@@ -4,6 +4,7 @@
 旋轉為角度，位移為角色高度的比例；s 是肢體在身體哪一側（畫面左 -1、右 +1，讓旋轉朝外），
 a 是第幾次循環的方向（+1／-1，讓左右交替）。實際幅度再乘上每根骨頭的 motion 係數。
 """
+import math
 from pathlib import Path
 
 from . import C2SError, NeedsInput, load_json, save_json
@@ -75,9 +76,19 @@ def _animation(rig, motion):
         if role not in template or factor == 0:
             continue
         s = -1 if world[bone][0] < body_x else 1
-        bones[bone] = {tl: _keys(_timeline(make, s, rig["height"], period, count, factor, 1 if tl == "scale" else 0),
-                                 CHANNELS[tl]) for tl, make in template[role].items()}
+        tls = {}
+        for tl, make in template[role].items():
+            frames = _timeline(make, s, rig["height"], period, count, factor, 1 if tl == "scale" else 0)
+            if tl == "scale" and _is_vertical(world[bone][2]):
+                # 模板的 scale 是畫面上的（寬, 高）；Spine 的 scaleX 沿著骨頭，骨頭直立時要對調
+                frames = [(t, sy, sx) for t, sx, sy in frames]
+            tls[tl] = _keys(frames, CHANNELS[tl])
+        bones[bone] = tls
     return {"bones": bones}
+
+
+def _is_vertical(rotation_deg):
+    return abs(math.sin(math.radians(rotation_deg))) > abs(math.cos(math.radians(rotation_deg)))
 
 
 def build_animations(workdir, motion="happy"):

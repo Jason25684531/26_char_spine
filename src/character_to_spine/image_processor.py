@@ -189,7 +189,9 @@ def prepare(workdir, only=None, replace=None):
     save_json(wd / "missing_parts.json", {"missing_required": missing_required, "needs_manual": manual,
                                           "unassigned_ratio": meta["unassigned_ratio"]})
     _write_repair_tasks(wd, missing_required, manual, entries, meta)
-    _write_preview(wd, composite([(rgba, 0, 0)], (w, h))[0], recomposed[0], entries)
+    shown = recomposed[0].copy()
+    shown[fg & ~assigned] = (255, 0, 255)  # 洋紅色：前景像素沒被任何部件涵蓋（漏畫或特效）
+    _write_preview(wd, composite([(rgba, 0, 0)], (w, h))[0], shown, entries)
     status = "needs_parts" if missing_required else "needs_repair" if manual else "ok"
     return {"status": status, "layers": [e["name"] for e, _ in drawable], "written": written,
             "missing_required": missing_required, "needs_manual": [m["name"] for m in manual],
@@ -219,9 +221,9 @@ def _write_repair_tasks(wd, missing_required, manual, entries, meta):
 
 
 def _write_preview(wd, source, recomposed, entries):
-    """layer_preview.png：原圖 | 圖層重組 | 部件範圍標示。"""
+    """layer_preview.png：原圖 | 圖層重組（洋紅＝未分配像素） | 部件範圍標示。"""
     h, w = source.shape[:2]
-    label = Image.fromarray((recomposed * 0.35 + 255 * 0.65).astype(np.uint8))
+    label = Image.fromarray((source * 0.35 + 255 * 0.65).astype(np.uint8))
     draw = ImageDraw.Draw(label)
     palette = [(230, 60, 60), (60, 140, 230), (40, 170, 90), (230, 150, 30), (150, 80, 200), (30, 170, 180), (200, 80, 150)]
     for i, e in enumerate(e for e in entries if "file" in e):

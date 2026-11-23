@@ -146,6 +146,18 @@ def test_motion_factor(workcopy):
     assert peak(anim(wd)["bones"]["arm_l"]["rotate"], "value") == pytest.approx(0.2 * base, rel=0.02)
 
 
+def test_crouch_is_wider_on_screen(built):
+    """下蹲（happy t=0.2）時身體在畫面上要變寬變矮。骨頭直立時 Spine 的 scaleX 是垂直方向。"""
+    import numpy as np
+    from character_to_spine.preview import world_matrices
+    wd = built("synth_a")
+    s = load_json(wd / "spine" / "character.json")
+    m0, m1 = world_matrices(s, "happy", 0.0)["body"], world_matrices(s, "happy", 0.2)["body"]
+    deform = m1[:2, :2] @ np.linalg.inv(m0[:2, :2])  # 畫面上 t=0 → t=0.2 的變形
+    assert np.linalg.norm(deform @ [1, 0]) > 1.02  # 變寬
+    assert np.linalg.norm(deform @ [0, 1]) < 0.98  # 變矮
+
+
 def test_secondary_motion_for_hair(built):
     assert "rotate" in anim(built("synth_b"))["bones"]["hair_back"]
 
