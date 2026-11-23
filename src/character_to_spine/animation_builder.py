@@ -31,6 +31,9 @@ HAPPY = {  # 週期 1.2 秒，2 次：蹲 → 跳 → 落地緩衝
     "head": {"rotate": lambda s, a, h: [(0, 0), (0.2, -4 * a), (0.5, 8 * a), (0.9, -3 * a), (1.2, 0)]},
     "arm": {"rotate": lambda s, a, h: [(0, 0), (0.2, -10 * s), (0.5, 110 * s), (0.7, 95 * s), (0.9, 30 * s), (1.2, 0)]},
     "leg": {"rotate": lambda s, a, h: [(0, 0), (0.5, 12 * s), (0.8, 0), (1.2, 0)]},
+    # 被道具帶著的手（雙手抱樂器）：幅度受接觸約束限制，改用一個週期 5 次的撥弦節奏表現動作（最大轉角與 arm 相同，約束上限不變）
+    "arm_strum": {"rotate": lambda s, a, h: [(0, 0), (0.2, 110 * s), (0.4, -110 * s), (0.6, 110 * s), (0.8, -110 * s),
+                                             (1.0, 110 * s), (1.2, 0)]},
     # 次要動作：比主體晚一拍，模擬頭髮、裙擺被甩動
     "hair": {"rotate": lambda s, a, h: [(0, 0), (0.3, 6 * a), (0.6, -8 * a), (0.95, 4 * a), (1.2, 0)]},
     "skirt": {"scale": lambda s, a, h: [(0, 1, 1), (0.3, 1.05, 0.94), (0.6, 0.97, 1.06), (0.95, 1.04, 0.96), (1.2, 1, 1)]},
@@ -69,6 +72,13 @@ def _timeline(make, s, h, period, count, factor, base):
 CONTACT_TOL = 0.01  # attach 接觸點因旋轉產生的最大位移（角色高度的比例）；校準依據見 docs/DECISIONS.md D-32
 
 
+def _template_role(rig, bone, template):
+    """被道具帶著的手（手掛在道具骨頭下，例如雙手抱吉他）改用撥弦節奏；手裡拿著的東西（道具掛在手下）不適用。"""
+    role = rig["roles"].get(bone)
+    parent = next((b.get("parent") for b in rig["bones"] if b["name"] == bone), None)
+    return "arm_strum" if role == "arm" and rig["roles"].get(parent) == "prop" and "arm_strum" in template else role
+
+
 def contact_limits(rig, motion):
     """attach 約束：讓「模板最大轉角 × 關節到接觸點的距離 ≤ 容許位移」的幅度上限。{骨頭: 上限}"""
     template = TEMPLATES[motion][0]
@@ -88,7 +98,7 @@ def contact_limits(rig, motion):
         pair = (c["a"], c["b"])
         carried = lambda b: rig["roles"].get(b) == "prop" and any(b in ancestors(o) for o in pair if o != b)
         for bone in [b for b in pair if not carried(b)]:
-            make = template.get(rig["roles"].get(bone), {}).get("rotate")
+            make = template.get(_template_role(rig, bone, template), {}).get("rotate")
             if not make:
                 continue
             peak = math.radians(max(abs(v) for _, v in make(1, 1, h)))
@@ -105,7 +115,7 @@ def _animation(rig, motion, tuning=None):
     limits = contact_limits(rig, motion)
     tune = (tuning or {}).get(motion, {})
     bones = {}
-    for bone, role in [("hip", "hip"), *rig["roles"].items()]:
+    for bone, role in [("hip", "hip"), *((b, _template_role(rig, b, template)) for b in rig["roles"])]:
         factor = min(rig["motion"].get(bone, 1.0), limits.get(bone, math.inf)) * tune.get(bone, 1.0)
         if role not in template or factor == 0:
             continue

@@ -328,3 +328,37 @@ def test_prop_carries_attached_arm(tmp_path):
     assert {b["name"]: b.get("parent") for b in rig["bones"]}["arm_l"] == "stick"
     limits = contact_limits(rig, "happy")
     assert "arm_l" in limits and "stick" not in limits
+
+
+def test_needs_manual_drafts_are_kept_out_of_view(workcopy):
+    """需人工部件的草稿在補畫前也不該被動畫露出：refine 要抓到並嘗試修正，但不重複降級、不改寫原因。"""
+    wd = workcopy("synth_a")
+    reason = part(wd, "body")["reason"]
+    assert part(wd, "body")["status"] == "needs_manual"
+    quality.refine(wd)
+    q = load_json(wd / "quality" / "quality_report.json")
+    assert any(a["kind"] == "exposure" and a["subject"] == "body" for a in q["rounds"][0]["anomalies"])
+    assert "body" not in q["downgraded_to_needs_manual"] and part(wd, "body")["reason"] == reason
+
+
+def test_carried_arm_strums(tmp_path):
+    """被道具帶著的手（雙手抱樂器）改用撥弦節奏：Happy 的轉角來回變號多次，而不是一次揮手。"""
+    img, _ = make("synth_a", tmp_path / "src")
+    doc = json.loads(img.with_suffix(".parts.json").read_text(encoding="utf-8"))
+    for p in doc["parts"]:
+        p["mask"] = str(img.parent / p["mask"])
+        if p["name"] == "arm_l":
+            p["attach"] = "stick"
+    doc["parts"].append({"name": "stick", "polygon": [[60, 250], [120, 250], [120, 262], [60, 262]], "z": 7, "role": "prop"})
+    path = tmp_path / "p.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    wd = tmp_path / "w"
+    analyze(img, wd, parts_path=path)
+    prepare(wd)
+    build_rig(wd)
+    build_animations(wd, "happy")
+    values = [k.get("value", 0) for k in load_json(wd / "animations.json")["happy"]["bones"]["arm_l"]["rotate"]]
+    signs = [v > 0 for v in values if v]
+    assert sum(a != b for a, b in zip(signs, signs[1:])) >= 8
+    other = [k.get("value", 0) for k in load_json(wd / "animations.json")["happy"]["bones"]["arm_r"]["rotate"]]
+    assert len([v for v in other if v]) < len([v for v in values if v])  # 沒抱道具的手仍是一般揮手

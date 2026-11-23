@@ -46,8 +46,10 @@ def _context(wd):
     parts = {e["name"]: e for e in meta["parts"] if "file" in e}
     return {"wd": wd, "meta": meta, "rig": rig, "canvas": canvas, "origin": origin, "scale": scale, "cache": {},
             "images": wd / "layers", "masks": wd / "repair_masks", "parts": parts,
-            # 只有「自動補、但量測為不可靠」的部件需要擔心露出；可靠的補圖露出也看不出破綻
-            "exposure_parts": [n for n, e in parts.items() if e["status"] == "auto_repaired" and not e.get("repair_reliable", True)],
+            # 要擔心露出的補圖：「自動補、但量測為不可靠」與「已判為需人工」的草稿。可靠的補圖露出也看不出破綻；
+            # 需人工的草稿在補畫前也不該露出，補畫後（--replace）沒有補圖遮罩，限制自然解除
+            "exposure_parts": [n for n, e in parts.items() if e["status"] == "needs_manual"
+                               or (e["status"] == "auto_repaired" and not e.get("repair_reliable", True))],
             "contacts": [(c["a"], c["b"]) for c in rig.get("contacts", [])],
             # 穿插檢查的對象：有宣告接觸的部件與道具（使用者要求手、吉他、身體不得穿插）
             "constrained": sorted({n for c in rig.get("contacts", []) for n in (c["a"], c["b"])}
@@ -277,7 +279,8 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
 
     # 不可靠、且修正後仍露出的補圖 → 不能宣稱自動修補成功
     meta = load_json(wd / "metadata.json")
-    exposed = {a["subject"]: a for a in final if a["kind"] == "exposure"}
+    auto = {e["name"] for e in meta["parts"] if e["status"] == "auto_repaired"}
+    exposed = {a["subject"]: a for a in final if a["kind"] == "exposure" and a["subject"] in auto}
     best_worst = best["worst"]
     for e in meta["parts"]:
         w = best_worst.get(f"exposure:{e['name']}")

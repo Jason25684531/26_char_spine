@@ -27,18 +27,24 @@ def measure(wd):
     rig = load_json(wd / "rig.json")
     q = load_json(wd / "quality" / "quality_report.json") if (wd / "quality" / "quality_report.json").exists() else None
     setup = world_matrices(skel)
-    out = {"workdir": wd.name, "travel_px": {}, "peak_rotation_deg": {}}
+    out = {"workdir": wd.name, "travel_px": {}, "path_px_per_s": {}, "peak_rotation_deg": {}}
     anim = skel["animations"]["happy"]
     for c in rig.get("contacts", []):
         p0 = np.array([*c["point"], 1.0])
         for bone in (c["a"], c["b"]):
             local = np.linalg.inv(setup[bone]) @ p0
             rest = np.linalg.inv(setup["body"]) @ p0
-            travel = 0.0
+            travel = path = 0.0
+            prev = rest
             for i in range(round(duration(anim) * FPS) + 1):
                 w = world_matrices(skel, "happy", i / FPS)
-                travel = max(travel, float(np.linalg.norm((np.linalg.inv(w["body"]) @ w[bone] @ local - rest)[:2])))
-            out["travel_px"][f"{bone}@{c['a']}+{c['b']}"] = round(travel, 1)
+                pos = np.linalg.inv(w["body"]) @ w[bone] @ local
+                travel = max(travel, float(np.linalg.norm((pos - rest)[:2])))
+                path += float(np.linalg.norm((pos - prev)[:2]))  # 手實際走過的路徑：同樣幅度、動得越頻繁越長
+                prev = pos
+            key = f"{bone}@{c['a']}+{c['b']}"
+            out["travel_px"][key] = round(travel, 1)
+            out["path_px_per_s"][key] = round(path / duration(anim), 1)
     for bone, tls in anim["bones"].items():
         if "rotate" in tls and rig["roles"].get(bone) in ("arm", "prop"):
             out["peak_rotation_deg"][bone] = round(max(abs(k.get("value", 0)) for k in tls["rotate"]), 2)
