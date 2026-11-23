@@ -254,16 +254,12 @@ def write_markdown(wd, ctx, sections, meas, path):
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def main():
-    ap = argparse.ArgumentParser(description="補畫優先順序與目視驗收圖")
-    ap.add_argument("workdir")
-    ap.add_argument("--out")
-    args = ap.parse_args()
-    wd = Path(args.workdir)
+def report(wd, out=None):
+    wd = Path(wd)
     for need in ("metadata.json", "rig.json", "parts.json", "source_rgba.png", "layer_preview.png", "spine/character.json"):
         if not (wd / need).exists():
             sys.exit(f"{wd} 缺少 {need}，請先跑完 c2s run")
-    out = Path(args.out) if args.out else wd / "report"
+    out = Path(out) if out else wd / "report"
     out.mkdir(parents=True, exist_ok=True)
     for old in out.glob("repair_*.png"):
         old.unlink()
@@ -284,8 +280,12 @@ def main():
         for e in entries:
             repair_png(ctx, skel, source, by_name[e["name"]], e, meas.get(e["name"]), out / f"repair_{e['name']}.png")
     visual_check(wd, ctx, skel, out / "visual_check.png")
-    print(out)
+    return out
 
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser(description="補畫優先順序與目視驗收圖")
+    ap.add_argument("workdir")
+    ap.add_argument("--out")
+    args = ap.parse_args()
+    print(report(args.workdir, args.out))

@@ -14,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from make_slides import CHECK_LABELS, build  # noqa: E402
+from visual_report import report as visual_report  # noqa: E402
 
 
 def load(p):
@@ -46,8 +47,10 @@ def package(chars, out, originals=ROOT / "examples" / "real", run_tests=True):
         for f in ("metadata.json", "parts.json", "missing_parts.json", "repair_tasks.md", "layer_preview.png", "grid_overlay.png"):
             if (wd / f).exists():
                 shutil.copy2(wd / f, la)
+        visual_report(wd, la / "report")  # 修補優先順序、三格對照、視覺驗收總覽
         sp = d["03_Spine_Project"] / name
         copytree(wd / "spine", sp, ignore=("roundtrip", "*.log"))
+        (sp / "IMPORT.md").write_text(_import_md(name, sp, load(wd / "export_report.json")), encoding="utf-8")
         for gif in (wd / "preview").glob("*.gif"):
             shutil.copy2(gif, d["04_Animation_Preview"] / f"{name}_{gif.name}")
         tr = d["07_Test_Reports"] / name
@@ -77,6 +80,45 @@ def package(chars, out, originals=ROOT / "examples" / "real", run_tests=True):
 
     (out / "README.md").write_text(_readme(rows, junit), encoding="utf-8")
     return out
+
+
+def _import_md(name, sp, export):
+    """Spine 匯入說明：版本、檔案雜湊、匯入指令、驗收清單，全部取自實際檔案。"""
+    import hashlib
+    import sys as _sys
+    _sys.path.insert(0, str(ROOT / "src"))
+    from character_to_spine.animation_builder import duration
+    from character_to_spine.spine_exporter import find_spine
+    skel = load(sp / "character.json")
+    exe, trial = find_spine()
+    imp = export["spine_import"]
+    files = [sp / "character.json"] + sorted((sp / "images").glob("*.png"))
+    lines = [f"# {name}：Spine 匯入說明", "",
+             f"**`.spine` 驗收狀態：{imp['status']}**。{imp['detail']}", "",
+             "## 版本", "",
+             f"- JSON 的 `skeleton.spine`：`{skel['skeleton']['spine']}`（匯出時可用 `c2s export --spine-version <版本>` 改成實際 Editor 的版本）",
+             f"- 本機偵測到的 Spine：`{exe or '未安裝'}`" + ("（試用版：CLI 不能匯入、不能存檔）" if trial else ""),
+             "- 本專案只用 Spine 4.2／4.3 共通的格式：bones、slots、region 附件、rotate／translate／scale、bezier 曲線；"
+             "不需要 Professional 功能（無 Mesh、IK、約束），Essential 授權即可",
+             "", "## 內容", "",
+             f"- 骨頭 {len(skel['bones'])} 根、插槽 {len(skel['slots'])} 個、圖片 {len(files) - 1} 張",
+             "- 動畫：" + "、".join(f"{a}（{duration(v)} 秒）" for a, v in skel["animations"].items()),
+             "", "## 檔案與 SHA-256", "", "| 檔案 | SHA-256 |", "|---|---|"]
+    lines += [f"| `{p.relative_to(sp).as_posix()}` | `{hashlib.sha256(p.read_bytes()).hexdigest()}` |" for p in files]
+    lines += ["", "## 匯入（需要 Essential 或 Professional 授權）", "",
+              "圖形介面：Spine 選單的 Import Data，選 `character.json`，縮放 1.0。圖片從同目錄的 `images/` 讀取。"
+              "（對話框的選項名稱未在完整版上驗證，以實際介面為準。）", "",
+              "CLI（Windows，於本目錄執行；語法取自官方 Command Line Interface 文件）：", "", "```",
+              f"Spine.com -u {skel['skeleton']['spine']} -i character.json -o character.spine -r character",
+              "Spine.com -i character.spine -o roundtrip -e json", "```", "",
+              "或用本專案自動匯入並往返比對：`set SPINE_EXE=<Spine.com 路徑>` 後執行 `c2s run <圖片>`。", "",
+              "## 匯入後驗收清單", "",
+              "- [ ] 匯入沒有錯誤或警告",
+              "- [ ] Setup 模式下各部件位置與原圖一致",
+              "- [ ] Animate 模式播放 `idle`、`happy`，動作與 `04_Animation_Preview` 的 Python Simulation Preview 一致",
+              "- [ ] 拖動任一關鍵影格、改一根骨頭的角度，可以存檔（確認可編輯）",
+              "- [ ] 往返匯出的 JSON 骨頭、插槽、動畫名稱與原始相同（`c2s run` 的 `spine_roundtrip` 會自動檢查）", ""]
+    return "\n".join(lines)
 
 
 def _readme(rows, junit):

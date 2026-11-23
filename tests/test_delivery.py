@@ -20,6 +20,11 @@ def test_package_from_real_outputs(built, tmp_path):
     assert (out / "03_Spine_Project" / "synth_b" / "character.json").read_bytes() == (b / "spine" / "character.json").read_bytes()
     assert list((out / "04_Animation_Preview").glob("*_python_simulation_preview.gif"))
     assert (out / "07_Test_Reports" / "synth_b" / "quality" / "quality_report.json").exists()
+    # Spine 匯入說明：雜湊與實際檔案一致、標明狀態
+    import hashlib
+    imp = (out / "03_Spine_Project" / "synth_b" / "IMPORT.md").read_text(encoding="utf-8")
+    assert hashlib.sha256((b / "spine" / "character.json").read_bytes()).hexdigest() in imp and "BLOCKED" in imp
+    assert (out / "02_Layered_Assets" / "synth_b" / "report" / "repair_priority.md").exists()
     # 沒有 .spine：不放替代檔，README 標明 BLOCKED
     assert not list(out.rglob("*.spine"))
     readme = (out / "README.md").read_text(encoding="utf-8")

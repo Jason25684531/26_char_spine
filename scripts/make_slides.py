@@ -7,6 +7,7 @@ python scripts/make_slides.py --chars output/ren output/zc2 --junit <pytest.xml>
 import argparse
 import json
 import shutil
+import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -18,6 +19,13 @@ from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Inches, Pt
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+import motion_metrics  # noqa: E402
+import numpy as np  # noqa: E402
+import visual_report as vr  # noqa: E402
+from character_to_spine import quality  # noqa: E402
 
 FONT = "Microsoft JhengHei"
 PLUM, MARIGOLD, CORAL = RGBColor(0x2E, 0x1A, 0x47), RGBColor(0xF2, 0x9F, 0x05), RGBColor(0xE4, 0x57, 0x2E)
@@ -318,26 +326,35 @@ def build(chars, originals_dir, junit, out_path):
     m = main["meta"]
     footer(s, f"原圖｜圖層重組（洋紅＝未分配像素）｜部件外框與 pivot　·　重組差異 {m['recompose_mae']}，未分配像素 {m['unassigned_ratio']:.2%}")
 
-    # 7 補圖與人工修正
-    s = new_slide(prs, "補圖：小面積自動填補，大面積交給人工")
-    rows = [["部件", "被遮擋", "留出誤差", "狀態"]]
+    # 7 修補優先順序：依動畫中草稿實際露出量排序
+    s = new_slide(prs, "補圖：依動畫實際露出量排出修補順序")
+    ctx = quality._context(main["wd"])
+    skel_main = load(main["wd"] / "spine" / "character.json")
+    meas = vr.measure(ctx, skel_main)
+    listed = sorted((e for e in main["meta"]["parts"] if e["status"] == "needs_manual"
+                     or (e["status"] == "auto_repaired" and not e.get("repair_reliable", True))),
+                    key=lambda e: -meas.get(e["name"], {"ratio": 1})["ratio"])
+    rows = [["部件", "狀態", "動畫最大露出", "優先"]]
     colors = {}
-    for i, e in enumerate(sorted(main["meta"]["parts"], key=lambda e: -e.get("hidden_ratio", 1)), 1):
-        st, col = PART_STATUS.get(e["status"], (e["status"], MUTED))
-        if e["status"] == "auto_repaired" and not e.get("repair_reliable", True):
-            st = "自動補（不可靠，未露出）"
-        rows.append([e["name"], f"{e.get('hidden_ratio', 1):.0%}", f"{e['holdout_error']:.2f}" if "holdout_error" in e else "—", st])
-        if e["status"] == "needs_manual":
-            colors[(i, 3)] = col
-    table(s, 0.6, 1.35, 6.2, rows, [1.6, 1.0, 1.1, 2.5], size=12, row_h=0.4, cell_colors=colors)
-    worst = max((e for e in main["meta"]["parts"] if "file" in e), key=lambda e: e.get("hidden_ratio", 0))
-    box(s, 7.0, 1.35, 5.7, 3.9, TINT)
-    picture(s, main["wd"] / worst["file"], 7.1, 1.45, 5.5, 3.7)
-    text(s, 7.0, 5.4, 5.7, 1.4, [
-        f"{worst['name']} 圖層：被遮住 {worst['hidden_ratio']:.0%}，中間是 OpenCV 邊緣延伸的填補草稿",
-        "被遮住 >35%，或「留出誤差 >0.08／被遮輪廓 >25%」且動畫中露出 → 列入 repair_tasks.md，人工補畫後 c2s prepare --replace 匯回",
+    for i, e in enumerate(listed, 1):
+        m = meas.get(e["name"])
+        rows.append([e["name"], "需人工" if e["status"] == "needs_manual" else "自動補（不可靠）",
+                     f"{m['ratio']:.1%}" if m else "無圖層", vr.priority(m)])
+        if vr.priority(m) == "高":
+            colors[(i, 3)] = STATUS["BLOCKED"]
+    table(s, 0.6, 1.35, 6.2, rows, [1.6, 2.0, 1.5, 1.1], size=12, row_h=0.4, cell_colors=colors)
+    top = next((e for e in listed if e["name"] in meas), None)
+    if top:
+        src = np.array(Image.alpha_composite(Image.new("RGBA", Image.open(main["wd"] / "source_rgba.png").size, "white"),
+                                             Image.open(main["wd"] / "source_rgba.png").convert("RGBA")).convert("RGB"))
+        part_def = next(p for p in main["parts"] if p["name"] == top["name"])
+        vr.repair_png(ctx, skel_main, src, part_def, top, meas[top["name"]], tmp / "repair_top.png")
+        picture(s, tmp / "repair_top.png", 7.0, 1.35, 5.7, 3.4)
+    text(s, 7.0, 4.95, 5.7, 1.8, [
+        "露出量：草稿在 Idle／Happy 每一格中實際被看見的面積 ÷ 部件面積（Python Simulation 逐格量測）",
+        "補畫後 c2s prepare --replace 匯回，對應的動作限制自動解除；各部件的建議見 02_Layered_Assets/<角色>/report/",
     ], size=13, bullets=True)
-    footer(s, "不使用 AI 補圖；填補草稿不視為完成，驗證報告的「人工修補」為 BLOCKED")
+    footer(s, "右：第一優先部件的原圖、目前圖層（洋紅＝自動補的草稿）、動畫中露出最多的一格（紅色）")
 
     # 8 骨架設計
     s = new_slide(prs, f"骨架設計：{len(main['rig']['bones'])} 根骨頭，全部由部件位置推算")
@@ -352,7 +369,8 @@ def build(chars, originals_dir, junit, out_path):
         picture(s, p, 0.6 + i * 1.55, 1.35, 1.45, 3.3)
         text(s, 0.6 + i * 1.55, 4.7, 1.45, 0.5, lab, size=11, color=MUTED, align=PP_ALIGN.CENTER)
     rows = [["role", "Happy 動作"], ["hip", "下蹲 → 跳起（角色高度 14%）→ 落地緩衝"], ["body", "擠壓伸展、左右傾"],
-            ["head", "反向點頭擺動"], ["arm／leg", "向外揮動，乘上 motion 係數"], ["hair／skirt", "晚一拍的跟隨擺動"],
+            ["head", "反向點頭擺動"], ["arm／leg", "向外揮動，乘上 motion 係數"],
+            ["抱樂器的手", "隨樂器擺動，加上撥弦節奏"], ["hair／skirt", "晚一拍的跟隨擺動"],
             ["prop／accessory", "輕微晃動"]]
     table(s, 6.95, 1.35, 5.75, rows, [1.85, 3.9], size=12, row_h=0.42)
     nkeys = lambda a: sum(len(k) for t in a.get("bones", {}).values() for k in t.values())
@@ -369,12 +387,18 @@ def build(chars, originals_dir, junit, out_path):
         s = new_slide(prs, "動畫品質：逐格檢查，自動修正，修不掉就標記")
         rows = [["輪", "總異常量", "異常", "修正（幅度 ×0.5）"]]
         for r in q["rounds"]:
-            rows.append([str(r["round"]), str(r["score"]),
-                         "、".join(f"{a['kind']}:{a['subject']}" for a in r["anomalies"]) or "無",
+            kinds = {"exposure": "露出", "hole": "破洞", "gap": "縫隙", "attach": "分離", "intrude": "穿插"}
+            count = {}
+            for a in r["anomalies"]:
+                count[kinds[a["kind"]]] = count.get(kinds[a["kind"]], 0) + 1
+            rows.append([str(r["round"]), str(r["score"]), "、".join(f"{k} {n}" for k, n in count.items()) or "無",
                          "、".join(x["bone"] for x in r.get("fixes", [])) or ("（採用此輪）" if r["round"] == q["chosen_round"] else "—")])
-        table(s, 0.6, 1.35, 7.2, rows, [0.6, 1.3, 3.0, 2.3], size=12, row_h=0.45)
+        table(s, 0.6, 1.35, 7.2, rows, [0.5, 1.1, 2.0, 3.6], size=12, row_h=0.45)
         worst = q["rounds"][q["chosen_round"]]["worst"]
         contacts = [f"{k.split(':')[1].replace('+', ' 與 ')}：重疊維持 {v['value']:.0%}" for k, v in worst.items() if k.startswith("attach:")]
+        mm = motion_metrics.measure(main["wd"])
+        contacts += [f"{key.split('@')[0]} 相對身體：最大位移 {mm['travel_px'][key]} px、每秒移動 {mm['path_px_per_s'][key]} px"
+                     for key in mm["travel_px"] if main["rig"]["roles"].get(key.split("@")[0]) == "arm"]
         text(s, 0.6, 1.5 + 0.45 * len(rows), 7.2, 2.6, contacts + [
             "檢查項目：被包住的透明破洞、相鄰部件的透明夾縫、attach 接觸分離、不可靠補圖露出",
             "歸因：在最差影格逐一凍結骨頭重算，降低改善最多的那根；沒改善就還原並停止",
@@ -429,18 +453,19 @@ def build(chars, originals_dir, junit, out_path):
 
     # 12 分工
     s = new_slide(prs, "AI 輔助與人工操作的分工")
-    cols = [("已完成（自動）", STATUS["PASS"], ["去背、切圖、圖層 metadata", "骨架、插槽、附件推算", "Idle／Happy 關鍵影格", "Spine JSON 與驗證報告"]),
-            ("半自動（AI＋人確認）", PLUM, ["Agent 看圖寫 parts.json", "依檢查圖修正 2～3 輪", "調整 role／motion 讓動作自然"]),
-            ("人工修正", STATUS["BLOCKED"], ["大面積遮擋部件補畫：" + "、".join(e["name"] for e in main["meta"]["parts"] if e["status"] == "needs_manual"),
-                                          "在 Spine 微調關鍵影格", "刪除素材瑕疵（第三隻手）"]),
-            ("未來規劃", STATUS["NOT_TESTED"], ["完整版 Spine 匯入與往返驗證", "Mesh／IK／表情切換", "可替換的 AI 補圖 Provider"])]
+    cols = [("已完成（自動，有測試）", STATUS["PASS"], ["去背、切圖、圖層 metadata", "骨架、接觸約束、撥弦節奏", "Idle／Happy 關鍵影格與逐格品質檢查",
+                                                         "自我修正、修補排序、Spine JSON"]),
+            ("半自動（AI＋人確認）", PLUM, ["Agent 看圖寫 parts.json", "依檢查圖修正 2～3 輪", "宣告接觸（attach）與 role"]),
+            ("人工修補", STATUS["BLOCKED"], ["依露出量補畫：" + "、".join(e["name"] for e in listed if e["status"] == "needs_manual"),
+                                          "補畫後 --replace 匯回", "刪除素材瑕疵（第三隻手）"]),
+            ("尚未驗證", STATUS["NOT_TESTED"], ["Spine 實際匯入、往返、可編輯性（需授權）", "在 Codex 中實際使用 Skill", "簡報在 PowerPoint 中的實際版面"])]
     cw = (W - 1.2 - 0.3 * 3) / 4
     for i, (title, col, items) in enumerate(cols):
         x = 0.6 + i * (cw + 0.3)
         box(s, x, 1.4, cw, 5.3, TINT)
         label(s, x, 1.4, cw, 0.6, title, col, size=15)
         text(s, x + 0.2, 2.2, cw - 0.35, 4.4, items, size=14, bullets=True, gap=10)
-    footer(s, "所有「人工修正」項目都列在各角色工作目錄的 repair_tasks.md")
+    footer(s, "人工修補的順序與對照圖：02_Layered_Assets/<角色>/report/repair_priority.md")
 
     # 13 驗證結果
     s = new_slide(prs, "驗證結果：可自動驗證的項目全部通過")
@@ -474,7 +499,7 @@ def build(chars, originals_dir, junit, out_path):
     text(s, 7.0, 2.1, 5.6, 4.6, [
         "取得 Essential／Professional 授權 → 設定 SPINE_EXE → c2s export，完成匯入與往返驗證",
         "在 Spine Editor 開啟專案、修改關鍵影格，確認可編輯性",
-        "依 repair_tasks.md 補畫被遮擋的部件，c2s prepare --replace 匯回",
+        "依修補優先順序補畫（" + "、".join(e["name"] for e in listed[:3]) + "），--replace 匯回後重跑，動作限制自動解除",
         "需要精準邊界的部件改用遮罩",
     ], size=15, color=WHITE, bullets=True, gap=12)
     footer(s, "Character-to-Spine AI · 原始碼、Skill、OpenSpec 規格見 06_Development", dark=True)

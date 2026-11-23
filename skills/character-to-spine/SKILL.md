@@ -45,7 +45,7 @@ metadata:
    - 肢體轉錯方向：檢查 `_l`／`_r` 與 pivot。
    - 動作太大露出沒畫的區域：降低該部件的 `motion`。
    - 道具或頭髮亂甩：確認 `role` 與 `parent`。
-6. **處理修補任務**：讀 `repair_tasks.md`，把需要人工修補的部件告訴使用者。
+6. **處理修補任務**：執行 `python scripts/visual_report.py <工作目錄>`，讀 `report/repair_priority.md`（依動畫實際露出量排序，附三格對照圖），把需要人工修補的部件依優先順序告訴使用者（工作目錄的 `repair_tasks.md` 是同一份清單的文字版，含匯回指令）；`report/visual_check.png` 是關鍵影格與接觸點的總覽。
    - 使用者修好後執行 `c2s prepare --replace <部件>=<修好的.png>`（會存到 `<圖名>.overrides/`），再執行 `c2s run <圖片>`。
 7. **回報**：逐項列出 `validation_report.json` 的狀態，以及待人工處理的部件。
 
@@ -77,7 +77,7 @@ metadata:
 | `parent` | 否 | 跟著哪根骨頭動。必要部件由 preset 決定；其他部件預設 `body` |
 | `role` | 否 | 套用哪種動作：`head` `body` `arm` `leg` `hair` `skirt` `prop` `accessory`。必要部件由名稱推得，其他預設 `accessory` |
 | `motion` | 否 | 動作幅度係數，預設 1.0，0 表示不動 |
-| `attach` | 否 | 必須保持接觸的部件名稱（或清單），例如抱著吉他的手 `"attach": "guitar"`。動畫會自動限制幅度，讓接觸點位移不超過角色高度的 1%；初始姿勢沒有接觸時 rig 會要求修正 |
+| `attach` | 否 | 必須保持接觸的部件名稱（或清單），例如抱著吉他的手 `"attach": "guitar"`。手 attach 一個 `role: prop` 的道具時，手會掛在道具骨頭下（道具帶著手擺動）並改用撥弦節奏；動畫會自動限制幅度，讓接觸點位移不超過角色高度的 1%；初始姿勢沒有接觸時 rig 會要求修正 |
 
 **必要部件**（preset `humanoid-chibi`）：`head`、`body`、`arm_l`、`arm_r`、`leg_l`、`leg_r`。`_l`／`_r` 指**畫面**的左右，不是角色自己的左右。
 

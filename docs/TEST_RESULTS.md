@@ -239,3 +239,46 @@ parts.json 由 Claude Code 依 `grid_overlay.png` 目測撰寫，依 `layer_prev
 | self-correction | 修正後仍失敗 | `test_unfixable_is_blocked_with_evidence`、`test_detects_joint_gap_and_attributes_it` | PASS |
 | self-correction | 確定性 | `test_refine_is_deterministic_with_fixes`、`test_rebuild_after_deleting_output` | PASS |
 | self-correction | 尚未執行 refine | `test_stale_quality_report_is_not_trusted`、`test_stale_report_after_prepare_and_animate` | PASS |
+## animation-liveliness（2026-11-23）
+
+量測工具 `scripts/motion_metrics.py` 量的是接觸點跟著手臂骨頭、扣掉身體移動後的位置。
+
+- **最大位移**：相對原位的最大距離。
+- **每秒路徑**：每秒走過的路徑長度。
+- **草稿露出**：所有有補圖的部件，草稿在動畫中被看見的最大比例。
+
+流程是確定性的，同一份輸入重跑數字完全相同，所以每個數字都是單次量測，不需要取多次中位數。每個假設的前後數字都記在 `.audit/`（不進版控）。
+
+| 假設 | 結果 | 處理 |
+|---|---|---|
+| H1：容許位移改看道具內部空間 | 撥弦手 4.4→6.1px，但握琴頸的手 8.8→4.4px，總和 13.2→10.5px | 回退 |
+| H2：道具帶動抱著它的手 | 第一版讓转场2 捧花手 8.6→38.3px、身體草稿 3.5%→12.3%（退步）；限縮後转场2 不變，人.png 總和 13.2→17.9px | 保留限縮版 |
+| H3：撥弦節奏（單獨） | 人.png 撥弦手每秒 14.2→38.8px，但後髮草稿 3.51%→5.36%（目視可見） | 回退 |
+| H4：需人工草稿也納入自我修正（單獨） | 腿草稿 14%→3.4%，但手路徑約減半 | 單獨不採用 |
+| H3＋H4 | 人.png 撥弦手每秒 14.2→37.5px、握琴頸 34.1→39.8px；腿草稿 14.1%→3.4%、身體 2.6%→2.0%；转场2 草稿變少、捧花手 8.6→2.2px | 保留（取捨見 DECISIONS D-36） |
+
+反事實估算（複本中把部件標為已補好，重跑自我修正）：
+
+| 情境 | 撥弦手最大位移 | 撥弦手每秒路徑 |
+|---|---|---|
+| 目前 | 5.1px | 37.5px |
+| 吉他補好 | 9.5px | 74.3px |
+| 全部補好 | 10.2px | 75.0px |
+
+完成條件「撥弦手最大位移 ≥13px」**NOT VERIFIED**，限制來源見 KNOWN_ISSUES K-18。
+
+回歸測試，皆先確認改動前失敗：
+
+- `test_prop_carries_attached_arm`（改動前：手臂的父骨頭是 body）。
+- `test_needs_manual_drafts_are_kept_out_of_view`。
+- `test_carried_arm_strums`（改動前：轉角只變號 3 次）。
+- 修補報告 `tests/test_visual_report.py` 3 個。
+- 打包時的 Spine 匯入說明（`test_delivery.py`）。
+
+整套測試 114 passed。
+
+目視：
+
+- `output/ren/report/visual_check.png`：接觸點一直在圈中央。
+- `output/ren_strum_strip.png`：雙手在吉他上、沒有破圖。
+- 修補三格對照圖：子代理與我各自看過。

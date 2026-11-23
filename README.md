@@ -81,6 +81,7 @@ c2s prepare --replace arm_l=fixed_arm.png
 | `validation_report.json` | 每個檢查項目的 PASS／FAIL／BLOCKED／NOT_TESTED |
 | `quality/quality_report.json`、`quality/round_N/*.png` | 動畫逐格品質檢查（破洞、關節縫隙、接觸分離、補圖露出）、每輪自動修正的紀錄與異常影格 |
 | `tuning.json` | 自動修正後各骨頭的動作幅度係數 |
+| `report/`（`python scripts/visual_report.py <工作目錄>`） | 修補優先順序 `repair_priority.md`、每個部件的三格對照圖、視覺驗收總覽 `visual_check.png` |
 | `preview/*_python_simulation_preview.gif` | 用 Python 模擬的動畫預覽，**不是** Spine 算圖 |
 
 ## 限制

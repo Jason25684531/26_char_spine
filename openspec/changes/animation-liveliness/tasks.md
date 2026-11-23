@@ -13,6 +13,6 @@
 
 ## 3. Spine 與交付
 
-- [ ] 3.1 匯入說明 IMPORT.md（spine-import-pack）
-- [ ] 3.2 預覽、15 頁簡報、測試報告更新
+- [x] 3.1 匯入說明 IMPORT.md（spine-import-pack）
+- [x] 3.2 預覽、15 頁簡報、測試報告更新
 - [ ] 3.3 獨立審查、決策軌跡稽核、OpenSpec 驗收
