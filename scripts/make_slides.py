@@ -6,6 +6,7 @@ python scripts/make_slides.py --chars output/ren output/zc2 --junit <pytest.xml>
 """
 import argparse
 import json
+import shutil
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -481,6 +482,7 @@ def build(chars, originals_dir, junit, out_path):
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     prs.save(out_path)
+    shutil.rmtree(tmp, ignore_errors=True)  # 抽出的影格含角色圖片；已嵌入簡報，不留在系統暫存
     return out_path
 
 
