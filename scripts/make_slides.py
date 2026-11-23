@@ -26,7 +26,7 @@ STATUS = {"PASS": RGBColor(0x2E, 0x8B, 0x57), "FAIL": RGBColor(0xC0, 0x39, 0x2B)
 PART_STATUS = {"ok": ("完整可見", STATUS["PASS"]), "auto_repaired": ("自動填補", STATUS["PASS"]),
                "needs_manual": ("需人工修補", STATUS["BLOCKED"]), "replaced": ("已人工替換", STATUS["PASS"])}
 CHECK_LABELS = {"bones": "骨頭階層", "slots": "插槽與附件", "image_references": "圖片引用", "animations": "動畫結構",
-                "setup_pose": "初始姿勢比對", "manual_repairs": "人工修補", "spine_import": "Spine 匯入 .spine",
+                "setup_pose": "初始姿勢比對", "animation_quality": "動畫品質", "manual_repairs": "人工修補", "spine_import": "Spine 匯入 .spine",
                 "spine_roundtrip": "Spine 往返驗證", "spine_editable": "Editor 可編輯性"}
 KEY_TIMES = [(0.0, "起始"), (0.2, "下蹲 0.2s"), (0.5, "跳躍頂點 0.5s"), (0.9, "落地緩衝 0.9s")]
 # 原始素材的用途與選擇理由（docs/DECISIONS.md D-13）
@@ -319,20 +319,22 @@ def build(chars, originals_dir, junit, out_path):
 
     # 7 補圖與人工修正
     s = new_slide(prs, "補圖：小面積自動填補，大面積交給人工")
-    rows = [["部件", "被遮擋", "狀態"]]
+    rows = [["部件", "被遮擋", "留出誤差", "狀態"]]
     colors = {}
     for i, e in enumerate(sorted(main["meta"]["parts"], key=lambda e: -e.get("hidden_ratio", 1)), 1):
         st, col = PART_STATUS.get(e["status"], (e["status"], MUTED))
-        rows.append([e["name"], f"{e.get('hidden_ratio', 1):.0%}", st])
+        if e["status"] == "auto_repaired" and not e.get("repair_reliable", True):
+            st = "自動補（不可靠，未露出）"
+        rows.append([e["name"], f"{e.get('hidden_ratio', 1):.0%}", f"{e['holdout_error']:.2f}" if "holdout_error" in e else "—", st])
         if e["status"] == "needs_manual":
-            colors[(i, 2)] = col
-    table(s, 0.6, 1.35, 6.0, rows, [2.4, 1.3, 2.3], size=12, row_h=0.4, cell_colors=colors)
+            colors[(i, 3)] = col
+    table(s, 0.6, 1.35, 6.2, rows, [1.6, 1.0, 1.1, 2.5], size=12, row_h=0.4, cell_colors=colors)
     worst = max((e for e in main["meta"]["parts"] if "file" in e), key=lambda e: e.get("hidden_ratio", 0))
     box(s, 7.0, 1.35, 5.7, 3.9, TINT)
     picture(s, main["wd"] / worst["file"], 7.1, 1.45, 5.5, 3.7)
     text(s, 7.0, 5.4, 5.7, 1.4, [
         f"{worst['name']} 圖層：被遮住 {worst['hidden_ratio']:.0%}，中間是 OpenCV 邊緣延伸的填補草稿",
-        "被遮住 ≤35% → 自動填補；>35% → 列入 repair_tasks.md，人工補畫後 c2s prepare --replace 匯回",
+        "被遮住 >35%，或「留出誤差 >0.08／被遮輪廓 >25%」且動畫中露出 → 列入 repair_tasks.md，人工補畫後 c2s prepare --replace 匯回",
     ], size=13, bullets=True)
     footer(s, "不使用 AI 補圖；填補草稿不視為完成，驗證報告的「人工修補」為 BLOCKED")
 
@@ -358,6 +360,29 @@ def build(chars, originals_dir, junit, out_path):
         "全部是 Spine 骨頭的 rotate／translate／scale 關鍵影格與 bezier 曲線，可在 Spine 內逐格修改；不是影片",
     ], size=14, bullets=True)
     footer(s, "左圖為 Python Simulation Preview（自寫骨架求值器），非 Spine 算圖")
+
+    # 9b 動畫品質自我檢查
+    qpath = main["wd"] / "quality" / "quality_report.json"
+    if qpath.exists():
+        q = load(qpath)
+        s = new_slide(prs, "動畫品質：逐格檢查，自動修正，修不掉就標記")
+        rows = [["輪", "總異常量", "異常", "修正（幅度 ×0.5）"]]
+        for r in q["rounds"]:
+            rows.append([str(r["round"]), str(r["score"]),
+                         "、".join(f"{a['kind']}:{a['subject']}" for a in r["anomalies"]) or "無",
+                         "、".join(x["bone"] for x in r.get("fixes", [])) or ("（採用此輪）" if r["round"] == q["chosen_round"] else "—")])
+        table(s, 0.6, 1.35, 7.2, rows, [0.6, 1.3, 3.0, 2.3], size=12, row_h=0.45)
+        worst = q["rounds"][q["chosen_round"]]["worst"]
+        contacts = [f"{k.split(':')[1].replace('+', ' ↔ ')}：重疊維持 {v['value']:.0%}" for k, v in worst.items() if k.startswith("attach:")]
+        text(s, 0.6, 1.5 + 0.45 * len(rows), 7.2, 2.6, contacts + [
+            "檢查項目：被包住的透明破洞、相鄰部件的透明夾縫、attach 接觸分離、不可靠補圖露出",
+            "歸因：在最差影格逐一凍結骨頭重算，降低改善最多的那根；沒改善就還原並停止",
+        ], size=13, bullets=True, gap=8)
+        frames = [a["frame"] for a in q["rounds"][0]["anomalies"] if Path(a["frame"]).exists()]
+        if frames:
+            picture(s, frames[0], 8.1, 1.35, 4.6, 4.9)
+            text(s, 8.1, 6.3, 4.6, 0.5, "第 0 輪異常影格（紅色＝問題區域）", size=11, color=MUTED, align=PP_ALIGN.CENTER)
+        footer(s, "資料來源：quality/quality_report.json；影格為 Python Simulation Preview，非 Spine 算圖")
 
     # 10 通用性
     if len(data) > 1:
@@ -441,7 +466,7 @@ def build(chars, originals_dir, junit, out_path):
     text(s, 0.8, 2.1, 5.6, 4.6, [
         "只有 Spine 試用版：無法產生 .spine、無法驗證可編輯性",
         "部件邊界由 AI 目測多邊形，交界處非像素級精準",
-        "被遮擋區域只做 OpenCV 邊緣延伸，不使用 AI 補圖",
+        "被遮擋區域只做 OpenCV 邊緣延伸；不可靠且會露出的補圖一律交給人工",
         "第一版只支援人形／Q 版骨架，沒有 Mesh、IK、物理",
     ], size=15, color=WHITE, bullets=True, gap=12)
     text(s, 7.0, 1.5, 5.6, 0.5, "下一步", size=20, bold=True, color=MARIGOLD)

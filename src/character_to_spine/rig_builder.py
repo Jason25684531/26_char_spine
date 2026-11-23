@@ -2,6 +2,7 @@
 import math
 from pathlib import Path
 
+import cv2
 import numpy as np
 from PIL import Image
 
@@ -32,6 +33,35 @@ def _rot(vec, deg):
     r = math.radians(deg)
     c, s = math.cos(r), math.sin(r)
     return vec[0] * c - vec[1] * s, vec[0] * s + vec[1] * c
+
+
+MIN_CONTACT_PX = 30  # attach 的兩個部件在初始姿勢至少要重疊（或相距 3px 內）這麼多像素，否則是宣告錯誤
+
+
+def _contacts(wd, meta, parts, world):
+    """parts.json 的 attach → 接觸點。兩個圖層在畫布上各膨脹 3px 後取重疊區，記錄重心（世界座標）與面積。"""
+    w, h = meta["canvas"]
+    kernel = np.ones((7, 7), np.uint8)
+
+    def alpha(e):
+        m = np.zeros((h, w), np.uint8)
+        a = np.array(Image.open(wd / e["file"]))[..., 3] > 127
+        m[e["y"]:e["y"] + e["h"], e["x"]:e["x"] + e["w"]] = a
+        return cv2.dilate(m, kernel).astype(bool)
+
+    pairs = sorted({tuple(sorted((n, t))) for n, e in parts.items() for t in e.get("attach") or []})
+    out = []
+    for a, b in pairs:
+        missing = [n for n in (a, b) if n not in parts]
+        if missing:
+            raise NeedsInput(f"attach 的部件 {', '.join(missing)} 沒有圖層，請先補上（見 repair_tasks.md）")
+        overlap = alpha(parts[a]) & alpha(parts[b])
+        if overlap.sum() < MIN_CONTACT_PX:
+            raise NeedsInput(f"attach {a} ↔ {b}：初始姿勢只重疊 {int(overlap.sum())} 像素（至少 {MIN_CONTACT_PX}），"
+                             "兩者沒有接觸，請修正 parts.json 的 attach 或範圍")
+        ys, xs = np.nonzero(overlap)
+        out.append({"a": a, "b": b, "point": [round(v, 2) for v in world(xs.mean(), ys.mean())], "area": int(overlap.sum())})
+    return out
 
 
 def build_rig(workdir, preset=None):
@@ -103,6 +133,7 @@ def build_rig(workdir, preset=None):
     rig = {"preset": preset_name, "height": meta["bbox"][3], "bbox": meta["bbox"], "origin": meta["origin"],
            "bones": bones, "slots": slots, "attachments": attachments,
            "roles": {n: e.get("role") or default_role(n) for n, e in parts.items()},
-           "motion": {n: e.get("motion", 1.0) for n, e in parts.items()}}
+           "motion": {n: e.get("motion", 1.0) for n, e in parts.items()},
+           "contacts": _contacts(wd, meta, parts, world)}
     save_json(wd / "rig.json", rig)
     return {"status": "ok", "bones": [b["name"] for b in bones], "slots": [s["name"] for s in slots]}

@@ -102,6 +102,7 @@ def import_to_spine(json_path, spine_path, exe=None):
 def export(workdir, spine_version=DEFAULT_SPINE_VERSION, spine_exe=None):
     wd = Path(workdir)
     data = build_skeleton(wd, spine_version)
+    (wd / "quality" / "quality_report.json").unlink(missing_ok=True)  # 重新匯出後需要重跑 c2s refine 才有有效的品質報告
     out = wd / "spine"
     images = out / "images"
     shutil.rmtree(images, ignore_errors=True)

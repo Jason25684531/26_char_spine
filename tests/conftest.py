@@ -1,3 +1,4 @@
+import json
 import shutil
 
 import pytest
@@ -39,5 +40,10 @@ def workcopy(built, tmp_path):
     def get(name):
         dst = tmp_path / name
         shutil.copytree(built(name), dst)
+        # 來源指向複本自己：--replace 的修補圖才會留在這個複本內，不會寫進共用的合成角色來源、影響其他測試
+        parts = dst / "parts.json"
+        doc = json.loads(parts.read_text(encoding="utf-8"))
+        doc["source"] = str(parts)
+        parts.write_text(json.dumps(doc), encoding="utf-8")
         return dst
     return get

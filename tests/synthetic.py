@@ -87,6 +87,31 @@ def make(name, out_dir):
     return image_path, {p: truth_bbox(v[0]) for p, v in spec["parts"].items()}
 
 
+def make_custom(out_dir, name, size, parts):
+    """parts：[(名稱, 多邊形, 顏色或 "stripes", z, 其他欄位)]。由後往前畫，寫出 <name>.png 與 <name>.parts.json。"""
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    w, h = size
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    for part, poly, color, z, extra in sorted(parts, key=lambda p: p[3]):
+        mask = Image.new("L", (w, h), 0)
+        ImageDraw.Draw(mask).polygon([tuple(p) for p in poly], fill=255)
+        if color == "stripes":  # 高對比細條紋：邊緣延伸補不回來
+            fill = Image.new("RGBA", (w, h))
+            d = ImageDraw.Draw(fill)
+            for x in range(0, w, 6):
+                d.rectangle([x, 0, x + 2, h], fill=(20, 20, 20, 255))
+                d.rectangle([x + 3, 0, x + 5, h], fill=(240, 240, 240, 255))
+        else:
+            fill = Image.new("RGBA", (w, h), (*color, 255))
+        img.paste(fill, (0, 0), mask)
+    path = out / f"{name}.png"
+    img.save(path)
+    (out / f"{name}.parts.json").write_text(json.dumps({"version": 1, "parts": [
+        {"name": n, "polygon": poly, "z": z, **extra} for n, poly, _, z, extra in parts]}), encoding="utf-8")
+    return path
+
+
 if __name__ == "__main__":
     for n in CHARACTERS:
         print(make(n, sys.argv[1] if len(sys.argv) > 1 else "examples/synthetic")[0])

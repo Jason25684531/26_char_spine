@@ -113,6 +113,15 @@ def check_parts(parts_doc, size, base_dir):
             elif max(v[0] for v in poly) < 0 or min(v[0] for v in poly) >= w or max(v[1] for v in poly) < 0 or min(v[1] for v in poly) >= h:
                 errors.append(f"{name}: polygon 完全在圖片範圍外（圖片 {w}x{h}）")
         out.append(q)
+    for q in out:  # attach：必須保持接觸的部件（品質條件，見 quality.py）
+        targets = q.get("attach", [])
+        q["attach"] = targets = [targets] if isinstance(targets, str) else targets
+        if not isinstance(targets, list):
+            errors.append(f"{q['name']}: attach 必須是部件名稱或名稱清單")
+            continue
+        for target in targets:
+            if target not in seen or target == q["name"]:
+                errors.append(f"{q['name']}: attach 指向不存在的部件 {target!r}")
     return out, errors
 
 
@@ -142,8 +151,9 @@ def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
         "preset": preset,
     }
 
-    # 工作目錄內的 parts.json 優先：那是使用者被告知要修改的檔案，不能被圖片旁的原始版本蓋掉
-    candidates = [Path(parts_path)] if parts_path else [wd / "parts.json", image.with_suffix(".parts.json")]
+    # 正式來源在圖片旁（output 可刪除）；工作目錄內的 parts.json 只是正規化複本，僅在沒有正式來源時沿用
+    sidecar = image.with_suffix(".parts.json")
+    candidates = [Path(parts_path)] if parts_path else [sidecar, wd / "parts.json"]
     if parts_path and not Path(parts_path).exists():
         raise C2SError(f"找不到 parts 檔：{parts_path}")
     found = next((c for c in candidates if c.exists()), None)
@@ -155,13 +165,17 @@ def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
             doc, errors = None, [f"{found.name} 不是合法的 JSON：{e}"]
         parts, errors = check_parts(doc, (w, h), found.parent) if doc is not None else ([], errors)
         names = [p["name"] for p in parts]
-        if not errors:
-            save_json(wd / "parts.json", {"version": 1, "image": image.name, "preset": preset, "parts": parts})
+        if errors:
+            if found.resolve() != (wd / "parts.json").resolve():
+                (wd / "parts.json").unlink(missing_ok=True)  # 不讓 prepare 讀到上一次的正規化複本
+        else:
+            save_json(wd / "parts.json", {"version": 1, "image": image.name, "preset": preset,
+                                          "source": str(found.resolve()), "parts": parts})
     else:
         save_json(wd / "parts.template.json", {
             "version": 1, "image": image.name, "preset": preset,
             "_說明": "座標為原圖像素（左上為原點）。polygon 要包含被其他部件遮住的範圍；z 越大越前面；"
-                    "_l/_r 指畫面左／右；pivot、parent 可省略。完成後存成 parts.json 再執行 c2s prepare。",
+                    "_l/_r 指畫面左／右；pivot、parent、role、motion、attach 可省略。完成後存成圖片旁的 <圖名>.parts.json 再執行 c2s run。",
             "parts": [{"name": n, "polygon": [], "z": i, "pivot": None} for i, n in enumerate(required)],
         })
     missing = [n for n in required if n not in names]
@@ -169,7 +183,7 @@ def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
     result["status"] = "ok" if found and not errors and not missing else "needs_parts"
     if result["status"] != "ok":
         result["next_steps"] = [
-            f"由 Agent（Skill）或人工檢視圖片後撰寫 {wd / 'parts.json'}（範本：parts.template.json）",
+            f"由 Agent（Skill）或人工看 {wd / 'grid_overlay.png'} 後撰寫 {sidecar}（與圖片同資料夾，範本：{wd / 'parts.template.json'}）",
             "必要部件：" + ", ".join(required),
             f"完成後執行：c2s prepare \"{image}\"",
         ]

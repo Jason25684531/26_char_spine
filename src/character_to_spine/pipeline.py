@@ -6,9 +6,11 @@ from .analyzer import analyze
 from .animation_builder import build_animations
 from .image_processor import prepare
 from .preview import write_previews
+from .quality import refine
 from .rig_builder import build_rig
-from .spine_exporter import DEFAULT_SPINE_VERSION, export
+from .spine_exporter import DEFAULT_SPINE_VERSION
 from .validator import validate
+
 
 def resolve_workdir(image=None, workdir=None):
     """工作目錄：明確指定 > ./output/<圖片檔名> > 上一次使用的（絕對路徑記在 ./output/.current）。"""
@@ -41,7 +43,7 @@ def run(image, motion="happy", workdir=None, parts=None, preset="humanoid-chibi"
         steps["prepare"] = prepare(wd)
         steps["rig"] = build_rig(wd, preset)
         steps["animate"] = build_animations(wd, motion)
-        steps["export"] = export(wd, spine_version, spine_exe)
+        steps["refine"] = refine(wd, motion, spine_version, spine_exe)  # 品質檢查與自我修正，結束時 export 一次
         steps["validate"] = validate(wd)
         steps["preview"] = write_previews(wd)
     except NeedsInput as e:

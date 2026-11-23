@@ -66,13 +66,36 @@ def _timeline(make, s, h, period, count, factor, base):
     return frames
 
 
-def _animation(rig, motion):
+CONTACT_TOL = 0.01  # attach 接觸點因旋轉產生的最大位移（角色高度的比例）；校準依據見 docs/DECISIONS.md D-32
+
+
+def contact_limits(rig, motion):
+    """attach 約束：讓「模板最大轉角 × 關節到接觸點的距離 ≤ 容許位移」的幅度上限。{骨頭: 上限}"""
+    template = TEMPLATES[motion][0]
+    world = {b["name"]: b["world"] for b in rig["bones"] if "world" in b}
+    h = rig["height"]
+    limits = {}
+    for c in rig.get("contacts", []):
+        for bone in (c["a"], c["b"]):
+            make = template.get(rig["roles"].get(bone), {}).get("rotate")
+            if not make:
+                continue
+            peak = math.radians(max(abs(v) for _, v in make(1, 1, h)))
+            r = math.hypot(world[bone][0] - c["point"][0], world[bone][1] - c["point"][1])
+            if peak and r:
+                limits[bone] = min(limits.get(bone, 1.0), CONTACT_TOL * h / (peak * r))
+    return limits
+
+
+def _animation(rig, motion, tuning=None):
     template, period, count = TEMPLATES[motion]
     world = {b["name"]: b["world"] for b in rig["bones"] if "world" in b}
     body_x = world["body"][0]
+    limits = contact_limits(rig, motion)
+    tune = (tuning or {}).get(motion, {})
     bones = {}
     for bone, role in [("hip", "hip"), *rig["roles"].items()]:
-        factor = rig["motion"].get(bone, 1.0)
+        factor = min(rig["motion"].get(bone, 1.0), limits.get(bone, math.inf)) * tune.get(bone, 1.0)
         if role not in template or factor == 0:
             continue
         s = -1 if world[bone][0] < body_x else 1
@@ -99,8 +122,10 @@ def build_animations(workdir, motion="happy"):
     if not (wd / "rig.json").exists():
         raise NeedsInput(f"{wd} 尚未建立骨架，請先執行 c2s rig")
     rig = load_json(wd / "rig.json")
-    anims = {m: _animation(rig, m) for m in dict.fromkeys(["idle", motion])}
+    tuning = load_json(wd / "tuning.json") if (wd / "tuning.json").exists() else {}
+    anims = {m: _animation(rig, m, tuning) for m in dict.fromkeys(["idle", motion])}
     save_json(wd / "animations.json", anims)
+    (wd / "quality" / "quality_report.json").unlink(missing_ok=True)  # 動畫變了，舊的品質報告不再有效
     return {"status": "ok", "animations": {n: duration(a) for n, a in anims.items()}}
 
 

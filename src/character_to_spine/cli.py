@@ -10,6 +10,7 @@ from .analyzer import analyze
 from .animation_builder import MOTIONS, build_animations
 from .image_processor import prepare
 from .preview import write_previews
+from .quality import refine
 from .rig_builder import PRESETS, build_rig
 from .spine_exporter import DEFAULT_SPINE_VERSION, export
 from .validator import validate
@@ -46,6 +47,11 @@ def _parser():
     s.add_argument("--spine-version", default=DEFAULT_SPINE_VERSION)
     s.add_argument("--spine-exe", help="Spine.com 路徑（預設讀環境變數 SPINE_EXE 或自動尋找）")
 
+    s = cmd("refine", "逐格檢查動畫品質並自動修正動作幅度（最多 3 輪），結束時 export")
+    s.add_argument("--motion", default="happy", choices=MOTIONS)
+    s.add_argument("--spine-version", default=DEFAULT_SPINE_VERSION)
+    s.add_argument("--spine-exe")
+
     cmd("validate", "檢查輸出內容並產生 validation_report.json")
     cmd("preview", "用內建算圖器輸出動畫預覽 GIF（不是 Spine 的算圖結果）")
 
@@ -74,6 +80,8 @@ def _dispatch(a, wd):
         return build_animations(wd, a.motion)
     if a.command == "export":
         return export(wd, a.spine_version, a.spine_exe)
+    if a.command == "refine":
+        return refine(wd, a.motion, a.spine_version, a.spine_exe)
     if a.command == "validate":
         return validate(wd)
     if a.command == "preview":

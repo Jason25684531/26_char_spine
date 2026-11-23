@@ -103,6 +103,17 @@ def validate(workdir):
     checks.append({"check": "manual_repairs", "status": "BLOCKED" if manual else "PASS",
                    "detail": ("等待人工修補：" + ", ".join(manual) + "（見 repair_tasks.md）") if manual else "沒有待人工修補的圖層"})
 
+    qpath = wd / "quality" / "quality_report.json"
+    if not qpath.exists():
+        checks.append({"check": "animation_quality", "status": "NOT_TESTED", "detail": "沒有品質報告，請執行 c2s refine"})
+    else:
+        q = load_json(qpath)
+        left = q["unresolved"]
+        checks.append({"check": "animation_quality", "status": "BLOCKED" if left else "PASS",
+                       "detail": ("自我修正後仍有異常（需人工在 Spine 調整）：" + "；".join(
+                           f"{a['kind']}:{a['subject']}={a['value']}（門檻 {a['threshold']}，{a['anim']} t={a['t']}s，{a['frame']}）" for a in left))
+                       if left else f"{q['fps']} fps 逐格檢查破洞、關節縫隙、接觸、補圖露出皆在門檻內（第 {q['chosen_round']} 輪）"})
+
     report_path = wd / "export_report.json"
     imp = load_json(report_path)["spine_import"] if report_path.exists() else {"status": "NOT_TESTED", "detail": "沒有 export_report.json"}
     checks.append({"check": "spine_import", "status": imp["status"], "detail": imp["detail"]})

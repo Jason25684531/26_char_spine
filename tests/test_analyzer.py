@@ -101,14 +101,38 @@ def test_no_parts_json_template_and_exit_2(tmp_path):
     assert cli.main(["analyze", str(img), "-w", str(tmp_path / "w")]) == 2
 
 
-def test_workdir_parts_json_wins_over_sidecar(synth, tmp_path):
+def test_sidecar_is_the_source_of_truth(synth, tmp_path):
+    """正式 parts.json 在圖片旁（不可刪）；工作目錄內的只是正規化複本，會被覆寫（spec: asset-persistence）。"""
     img, _ = synth("synth_a")
-    analyze(img, tmp_path)  # 第一次：從圖片旁的 parts.json 匯入
-    doc = load_json(tmp_path / "parts.json")
-    doc["parts"][0]["pivot"] = [1, 2]  # 使用者照指示修改工作目錄內的版本
-    (tmp_path / "parts.json").write_text(json.dumps(doc), encoding="utf-8")
-    analyze(img, tmp_path)
-    assert load_json(tmp_path / "parts.json")["parts"][0]["pivot"] == [1, 2]
+    wd = tmp_path / "w"
+    analyze(img, wd)
+    doc = load_json(wd / "parts.json")
+    assert doc["source"] == str(img.with_suffix(".parts.json").resolve())
+    doc["parts"][0]["pivot"] = [1, 2]  # 改了工作目錄內的複本
+    (wd / "parts.json").write_text(json.dumps(doc), encoding="utf-8")
+    analyze(img, wd)
+    assert "pivot" not in load_json(wd / "parts.json")["parts"][0]  # 以圖片旁的正式版本為準
+
+
+def test_workdir_parts_json_used_without_sidecar(tmp_path):
+    img = tmp_path / "solo.png"
+    im = Image.new("RGBA", (60, 60), (0, 0, 0, 0))
+    im.paste((200, 0, 0, 255), (10, 10, 50, 50))
+    im.save(img)
+    (tmp_path / "w").mkdir()
+    (tmp_path / "w" / "parts.json").write_text(json.dumps({"parts": [{"name": "head", "polygon": [[10, 10], [50, 10], [50, 50]], "z": 1}]}), encoding="utf-8")
+    r = analyze(img, tmp_path / "w")
+    assert r["parts"] == ["head"] and r["parts_file"] == str(tmp_path / "w" / "parts.json")
+
+
+def test_invalid_source_removes_stale_normalized_copy(synth, tmp_path):
+    img, _ = synth("synth_a")
+    wd = tmp_path / "w"
+    analyze(img, wd)
+    bad = tmp_path / "bad.json"
+    bad.write_text("{oops", encoding="utf-8")
+    analyze(img, wd, parts_path=bad)
+    assert not (wd / "parts.json").exists()  # prepare 不能拿上一次的複本繼續做
 
 
 def test_partial_required(synth, tmp_path):
