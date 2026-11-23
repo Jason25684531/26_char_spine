@@ -1,4 +1,4 @@
-﻿# 測試結果
+# 測試結果
 
 狀態只用 PASS／FAIL／BLOCKED／NOT_TESTED。每一筆都對應實際執行的指令與輸出。
 
@@ -107,7 +107,7 @@
 | 未預期的例外 | `test_unexpected_error_logged`、`test_tiny_and_unreadable_inputs_are_clean_errors` | PASS |
 | 驗證 FAIL 的結束碼與 log | `test_validation_fail_exits_1_with_log` | PASS |
 | Skill 內容一致 | `test_skill_copies_identical` | PASS |
-| Skill 說明完整流程 | `test_skill_copies_identical`（關鍵字）；實際由 Agent 依 Skill 處理真實角色 | 關鍵字 PASS；實際使用 NOT_TESTED |
+| Skill 說明完整流程 | `test_skill_copies_identical`（關鍵字）；Claude Code 依 Skill 的步驟處理兩組真實角色（grid_overlay → parts.json → run → 檢查圖 → 修正），但不是在全新 session 透過 Skill 呼叫 | Claude Code 依步驟 PASS；Codex NOT_TESTED |
 
 ### delivery-validation
 
@@ -122,7 +122,9 @@
 | 測試結果紀錄 | 本文件 | PASS |
 | 兩組真實角色 | 見下方「真實角色」；兩組只有圖片與 parts.json 不同，處理第二組期間沒有修改程式 | PASS（Spine 匯入 BLOCKED） |
 | 程式沒有寫死座標 | `test_no_character_specific_code` | PASS |
-| 打包內容、缺少 .spine 時的標示、簡報內容 | `test_delivery.py::test_package_from_real_outputs`（合成角色）＋ 實際打包兩組真實角色 | PASS |
+| 打包內容 | `test_delivery.py::test_package_from_real_outputs`（合成角色）；實際打包 `Character-to-Spine-Deliverables/`（兩組真實角色，01～07 與 README） | PASS |
+| 缺少 .spine 時的標示 | 同上測試；實際交付目錄 `.spine` 檔案數 0，README 開頭標明兩個角色 BLOCKED 與解除方式 | PASS |
+| 簡報內容來自實際輸出 | 同上測試；`05_Presentation/workflow.pptx` 由 `scripts/make_slides.py` 讀取工作目錄與 pytest junit 產生，`validate.py` 結構檢查通過 | PASS |
 
 ## 真實角色（2026-11-23）
 
@@ -146,3 +148,35 @@ parts.json 由 Claude Code 依 `grid_overlay.png` 目測撰寫，依 `layer_prev
 - `人.png`：手臂抱著吉他，`arm_l` motion 0.1（撥弦）、`arm_r` 0.05（握琴頸），避免手離開吉他、露出被擋住的軀幹；`guitar` 0.2 只做輕微晃動；`skirt` 掛在 `hip`，不隨上身傾斜。
 - `转场2.png`：`arm_l` 已經舉高，照預設往外轉 110° 會甩過頭頂，motion 0.25 變成揮手；`arm_r` 0.15 捧著花瓣；`petals` 掛在 `arm_r`。
 - 第一次檢視主要角色時發現擠壓伸展方向相反（通用錯誤，已修正並加測試，見 KNOWN_ISSUES）。
+
+## OpenSpec 規格驗收（2026-11-23，tasks 11.3）
+
+- `openspec validate character-to-spine-mvp --strict`：valid。
+- 7 個 capability、26 條 Requirement、65 個 Scenario，每個 Scenario 在上方對照表都有一列（以程式比對名稱，0 個遺漏）。
+- 狀態統計（對照表 66 列，多出的 1 列是補充的「驗證 FAIL 的結束碼與 log」）：
+  - 60 列 PASS。
+  - 2 列 BLOCKED：Spine 匯入成功、往返驗證，需要完整版授權。
+  - 4 列部分通過：
+    - 包裝程式邏輯 PASS，但不是 Spine 驗證。
+    - hair PASS、skirt 自動化 NOT_TESTED。
+    - Skill 由 Claude Code 依步驟執行 PASS，Codex NOT_TESTED。
+    - 兩組真實角色 PASS，但 Spine 匯入 BLOCKED。
+- 未完成的 task：7.7（BLOCKED，需完整版 Spine）。
+- 結論：**不可封存（archive）**。7.7 與 Spine 相關 scenario 仍是 BLOCKED，等授權到位、實測後再封存。
+
+## Definition of Done（tasks 11.4）
+
+| 項目 | 驗收標準 | 狀態 | 證據 |
+|---|---|---|---|
+| CLI | 可以執行核心工作流程 | PASS | `test_cli.py` 子行程測試；兩組真實角色 `c2s run` 結束碼 0 |
+| Skill | Claude／Codex 使用共用 Python 核心 | Claude PASS／Codex NOT_TESTED | SKILL.md 只呼叫 `c2s`，三份內容一致；Claude Code 依 Skill 步驟處理兩組真實角色；未在 Codex 實際執行 |
+| 角色處理 | 輸出可用分層 PNG 與 Metadata | PASS（人工修補 BLOCKED） | 兩組 `recompose_mae` 0.0014；被大面積遮擋的部件只有填補草稿，列在 `repair_tasks.md` |
+| 通用性 | 至少兩組不同角色使用相同流程 | PASS | `人.png`（10 部件）、`转场2.png`（11 部件）；處理第二組期間沒有修改程式 |
+| 骨架 | Bones、Slots、Attachments 正確 | PASS（Spine 內 NOT_TESTED） | 驗證器 bones／slots／image_references PASS；初始姿勢與原圖差異 0.0019／0.0018 |
+| 動畫 | 至少完成 Idle／Happy | PASS（Spine 內播放 NOT_TESTED） | idle 2.0 秒、happy 2.4 秒；關鍵影格格式對照官方 4.3 匯出檔鍵名；Python Simulation Preview 目視 |
+| Spine | `.spine` 可開啟、可編輯 | **BLOCKED** | 只有試用版（Launcher 4.3.08／Editor 4.3.26），CLI 無匯入參數、不能存檔 |
+| pstack | 工程審查通過 | 等價審查 PASS／pstack 本身 NOT_TESTED | pstack skill 只能由使用者呼叫；兩次獨立子代理審查，Critical 1、Major 10 全部修正並有回歸測試 |
+| OpenSpec | 規格驗收通過 | 部分（Spine 相關 BLOCKED） | 見上一節 |
+| 文件 | 使用方式與技術限制記錄完整 | PASS | `README.md`、`docs/`、交付目錄 `README.md` |
+
+**整體：不能標記為完成。** Spine 可編輯專案（交付物 A）在完整版授權到位前是 BLOCKED。其餘可在本機驗證的項目都已通過並有證據。
