@@ -1,123 +1,38 @@
-# Secrets and Environment
-.env
-.env.local
-.secrets/
-*.pem
-*.key
-doc/
-.claude/
-.agent/
-.gemini/
-.cursor/
-.codex/
-openspec/*
-.serena/*
+# Character-to-Spine AI
+# (舊版 .gitignore 是從其他專案複製來的，會忽略 openspec/ 與 docs/，已於 2026-11-23 改寫，見 docs/DECISIONS.md D-16)
 
-!openspec/changes/
-openspec/changes/*
-!openspec/changes/fix-match-persistence-lifecycle/
-!openspec/changes/rog-future-gamer-uiux/
+# 產出物（可由 c2s 重新產生）
+output/
+Character-to-Spine-Deliverables/
+
+# 使用者放在 src/ 的原始圖檔留在原地不動；會另外複製到 examples/real/ 並納入版控（見 docs/DECISIONS.md D-16）
+src/*.png
 
 # Python
+.venv*/
 venv/
-.venv/
-env/
-*.pyc
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-.github/*
-# IDEs
+build/
+dist/
+.pytest_cache/
+
+# 工具與本機設定
+.tokensave/
+.serena/
+.claude/settings.local.json
+.claude/.headroom_wrap_marker.json
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
 *.log
-logs/
-node_modules/
-test-results/
-playwright-report/
+Thumbs.db
+.DS_Store
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Docker
-.docker/
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
-
-# MockBroker State Files (Local Simulation)
-data/mock_broker_state.json
-**/test_broker_state.json
-test_broker_state.json
-
-/data/
-
-.venv*/
-.tokensave/*
-reports/*
-
-outputs/*
-docs/research-publication/*
-docs/handoff/*
-
-Char_Aassest/*
-public/*
-sample_UIUX/*
-openspec/*
-
-# Track the Experience 3 planning change while preserving other ignore rules.
-
-docs/*
-webUIUX_Ref/*
-openspec/*
-
-# ROG UI implementation deliverables only.
-openspec/*
-!public/assets/
-!docs/evidence/
-docs/evidence/*
-!docs/evidence/rog-uiux/
-!docs/rog-uiux-report.md
-docs/*
-assets/*
-public/*
-1102_關卡編輯器/*
-Audio/*
-ComfyUI_API/*
-assest/*
-mainvis.jpg
-skills-lock.json
+# Secrets
+.env
+.env.local
+*.pem
+*.key
+.codex/*
+.claude/*
