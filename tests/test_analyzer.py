@@ -97,7 +97,7 @@ def test_no_parts_json_template_and_exit_2(tmp_path):
     im.save(img)
     r = analyze(img, tmp_path / "w")
     assert r["status"] == "needs_parts" and r["missing_required"] == REQUIRED
-    assert (tmp_path / "w" / "parts.template.json").exists() and any("c2s prepare" in s for s in r["next_steps"])
+    assert (tmp_path / "w" / "parts.template.json").exists() and any("c2s run" in s for s in r["next_steps"])
     assert cli.main(["analyze", str(img), "-w", str(tmp_path / "w")]) == 2
 
 

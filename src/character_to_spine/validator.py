@@ -109,10 +109,15 @@ def validate(workdir):
     else:
         q = load_json(qpath)
         left = q["unresolved"]
-        checks.append({"check": "animation_quality", "status": "BLOCKED" if left else "PASS",
-                       "detail": ("自我修正後仍有異常（需人工在 Spine 調整）：" + "；".join(
-                           f"{a['kind']}:{a['subject']}={a['value']}（門檻 {a['threshold']}，{a['anim']} t={a['t']}s，{a['frame']}）" for a in left))
-                       if left else f"{q['fps']} fps 逐格檢查破洞、關節縫隙、接觸、補圖露出皆在門檻內（第 {q['chosen_round']} 輪）"})
+        detail = ("自我修正後仍有異常（需人工在 Spine 調整）：" + "；".join(
+            f"{a['kind']}:{a['subject']}={a['value']}（門檻 {a['threshold']}，{a['anim']} t={a['t']}s，{a['frame']}）" for a in left)
+                  if left else f"{q['fps']} fps＋所有關鍵影格逐格檢查：破洞、關節縫隙、接觸分離、穿插皆在門檻內（採用第 {q['chosen_round']} 輪）")
+        if q["downgraded_to_needs_manual"]:
+            detail += "；補圖露出超過門檻、已改為需人工：" + "、".join(q["downgraded_to_needs_manual"])
+        if q.get("unreliable_exposed_within_threshold"):
+            detail += "；注意：不可靠的補圖在動畫中有少量露出（門檻內，建議目視）：" + "、".join(
+                f"{n} {v:.1%}" for n, v in q["unreliable_exposed_within_threshold"].items())
+        checks.append({"check": "animation_quality", "status": "BLOCKED" if left else "PASS", "detail": detail})
 
     report_path = wd / "export_report.json"
     imp = load_json(report_path)["spine_import"] if report_path.exists() else {"status": "NOT_TESTED", "detail": "沒有 export_report.json"}

@@ -156,6 +156,9 @@ def prepare(workdir, only=None, replace=None):
     rgba = np.array(Image.open(wd / "source_rgba.png"))
     h, w = rgba.shape[:2]
     doc = load_json(wd / "parts.json")
+    src = Path(doc.get("source", wd / "parts.json"))
+    if src.resolve() != (wd / "parts.json").resolve() and src.exists() and src.stat().st_mtime > (wd / "parts.json").stat().st_mtime:
+        raise NeedsInput(f"{src} 比工作目錄內的複本新（改過了），請重新執行 c2s analyze 或 c2s run，修改才會生效")
     parts = sorted(doc["parts"], key=lambda p: p["z"])
     names = [p["name"] for p in parts]
     preset = PRESETS[doc.get("preset", "humanoid-chibi")]
@@ -202,9 +205,13 @@ def prepare(workdir, only=None, replace=None):
     for stale in (wd / "layers").glob("*.png"):  # 部件被刪除或變成完全被遮住時，舊圖層不能留著被當成有效輸出
         if stale.name not in produced:
             stale.unlink()
-    for name, src in replace.items():
+    for name, new in replace.items():
         odir.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(src, odir / f"{name}.png")
+        dest = odir / f"{name}.png"
+        if dest.exists() and dest.resolve() != new.resolve():
+            shutil.copyfile(dest, dest.with_suffix(".png.bak"))  # 人工修補圖不可回復，覆蓋前先備份
+        if not dest.exists() or dest.resolve() != new.resolve():
+            shutil.copyfile(new, dest)
     entries = [e for e, _, _ in results]
 
     assigned = np.zeros((h, w), bool)
@@ -293,9 +300,15 @@ def _write_repair_tasks(wd, missing_required, manual, entries, meta):
                       f"  - 修好後執行：`c2s prepare --replace {m['name']}=<修好的.png>`"
                       f"（PNG 尺寸要等於整張畫布 {meta['canvas'][0]}x{meta['canvas'][1]}，或與草稿圖層相同）"]
         lines.append("")
-    auto = [e["name"] for e in entries if e["status"] == "auto_repaired"]
+    auto = [e for e in entries if e["status"] == "auto_repaired"]
     if auto:
-        lines += ["## 已自動填補（OpenCV 邊緣延伸，品質有限，建議目視檢查）", ""] + [f"- `{n}`" for n in auto] + [""]
+        lines += ["## 已自動填補（OpenCV 邊緣延伸）", ""]
+        for e in auto:
+            note = "可靠" if e.get("repair_reliable", True) else (
+                f"**不可靠**（留出誤差 {e.get('holdout_error')}、被遮輪廓 {e.get('contour_hidden')}）"
+                + (f"，動畫中露出 {e['exposure']:.1%}（門檻內），建議目視" if e.get("exposure") else "，動畫中沒有露出"))
+            lines.append(f"- `{e['name']}`：{note}")
+        lines.append("")
     if meta["unassigned_ratio"] > 0.01:
         lines += ["## 未分配像素", "", f"- 有 {meta['unassigned_ratio']:.1%} 的前景像素不屬於任何部件。"
                   "緊貼部件的小區塊多半是漏畫（擴大該部件的 polygon）；遠離角色的多半是特效，可以忽略。", ""]

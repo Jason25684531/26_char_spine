@@ -185,39 +185,57 @@ parts.json 由 Claude Code 依 `grid_overlay.png` 目測撰寫，依 `layer_prev
 
 | 指令 | 結果 |
 |---|---|
-| `.venv\Scripts\python.exe -m pytest -q` | **101 passed**（新增 `tests/test_quality.py` 16 個、analyzer 3 個；既有測試全數保留） |
-| 兩組真實角色刪除工作目錄後 `c2s run` 兩次，比對雜湊 | `spine/character.json`、`tuning.json`、`metadata.json`、`quality_report.json`、`validation_report.json`、全部 `layers/*.png` 逐位元組相同 |
+| `.venv\Scripts\python.exe -m pytest -q` | **108 passed**（約 3 分鐘）。新增 `tests/test_quality.py` 23 個、analyzer 3 個；既有測試全數保留 |
+| 改壞驗證：在暫存複本中逐一改壞 6 處，只跑對應的測試 | 6 個全部被抓到，見下表 |
+| 兩組真實角色刪除工作目錄後 `c2s run` 兩次，比對雜湊 | `spine/character.json`、`tuning.json`、`metadata.json`、`quality_report.json`、`validation_report.json`、全部 `layers/*.png` 逐位元組相同（同一台機器、同一路徑、`requirements-lock.txt` 的版本；JSON 內含絕對路徑） |
+
+### 改壞驗證（回應最終驗收審查 M4）
+
+| 改壞的地方 | 抓到它的測試 |
+|---|---|
+| animate／prepare 不刪除舊的品質報告 | `test_stale_report_after_prepare_and_animate` |
+| 破洞偵測永遠回傳空 | `test_real_holes_ignore_background_enclosed_by_new_contact` |
+| 接觸約束算了但沒套用 | `test_contact_limit_is_applied` |
+| refine 不重設 tuning | `test_refine_is_deterministic_with_fixes`（第一版沒抓到，加強斷言後抓到） |
+| 不檢查穿插 | `test_detects_interpenetration` |
+| prepare 不檢查來源是否更新 | `test_sidecar_edit_requires_reanalyze` |
 
 ### 真實角色的品質檢查（parts.json 在 `examples/real/`，加上 attach）
 
 | 項目 | `人.png` | `转场2.png` |
 |---|---|---|
-| 自我修正 | 第 0 輪：吉他補圖露出 2.5%（歸因 arm_l）、頭髮離開肩膀的細縫 0.0031（歸因 hair_back）→ 第 1 輪 0 異常 | 第 0 輪：leg_r 露出 12.4%（歸因 skirt）、細縫 0.0046 → 3 輪後只剩 leg_r 露出 2.03% |
+| 自我修正 | 第 0 輪：吉他補圖露出 2.48%（歸因 arm_l）、頭髮離開肩膀的細縫 0.0031（歸因 hair_back）→ 第 1 輪 0 異常 | 第 0 輪：leg_r 露出 12.4%（歸因 skirt）、細縫 0.0046 → 3 輪後只剩 leg_r 露出 2.03% |
 | 最終 tuning | happy：arm_l ×0.5、hair_back ×0.5 | happy：skirt ×0.125、hair_back ×0.5 |
-| 接觸（重疊相對初始的最低值） | 左手↔吉他 95.5%、右手↔吉他 89.1% | 右手↔花瓣 93.4% |
-| 接觸約束自動算出的幅度上限 | arm_l 0.036、arm_r 0.144、guitar 0.274 | — |
+| 接觸（重疊相對初始的最低值） | 左手與吉他 95.5%、右手與吉他 89.1% | 右手與花瓣 93.4% |
+| 穿插（新重疊 ÷ 較小部件，最大值） | 1.8%（右手與頭，門檻 2%） | 0% |
+| 接觸約束自動算出的幅度上限 | arm_l 0.036、arm_r 0.144、guitar 0.274。手臂幾乎不動，以保持接觸 | — |
 | 補圖降級為 needs_manual | 無 | leg_r（留出誤差 0.089、被遮輪廓 32%、露出 2.03%） |
-| `animation_quality` | PASS | PASS |
+| 不可靠、門檻內但有露出（報告列為建議目視） | guitar 1.7%、head 1.0%、skirt 0.7% | petals 1.9%、head 1.2%、skirt 0.4% |
+| `animation_quality` | PASS（detail 附建議目視清單） | PASS（detail 附需人工與建議目視清單） |
+| 整體驗證 | BLOCKED（manual_repairs、spine_import） | BLOCKED（同左） |
 | 目視 | Happy 四個關鍵影格雙手都在吉他上；擠壓伸展與跳躍保留 | 第 0 輪破洞影格目視為頭髮與袖子間的真實細縫 |
 
 ### Spec scenario 對照（quality-hardening）
 
 | Capability | Scenario | 證據 | 狀態 |
 |---|---|---|---|
-| asset-persistence | 圖片旁的 parts.json 是正式來源 | `test_analyzer.py::test_sidecar_is_the_source_of_truth`、`test_workdir_parts_json_used_without_sidecar`、`test_invalid_source_removes_stale_normalized_copy` | PASS |
-| asset-persistence | 人工修補圖存到永久位置 | `test_quality.py::test_replace_goes_to_permanent_overrides` | PASS |
+| asset-persistence | 圖片旁的 parts.json 是正式來源 | `test_analyzer.py::test_sidecar_is_the_source_of_truth`、`test_workdir_parts_json_used_without_sidecar`、`test_invalid_source_removes_stale_normalized_copy`、`test_quality.py::test_sidecar_edit_requires_reanalyze` | PASS |
+| asset-persistence | 人工修補圖存到永久位置 | `test_replace_goes_to_permanent_overrides`、`test_override_backup` | PASS |
 | asset-persistence | 重建包含人工修補 | `test_rebuild_after_deleting_output`；真實角色重建比對 | PASS |
 | repair-risk | 單色部件可靠 | `test_solid_fill_is_reliable` | PASS |
 | repair-risk | 高紋理部件不可靠 | `test_stripes_are_unreliable` | PASS |
 | repair-risk | 被遮住的輪廓 | `test_hidden_contour_is_unreliable` | PASS |
-| repair-risk | 不可靠補圖露出 | `test_detects_unreliable_repair_exposure`；转场2 leg_r | PASS |
+| repair-risk | 不可靠補圖露出 | `test_detects_unreliable_repair_exposure`、`test_unreliable_exposure_within_threshold_is_reported`；转场2 leg_r | PASS |
 | animation-quality | 正常動畫沒有異常 | `test_clean_character_has_no_anomalies` | PASS |
 | animation-quality | 抓到關節縫隙 | `test_detects_joint_gap_and_attributes_it` | PASS |
 | animation-quality | 抓到補圖露出 | `test_detects_unreliable_repair_exposure`、`test_refine_fixes_and_records_rounds` | PASS |
 | animation-quality | 輸出異常影格 | `test_detects_unreliable_repair_exposure`、`test_unfixable_is_blocked_with_evidence` | PASS |
+| animation-quality | （破洞） | `test_real_holes_ignore_background_enclosed_by_new_contact`；真實角色第 0 輪 | PASS |
 | motion-constraints | 宣告不存在的部件 | `test_attach_to_unknown_part_is_rejected` | PASS |
-| motion-constraints | 手離開道具 | `test_separation_detected_without_constraint`、`test_contact_limit_bounds_displacement`、`test_attach_without_contact_refuses_rig` | PASS |
+| motion-constraints | 手離開道具 | `test_separation_detected_without_constraint`、`test_contact_limit_is_applied`、`test_attach_without_contact_refuses_rig` | PASS |
+| motion-constraints | 道具揮進臉 | `test_detects_interpenetration` | PASS |
+| motion-constraints | 頭髮背景層不算穿插 | `test_detects_interpenetration` | PASS |
 | self-correction | 修正後通過 | `test_refine_fixes_and_records_rounds` | PASS |
 | self-correction | 修正後仍失敗 | `test_unfixable_is_blocked_with_evidence`、`test_detects_joint_gap_and_attributes_it` | PASS |
-| self-correction | 確定性 | `test_refine_is_deterministic`、`test_rebuild_after_deleting_output` | PASS |
-| self-correction | 尚未執行 refine | `test_stale_quality_report_is_not_trusted` | PASS |
+| self-correction | 確定性 | `test_refine_is_deterministic_with_fixes`、`test_rebuild_after_deleting_output` | PASS |
+| self-correction | 尚未執行 refine | `test_stale_quality_report_is_not_trusted`、`test_stale_report_after_prepare_and_animate` | PASS |

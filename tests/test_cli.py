@@ -49,7 +49,7 @@ def test_run_without_parts_exit_2(tmp_path):
     code, out, _ = c2s("run", img, cwd=tmp_path)
     assert code == 2
     msg = json.loads(out)["message"]
-    assert "head" in msg and "c2s prepare" in msg
+    assert "head" in msg and "c2s run" in msg
     wd = tmp_path / "output" / "plain"
     assert not (wd / "rig.json").exists() and not (wd / "spine").exists()
 

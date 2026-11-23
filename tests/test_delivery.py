@@ -19,6 +19,7 @@ def test_package_from_real_outputs(built, tmp_path):
     assert (out / "02_Layered_Assets" / "synth_a" / "PNG" / "head.png").read_bytes() == (a / "layers" / "head.png").read_bytes()
     assert (out / "03_Spine_Project" / "synth_b" / "character.json").read_bytes() == (b / "spine" / "character.json").read_bytes()
     assert list((out / "04_Animation_Preview").glob("*_python_simulation_preview.gif"))
+    assert (out / "07_Test_Reports" / "synth_b" / "quality" / "quality_report.json").exists()
     # 沒有 .spine：不放替代檔，README 標明 BLOCKED
     assert not list(out.rglob("*.spine"))
     readme = (out / "README.md").read_text(encoding="utf-8")

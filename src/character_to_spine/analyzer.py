@@ -185,7 +185,7 @@ def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
         result["next_steps"] = [
             f"由 Agent（Skill）或人工看 {wd / 'grid_overlay.png'} 後撰寫 {sidecar}（與圖片同資料夾，範本：{wd / 'parts.template.json'}）",
             "必要部件：" + ", ".join(required),
-            f"完成後執行：c2s prepare \"{image}\"",
+            f"完成後執行：c2s run \"{image}\"",
         ]
     save_json(wd / "analysis.json", result)
     return result

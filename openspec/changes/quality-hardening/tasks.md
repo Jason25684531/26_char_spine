@@ -35,6 +35,6 @@
 ## 6. 真實角色與驗收
 
 - [x] 6.1 兩組真實角色加上 attach，刪除 output 後重建並檢查報告與異常影格
-- [ ] 6.2 獨立子代理工程審查並修正
-- [ ] 6.3 Skill、README、docs、簡報、交付打包更新
-- [ ] 6.4 OpenSpec 驗收、`openspec validate --strict`
+- [x] 6.2 獨立子代理工程審查並修正（2 次：設計審查 3 個 P0、最終驗收 4 個 Major，全部修正並有回歸測試與改壞驗證）
+- [x] 6.3 Skill、README、docs、簡報、交付打包更新
+- [x] 6.4 OpenSpec 驗收、`openspec validate --strict`

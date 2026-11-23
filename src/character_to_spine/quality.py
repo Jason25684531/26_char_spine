@@ -3,7 +3,9 @@
 逐格量測四類問題，與初始姿勢比較：
 - hole：角色內部新出現的透明破洞（閉運算後的內部空洞面積 ÷ 角色面積）
 - gap：關節縫隙（部件與它最貼近的部件之間，新出現的透明夾縫像素 ÷ 兩者初始接觸區面積）
-- attach：parts.json 宣告要接觸的兩個部件，重疊量 ÷ 初始姿勢的重疊量
+- attach：parts.json 宣告要接觸的兩個部件，重疊量 ÷ 初始姿勢的重疊量（分離）
+- intrude：受約束的部件（有 attach 的部件與道具）和「初始姿勢沒有接觸」的部件新產生的重疊 ÷ 較小部件面積（穿插，
+  例如吉他甩進臉）。部件前後順序本身是 parts.json 的語意判斷，程式無法自動驗證，請看 layer_preview.png
 - exposure：不可靠的補圖在動畫中被看見的面積 ÷ 部件面積
 
 refine：有異常 → 在最差的影格逐一凍結各骨頭（hip 除外）找出改善最多的那根 → 該骨頭幅度 ×0.5 → 重做動畫。
@@ -27,7 +29,7 @@ from .spine_exporter import DEFAULT_SPINE_VERSION, build_skeleton, export
 FPS = 10
 MAX_ROUNDS = 3
 # 門檻（校準依據見 docs/DECISIONS.md D-31、D-32）
-THRESHOLDS = {"hole": 0.003, "gap": 0.1, "attach": 0.6, "exposure": 0.02}
+THRESHOLDS = {"hole": 0.003, "gap": 0.1, "attach": 0.6, "intrude": 0.02, "exposure": 0.02}
 LOWER_IS_BAD = {"attach"}  # attach 是比值越低越糟，其餘越高越糟
 
 
@@ -46,7 +48,10 @@ def _context(wd):
             "images": wd / "layers", "masks": wd / "repair_masks", "parts": parts,
             # 只有「自動補、但量測為不可靠」的部件需要擔心露出；可靠的補圖露出也看不出破綻
             "exposure_parts": [n for n, e in parts.items() if e["status"] == "auto_repaired" and not e.get("repair_reliable", True)],
-            "contacts": [(c["a"], c["b"]) for c in rig.get("contacts", [])]}
+            "contacts": [(c["a"], c["b"]) for c in rig.get("contacts", [])],
+            # 穿插檢查的對象：有宣告接觸的部件與道具（使用者要求手、吉他、身體不得穿插）
+            "constrained": sorted({n for c in rig.get("contacts", []) for n in (c["a"], c["b"])}
+                                  | {n for n, r in rig.get("roles", {}).items() if r == "prop"})}
 
 
 def _frame(ctx, skel, anim, t):
@@ -59,11 +64,6 @@ def _frame(ctx, skel, anim, t):
         through = through * (1 - alphas[n])
     return {"alpha": 1 - through, "alphas": alphas, "vis": vis, "masks": {n: m for n, _, m in slots},
             "world": world_matrices(skel, anim, t), "dil": {}}
-
-
-def _canvas_matrix(ctx):
-    s, (ox, oy) = ctx["scale"], ctx["origin"]
-    return np.array([[s, 0, ox], [0, -s, oy], [0, 0, 1]])  # Spine 世界座標（y 向上）→ 畫布像素
 
 
 def _dilated(f, name):
@@ -116,11 +116,6 @@ def _real_holes(ctx, f):
     return keep
 
 
-def _disk(shape, center, r):
-    yy, xx = np.ogrid[:shape[0], :shape[1]]
-    return (xx - center[0]) ** 2 + (yy - center[1]) ** 2 <= r * r
-
-
 def _raw(ctx, f):
     """單一影格的原始量測值。"""
     raw = {("hole", "character"): float(_real_holes(ctx, f).sum())}
@@ -128,6 +123,8 @@ def _raw(ctx, f):
         raw[("gap", child)] = float(_crack(f, child, adj).sum())
     for a, b in ctx["contacts"]:
         raw[("attach", f"{a}+{b}")] = float((_dilated(f, a) & _dilated(f, b)).sum())
+    for a, b in ctx["intrude_pairs"]:
+        raw[("intrude", f"{a}+{b}")] = float(((f["alphas"][a] > 0.5) & (f["alphas"][b] > 0.5)).sum())
     for p in ctx["exposure_parts"]:
         m = f["masks"].get(p)
         raw[("exposure", p)] = float((m * f["vis"][p]).sum()) if m is not None else 0.0
@@ -144,8 +141,11 @@ def _relative(ctx, raw, base):
         elif kind == "gap":  # 新增的夾縫像素 ÷ 兩者在初始姿勢的接觸區面積
             contact = next(c for ch, _, c in ctx["joints"] if ch == subject)
             out[(kind, subject)] = max(0.0, v - b) / contact
-        elif kind == "attach":
-            out[(kind, subject)] = v / b if b else 1.0
+        elif kind == "attach":  # 基準為 0（縮圖後量不到接觸）時判為 0：寧可報異常，也不默默通過
+            out[(kind, subject)] = v / b if b else 0.0
+        elif kind == "intrude":
+            a, c = subject.split("+")
+            out[(kind, subject)] = max(0.0, v - b) / max(1.0, min(ctx["part_area"][a], ctx["part_area"][c]))
         else:
             out[(kind, subject)] = max(0.0, v - b) / max(1.0, ctx["part_area"][subject])
     return out
@@ -155,10 +155,13 @@ def _prepare_context(ctx, skel):
     """用初始姿勢算出基準值與各部件的鄰接關係。"""
     f = _frame(ctx, skel, None, 0.0)
     ctx["char_area"] = max(1.0, float((f["alpha"] > 0.5).sum()))
-    ctx["char_h"] = ctx["meta"]["bbox"][3] * ctx["scale"]
     ctx["part_area"] = {n: float((a > 0.5).sum()) for n, a in f["alphas"].items()}
     names = sorted(f["alphas"])
     ctx["setup_contacts"] = {(a, b) for i, a in enumerate(names) for b in names[i + 1:] if (_dilated(f, a) & _dilated(f, b)).any()}
+    # 頭髮是最後面的背景層，手或道具畫在它前面是正常的，不算穿插
+    backdrop = {n for n, r in ctx["rig"].get("roles", {}).items() if r == "hair"}
+    ctx["intrude_pairs"] = sorted({tuple(sorted((a, o))) for a in ctx["constrained"] for o in names
+                                   if o != a and o not in backdrop and tuple(sorted((a, o))) not in ctx["setup_contacts"]})
     # 每個部件配上「初始姿勢接觸區最大」的鄰接部件，記錄接觸區面積作為縫隙的正規化基準
     ctx["joints"] = []
     for child in sorted(ctx["parts"]):
@@ -172,8 +175,8 @@ def assess(ctx, skel):
     """逐格量測所有動畫。回傳 (各指標最差值, 異常清單)。"""
     worst = {}
     for anim, data in skel["animations"].items():
-        for i in range(round(duration(data) * FPS) + 1):
-            t = round(i / FPS, 4)
+        keys = {k.get("time", 0) for tls in data["bones"].values() for ks in tls.values() for k in ks}
+        for t in sorted({round(i / FPS, 4) for i in range(round(duration(data) * FPS) + 1)} | keys):  # 一定包含每個關鍵影格
             for key, v in _relative(ctx, _raw(ctx, _frame(ctx, skel, anim, t)), ctx["base"]).items():
                 if key not in worst or violation(key[0], v) > violation(key[0], worst[key]["value"]):
                     worst[key] = {"value": round(v, 4), "anim": anim, "t": t}
@@ -208,6 +211,9 @@ def _save_frame(ctx, skel, a, out_dir):
     elif kind == "gap":
         adj = next(a for c, a, _ in ctx["joints"] if c == s)
         mark = cv2.dilate(_crack(f, s, adj).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
+    elif kind == "intrude":
+        p1, p2 = s.split("+")
+        mark = (f["alphas"][p1] > 0.5) & (f["alphas"][p2] > 0.5)
     elif kind == "attach":
         mark = np.zeros(f["alpha"].shape, bool)
         for n in s.split("+"):
@@ -241,7 +247,8 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
         worst, anomalies = assess(ctx, skel)
         for a in anomalies:
             a["frame"] = _save_frame(ctx, skel, a, qdir / f"round_{r}")
-        rec = {"round": r, "tuning": copy.deepcopy(tuning), "score": round(sum(a["violation"] for a in anomalies), 4),
+        # 各類違規先除以自己的門檻再加總，單位才一致（hole 門檻 0.003 與 attach 0.6 差兩個數量級）
+        rec = {"round": r, "tuning": copy.deepcopy(tuning), "score": round(sum(a["violation"] / a["threshold"] for a in anomalies), 4),
                "anomalies": anomalies, "worst": {f"{k}:{s}": w for (k, s), w in sorted(worst.items())}}
         rounds.append(rec)
         if best is not None and rec["score"] >= best["score"]:
@@ -271,7 +278,11 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
     # 不可靠、且修正後仍露出的補圖 → 不能宣稱自動修補成功
     meta = load_json(wd / "metadata.json")
     exposed = {a["subject"]: a for a in final if a["kind"] == "exposure"}
+    best_worst = best["worst"]
     for e in meta["parts"]:
+        w = best_worst.get(f"exposure:{e['name']}")
+        if w:  # 不可靠的補圖：記錄實際露出量（門檻內也記，供目視檢查）
+            e["exposure"] = w["value"]
         if e["name"] in exposed:
             a = exposed[e["name"]]
             e.update(status="needs_manual", reason=f"自動補圖不可靠（留出驗證誤差 {e.get('holdout_error')}、"
@@ -281,9 +292,11 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
 
     export(wd, spine_version or DEFAULT_SPINE_VERSION, spine_exe)
     unresolved = [a for a in final if a["kind"] != "exposure"]
+    watch = {e["name"]: e["exposure"] for e in meta["parts"]
+             if e.get("exposure") and e["status"] == "auto_repaired"}  # 不可靠、門檻內但有露出：建議目視
     report = {"fps": FPS, "thresholds": THRESHOLDS, "max_rounds": MAX_ROUNDS, "chosen_round": best["round"],
               "tuning": best["tuning"], "rounds": rounds, "unresolved": unresolved,
-              "downgraded_to_needs_manual": sorted(exposed)}
+              "downgraded_to_needs_manual": sorted(exposed), "unreliable_exposed_within_threshold": watch}
     save_json(qdir / "quality_report.json", report)
     return {"status": "BLOCKED" if unresolved else "PASS", "rounds": len(rounds), "chosen_round": best["round"],
             "tuning": best["tuning"], "unresolved": [f"{a['kind']}:{a['subject']}" for a in unresolved],

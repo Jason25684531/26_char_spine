@@ -17,6 +17,9 @@
 | K-12 | 自我修正只能降低動作幅度，不能修改部件範圍 | 設計限制 | 重疊不足造成的細縫（如 synth_b 手臂只重疊 2px）修不掉，判 BLOCKED | 依異常影格擴大相鄰部件的 polygon 讓它們多重疊 |
 | K-13 | 補圖可靠度是保守判定：單色部件的輪廓被深度遮住也會判為不可靠，抬手露出後改為 needs_manual（synth_a、synth_b 的 body） | 設計取捨 | 真實角色的被遮輪廓確實是猜的，寧可多交給人 | 人工確認後用 `--replace` 匯回原圖層即可 |
 | K-14 | 品質檢查以 10 fps、最長邊 480px 抽樣 | 設計限制 | 小於約 2px 的細縫、兩個抽樣點之間的瞬間問題可能漏掉 | 需要時提高 `quality.FPS` 或 `PREVIEW_MAX_SIDE` |
+| K-15 | 部件的前後順序（z）是 parts.json 的語意判斷，程式無法自動驗證 | 設計限制（最終驗收審查指出） | 對調 z 時，重組與 setup_pose 仍會一致（像素依 z 分配）；只有穿插、露出等間接指標可能改變 | 寫 parts.json 後用 `layer_preview.png` 第三欄目視確認順序 |
+| K-16 | 「逐位元組相同」只在同一台機器、同一路徑、相同套件版本下成立 | 範圍限制 | JSON 內含絕對路徑；OpenCV 版本不同時，量測值可能跨過門檻、讓 tuning 不同 | 用 `requirements-lock.txt` 安裝 |
+| K-17 | 接觸約束只限制骨頭自身的旋轉幅度；為了保持接觸，抱吉他的手臂幅度只剩 0.018～0.07 倍，幾乎不動 | 設計取捨 | 手不會離開吉他，但撥弦動作很小 | 需要更明顯的手部動作時，改用 Spine 內的 IK（Professional），或人工加關鍵影格 |
 | K-08 | 部件邊界由 Agent 目測多邊形，交界處（頭髮捲曲邊緣、蕾絲）不是像素級精準 | 設計限制 | 動畫時交界可能出現細縫或多帶一點相鄰部件 | 需要精準時改用遮罩（`mask`），或人工修圖後 `--replace` |
 
 ## 已修正
@@ -43,4 +46,8 @@
 | **最終驗收審查**：預覽標示、曲線數值、FAIL 結束碼、整體狀態的測試在功能壞掉時仍會通過 | 加強 `test_preview_labelled_and_moving`、`test_trial_environment_not_pass`；新增 `test_curve_values_are_absolute_bezier`、`test_validation_fail_exits_1_with_log` |
 | **最終驗收審查**：驗證 FAIL 時沒有寫 `c2s_error.log`；成功後殘留過期的 log | `test_validation_fail_exits_1_with_log` |
 | **最終驗收審查**：刪除部件後舊圖層殘留；rig 拒絕時留下舊 `rig.json` | `test_removed_part_leaves_no_stale_layer`、`test_missing_required_layer_refuses` |
+| **quality-hardening 驗收審查**：穿插只是宣稱、沒有檢查 | `test_detects_interpenetration`（新增 intrude 檢查） |
+| **quality-hardening 驗收審查**：不可靠補圖露出量在門檻內時，驗證完全不提 | `test_unreliable_exposure_within_threshold_is_reported` |
+| **quality-hardening 驗收審查**：改了圖片旁的 parts.json 後直接 prepare，修改被默默忽略 | `test_sidecar_edit_requires_reanalyze` |
+| **quality-hardening 驗收審查**：接觸基準量到 0 時檢查失效；各類違規單位不同卻直接加總；10 fps 抽樣漏掉 0.95、2.15 秒的關鍵影格；覆蓋人工修補圖沒有備份 | `test_override_backup`；其餘以程式修正，見 design.md §8 |
 | **最終驗收審查**：1×1 圖片讓 OpenCV 崩潰（unexpected_error）；非圖片的 `--replace` 回報為 unexpected_error | `test_tiny_and_unreadable_inputs_are_clean_errors`、`test_replace_with_non_image` |

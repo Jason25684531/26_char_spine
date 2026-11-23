@@ -373,7 +373,7 @@ def build(chars, originals_dir, junit, out_path):
                          "、".join(x["bone"] for x in r.get("fixes", [])) or ("（採用此輪）" if r["round"] == q["chosen_round"] else "—")])
         table(s, 0.6, 1.35, 7.2, rows, [0.6, 1.3, 3.0, 2.3], size=12, row_h=0.45)
         worst = q["rounds"][q["chosen_round"]]["worst"]
-        contacts = [f"{k.split(':')[1].replace('+', ' ↔ ')}：重疊維持 {v['value']:.0%}" for k, v in worst.items() if k.startswith("attach:")]
+        contacts = [f"{k.split(':')[1].replace('+', ' 與 ')}：重疊維持 {v['value']:.0%}" for k, v in worst.items() if k.startswith("attach:")]
         text(s, 0.6, 1.5 + 0.45 * len(rows), 7.2, 2.6, contacts + [
             "檢查項目：被包住的透明破洞、相鄰部件的透明夾縫、attach 接觸分離、不可靠補圖露出",
             "歸因：在最差影格逐一凍結骨頭重算，降低改善最多的那根；沒改善就還原並停止",

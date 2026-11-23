@@ -1,0 +1,16 @@
+# 2026-11-23 開發與驗證所用的版本（Windows 11、Python 3.11.9）。重建結果逐位元組相同的前提是相同版本、同一路徑。
+# 安裝：.venv\Scripts\python.exe -m pip install -r requirements-lock.txt ; .venv\Scripts\python.exe -m pip install -e . --no-deps
+colorama==0.4.6
+defusedxml==0.7.1
+iniconfig==2.3.1
+lxml==6.1.3
+numpy==2.4.6
+opencv-python==5.1.0.95
+packaging==26.3
+pillow==13.0.0
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.2.0
+python-pptx==1.0.2
+typing_extensions==4.16.0
+xlsxwriter==3.3.4

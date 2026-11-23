@@ -52,9 +52,10 @@ def package(chars, out, originals=ROOT / "examples" / "real", run_tests=True):
             shutil.copy2(gif, d["04_Animation_Preview"] / f"{name}_{gif.name}")
         tr = d["07_Test_Reports"] / name
         tr.mkdir()
-        for f in ("validation_report.json", "export_report.json", "analysis.json"):
+        for f in ("validation_report.json", "export_report.json", "analysis.json", "tuning.json"):
             if (wd / f).exists():
                 shutil.copy2(wd / f, tr)
+        copytree(wd / "quality", tr / "quality")  # 動畫品質報告、每輪的異常影格
         checks = {c["check"]: c for c in load(wd / "validation_report.json")["checks"]}
         rows.append((name, checks, (sp / "character.spine").exists()))
 
@@ -101,7 +102,7 @@ def _readme(rows, junit):
               "| `04_Animation_Preview/` | Idle／Happy 的 **Python Simulation Preview** GIF（自寫骨架求值器，不是 Spine 算圖） |",
               "| `05_Presentation/` | `workflow.pptx` 製作流程簡報 |",
               "| `06_Development/` | Skill、Python 原始碼、測試、OpenSpec 規格、文件 |",
-              "| `07_Test_Reports/` | pytest 報告、各角色驗證報告、`TEST_RESULTS.md`、`KNOWN_ISSUES.md` |", "",
+              "| `07_Test_Reports/` | pytest 報告、各角色驗證報告、動畫品質報告與異常影格（`<角色>/quality/`）、`tuning.json`、`TEST_RESULTS.md`、`KNOWN_ISSUES.md` |", "",
               "## 在 Spine 中使用（需完整版）", "",
               "1. Spine → Import Data → 選 `03_Spine_Project/<角色>/character.json`（圖片路徑為同目錄的 `images/`）。",
               "2. 或用 CLI：`Spine.com -i character.json -o character.spine -r character`。", ""]
