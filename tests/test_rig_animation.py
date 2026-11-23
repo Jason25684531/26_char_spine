@@ -79,7 +79,7 @@ def test_missing_required_layer_refuses(workcopy):
         if e["name"] == "leg_r":
             e.pop("file")
     save_json(wd / "metadata.json", meta)
-    (wd / "rig.json").unlink()
+    assert (wd / "rig.json").exists()
     with pytest.raises(NeedsInput, match="leg_r"):
         build_rig(wd)
     assert not (wd / "rig.json").exists()

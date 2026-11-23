@@ -84,6 +84,8 @@ def test_missing_exe_is_fail_not_crash(workcopy, tmp_path):
 
 
 def test_preview_labelled_and_moving(built):
+    from character_to_spine import preview
+    assert "Python Simulation Preview" in preview.LABEL and "not a Spine render" in preview.LABEL
     wd = built("synth_a")
     paths = write_previews(wd)
     assert {Path(p).name for p in paths} == {"idle_python_simulation_preview.gif", "happy_python_simulation_preview.gif"}
@@ -167,7 +169,7 @@ def test_trial_environment_not_pass(workcopy, monkeypatch):
     c = checks(r)
     assert c["spine_import"]["status"] == "BLOCKED"
     assert c["spine_roundtrip"]["status"] == "NOT_TESTED" and c["spine_editable"]["status"] == "NOT_TESTED"
-    assert r["status"] != "PASS"
+    assert r["status"] == "BLOCKED"
 
 
 def test_manual_repairs_blocked(built):
@@ -180,3 +182,23 @@ def test_no_character_specific_code():
     text = "".join(p.read_text(encoding="utf-8") for p in src.rglob("*.py"))
     for marker in ("人.png", "转场", "预中奖", "synth_", "guitar", "hair_back"):
         assert marker not in text, marker
+
+
+def test_validate_catches_wrong_image_content(workcopy):
+    """審查發現：舊版拿匯出的圖跟自己比，換成純色或翻轉都會 PASS。"""
+    for tamper in ("magenta", "flip"):
+        wd = workcopy("synth_b")
+        p = wd / "spine" / "images" / ("head.png" if tamper == "magenta" else "flag.png")  # 旗子上下不對稱
+        im = Image.open(p)
+        im = Image.new("RGBA", im.size, (255, 0, 255, 255)) if tamper == "magenta" else im.transpose(Image.FLIP_TOP_BOTTOM)
+        im.save(p)
+        assert checks(validate(wd))["setup_pose"]["status"] == "FAIL", tamper
+        import shutil
+        shutil.rmtree(wd)
+
+
+def test_curve_values_are_absolute_bezier():
+    """Spine 4.x：每個 channel 四個數字 [t1, v1, t2, v2]，時間與數值都是絕對值（不是 3.x 的 0~1 比例）。"""
+    from character_to_spine.animation_builder import _keys
+    k = _keys([(0.0, 10, 20), (0.6, 40, 50)], ["x", "y"])[0]
+    assert k["curve"] == pytest.approx([0.2, 10, 0.4, 40, 0.2, 20, 0.4, 50])

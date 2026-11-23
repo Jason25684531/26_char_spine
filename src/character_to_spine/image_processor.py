@@ -65,7 +65,10 @@ def _cut(part, rgba, masks, parts, repair):
 
 def _apply_override(path, entry, canvas_size):
     """人工修好的圖層：可以是整張畫布大小（保留原座標），或與自動圖層相同大小。"""
-    img = Image.open(path).convert("RGBA")
+    try:
+        img = Image.open(path).convert("RGBA")
+    except OSError as e:  # 含 UnidentifiedImageError
+        raise C2SError(f"{path} 不是可讀取的圖片：{e}") from e
     if img.size == tuple(canvas_size):
         arr = np.array(img)
         if not (arr[..., 3] > ALPHA_MIN).any():
@@ -154,6 +157,10 @@ def prepare(workdir, only=None, replace=None):
         if entry["name"] == only or not _same_png(path, layer):
             Image.fromarray(layer).save(path)
             written.append(entry["name"])
+    produced = {f"{e['name']}.png" for e, layer in results if layer is not None}
+    for stale in (wd / "layers").glob("*.png"):  # 部件被刪除或變成完全被遮住時，舊圖層不能留著被當成有效輸出
+        if stale.name not in produced:
+            stale.unlink()
     for name, src in replace.items():
         (wd / "overrides").mkdir(exist_ok=True)
         shutil.copyfile(src, wd / "overrides" / f"{name}.png")

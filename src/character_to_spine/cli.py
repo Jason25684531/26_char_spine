@@ -93,19 +93,30 @@ def main(argv=None):
         print(json.dumps({"status": "needs_input", "workdir": str(wd), "message": str(e)}, ensure_ascii=False, indent=2))
         return 2
     except Exception as e:
-        # 任何失敗都留下診斷資訊
-        log = Path(wd or ".") / "c2s_error.log"
-        try:
-            log.parent.mkdir(parents=True, exist_ok=True)
-            log.write_text(f"command: {sys.argv if argv is None else argv}\n\n{traceback.format_exc()}", encoding="utf-8")
-        except OSError:
-            log = None
+        log = _write_log(wd, argv, traceback.format_exc())
         kind = "error" if isinstance(e, C2SError) else "unexpected_error"
-        print(json.dumps({"status": kind, "message": str(e), "log": str(log) if log else None}, ensure_ascii=False, indent=2), file=sys.stderr)
+        print(json.dumps({"status": kind, "message": str(e), "log": log}, ensure_ascii=False, indent=2), file=sys.stderr)
         return 1
     print(json.dumps(result, ensure_ascii=False, indent=2))
     status = result.get("status")
-    return 2 if status in ("needs_input", "needs_parts") else 1 if status == "FAIL" else 0
+    if status == "FAIL":
+        failed = [c for c in result.get("checks", result.get("steps", {}).get("validate", {}).get("checks", []))
+                  if c["status"] == "FAIL"]
+        _write_log(wd, argv, "驗證失敗：\n" + json.dumps(failed, ensure_ascii=False, indent=2))
+        return 1
+    (Path(wd) / "c2s_error.log").unlink(missing_ok=True)  # 成功後不留上一次失敗的紀錄
+    return 2 if status in ("needs_input", "needs_parts") else 0
+
+
+def _write_log(wd, argv, body):
+    """任何失敗都留下診斷資訊。回傳 log 路徑（寫不進去時為 None）。"""
+    log = Path(wd or ".") / "c2s_error.log"
+    try:
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text(f"command: {sys.argv if argv is None else argv}\n\n{body}", encoding="utf-8")
+        return str(log)
+    except OSError:
+        return None
 
 
 if __name__ == "__main__":

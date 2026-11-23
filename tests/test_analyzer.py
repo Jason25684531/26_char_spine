@@ -117,3 +117,22 @@ def test_partial_required(synth, tmp_path):
         ps[:] = [p for p in ps if p["name"] not in ("leg_l", "arm_r")]
     r = _with_parts(img, tmp_path, drop)
     assert r["status"] == "needs_parts" and sorted(r["missing_required"]) == ["arm_r", "leg_l"]
+
+
+@pytest.mark.parametrize("content, expect", [
+    ("{not json", "不是合法的 JSON"),
+    ("[]", "parts 陣列"),
+    ('{"parts": ["head"]}', "必須是物件"),
+    ('{"parts": [{"name": "head", "polygon": [[0,0],[5,0],[5,5]], "z": 1, "motion": NaN}]}', "motion"),
+    ('{"parts": [{"name": "head", "polygon": [[0,0],[5,0],[5,5]], "z": 1, "pivot": [Infinity, 2]}]}', "pivot"),
+    ('{"parts": [{"name": "head", "polygon": [[0,0],[1e12,0],[5,5]], "z": 1}]}', "polygon"),
+    ('{"parts": [{"name": "head", "polygon": [[320,10],[380,10],[380,50]], "z": 1}]}', "範圍外"),
+])
+def test_malformed_parts_json_is_needs_parts(synth, tmp_path, content, expect):
+    """審查發現：語法錯誤時結束碼是 1；Agent 寫 parts.json 最常見的錯誤必須是「修正後接續」（2）。"""
+    img, _ = synth("synth_a")
+    bad = tmp_path / "bad.parts.json"
+    bad.write_text(content, encoding="utf-8")
+    r = analyze(img, tmp_path / "w", parts_path=bad)
+    assert r["status"] == "needs_parts" and any(expect in e for e in r["parts_errors"]), r["parts_errors"]
+    assert cli.main(["analyze", str(img), "--parts", str(bad), "-w", str(tmp_path / "w2")]) == 2

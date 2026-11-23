@@ -1,4 +1,4 @@
-# 已知問題
+﻿# 已知問題
 
 ## 未解決
 
@@ -8,9 +8,12 @@
 | K-02 | 使用者把 `.claude/*`、`.codex/*` 加入 `.gitignore`（同時移除了先前加入的 `openspec`） | 已接受 | Skill 只有 `skills/character-to-spine/` 這份正本進版控；clone 後需要自行複製到 `.claude/skills/`、`.codex/skills/` | 見 README「安裝 Skill」 |
 | K-03 | Python Simulation Preview 只支援本專案輸出的功能（rotate／translate／scale、平切線 bezier） | 設計限制 | 在 Spine 裡手動改成其他曲線後，預覽會不準 | 預覽只用於自我檢查，正式預覽以 Spine 為準 |
 | K-04 | 自動填補只用 OpenCV Telea 邊緣延伸 | 設計限制 | 大面積遮擋的部件標為 `needs_manual`，需要人工修補 | 人工修好後 `c2s prepare --replace` |
-| K-05 | skirt 的次要動作沒有合成測試角色 | 已由真實角色目視確認 | 兩組真實角色都有 skirt，預覽中裙擺有擠壓擺動 | 需要時再加合成角色 |
+| K-05 | skirt 的次要動作沒有自動化測試 | 自動化 NOT_TESTED；真實角色預覽中目視可見裙擺擺動 | 與 hair 走同一段程式 | 需要時加一個帶裙擺的合成角色 |
 | K-06 | `转场2.png` 是 AI 生成圖，有第三隻手（右側下垂） | 素材瑕疵 | 已獨立成 `arm_extra` 部件，跟著身體小幅擺動 | 美術在 Spine 刪除該插槽，或修圖後重跑 |
 | K-07 | 真實角色有被大面積遮擋的部件（`人.png`：body、hair_back、leg_l、leg_r；`转场2.png`：body、hair_back、leg_l） | BLOCKED（需人工） | 目前用 OpenCV 填補草稿；在動作幅度內大多不會露出，但品質未經人工確認 | 依各工作目錄的 `repair_tasks.md` 補畫，`c2s prepare --replace` 匯回 |
+| K-09 | 沒有透明度的圖片用邊界 flood fill 去背，容許差 14；灰階或與背景顏色接近的部件可能被一起去掉 | 設計限制 | 被去掉的部件會在 rig 階段以「缺少圖層」停下（結束碼 2） | 先提供帶透明度的 PNG，或用遮罩 |
+| K-10 | 往返驗證用 `Spine -e json`（官方 CLI 頁的語法列有此寫法，但範例只示範 export settings 檔） | 無法驗證（需完整版） | 授權到位後若往返驗證 FAIL，先檢查是否需要改用 export settings 檔 | 看 `spine/spine_roundtrip.log` |
+| K-11 | `test_skill_copies_identical` 在 `.claude`／`.codex` 複本不存在時只檢查正本；`test_no_character_specific_code` 只比對字串，無法抓到寫死的座標 | 測試限制（最終審查指出） | 座標寫死改以人工審查確認：兩次獨立審查都未發現 | — |
 | K-08 | 部件邊界由 Agent 目測多邊形，交界處（頭髮捲曲邊緣、蕾絲）不是像素級精準 | 設計限制 | 動畫時交界可能出現細縫或多帶一點相鄰部件 | 需要精準時改用遮罩（`mask`），或人工修圖後 `--replace` |
 
 ## 已修正
@@ -31,3 +34,10 @@
 | 可用 `root`／`hip` 當部件名稱、可有重複 z、多邊形格式不檢查 | `test_parts_format_errors` |
 | 預覽沒有「Python Simulation Preview」標示；大圖角色的預覽記憶體用量可達 GB 級 | `test_preview_labelled_and_moving` |
 | 擠壓伸展方向相反：Spine 的 scaleX 沿骨頭方向，直立的骨頭要對調 x／y（檢視主要角色預覽時發現） | `test_crouch_is_wider_on_screen` |
+| **最終驗收審查**：`setup_pose` 拿匯出圖片跟自己比，換錯圖、翻轉都 PASS | `test_validate_catches_wrong_image_content`（已確認舊版會失敗） |
+| **最終驗收審查**：parts.json 語法錯誤、型別錯誤時結束碼 1（應為 2） | `test_malformed_parts_json_is_needs_parts` |
+| **最終驗收審查**：NaN／Infinity 座標被接受並寫進 Spine JSON | `test_malformed_parts_json_is_needs_parts`；`save_json` 拒絕 NaN |
+| **最終驗收審查**：預覽標示、曲線數值、FAIL 結束碼、整體狀態的測試在功能壞掉時仍會通過 | 加強 `test_preview_labelled_and_moving`、`test_trial_environment_not_pass`；新增 `test_curve_values_are_absolute_bezier`、`test_validation_fail_exits_1_with_log` |
+| **最終驗收審查**：驗證 FAIL 時沒有寫 `c2s_error.log`；成功後殘留過期的 log | `test_validation_fail_exits_1_with_log` |
+| **最終驗收審查**：刪除部件後舊圖層殘留；rig 拒絕時留下舊 `rig.json` | `test_removed_part_leaves_no_stale_layer`、`test_missing_required_layer_refuses` |
+| **最終驗收審查**：1×1 圖片讓 OpenCV 崩潰（unexpected_error）；非圖片的 `--replace` 回報為 unexpected_error | `test_tiny_and_unreadable_inputs_are_clean_errors`、`test_replace_with_non_image` |

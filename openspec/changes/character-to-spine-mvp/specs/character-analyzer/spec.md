@@ -23,8 +23,8 @@
 - **THEN** 結果狀態為 `ok`，正規化後的 `parts.json` 寫入工作目錄，遮罩路徑轉為絕對路徑
 
 #### Scenario: 格式錯誤
-- **WHEN** `parts.json` 有名稱重複、缺少 `z`、多邊形少於 3 點、遮罩檔不存在或遮罩尺寸與原圖不同
-- **THEN** 結果狀態為 `needs_parts`，`parts_errors` 逐條列出是哪個部件、什麼問題
+- **WHEN** `parts.json` 不是合法的 JSON、結構不是 `{"parts": [...]}`、有名稱重複、缺少 `z`、多邊形少於 3 點、座標不是有限數字或遠超出圖片範圍、遮罩檔不存在或遮罩尺寸與原圖不同
+- **THEN** 結果狀態為 `needs_parts`，`parts_errors` 逐條列出是哪個部件、什麼問題，CLI 結束碼為 2
 
 ### Requirement: 缺少部件資訊時不假裝完成
 當 `parts.json` 不存在或缺少必要部件時，系統 MUST 停在分析階段，列出缺少的部件與接續步驟，且 MUST NOT 以猜測的範圍代替。

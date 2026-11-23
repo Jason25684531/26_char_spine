@@ -1,6 +1,8 @@
 """圖片讀取、去背與 parts.json 檢查。語意辨識（哪裡是頭、手）不在這裡：由 Skill 層的 Agent 寫出 parts.json。"""
 from pathlib import Path
 
+import math
+
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
@@ -23,7 +25,7 @@ def load_rgba(image_path):
 def _flood_alpha(rgb, tol=14):
     # ponytail: 只處理接近純色的背景；漸層或複雜背景請改用外部遮罩（parts.json 的 mask）。
     h, w = rgb.shape[:2]
-    img = np.ascontiguousarray(rgb)
+    img = rgb.copy()  # 必須是獨立的連續記憶體；ascontiguousarray 對 1x1 切片會回傳 OpenCV 不接受的 view
     border = np.concatenate([img[0], img[-1], img[:, 0], img[:, -1]]).astype(int)
     bg = np.median(border, axis=0)
     mask = np.zeros((h + 2, w + 2), np.uint8)
@@ -50,15 +52,27 @@ def _grid_overlay(rgba, step=50):
     return img
 
 
-def _is_point(v):
-    return isinstance(v, (list, tuple)) and len(v) == 2 and all(isinstance(n, (int, float)) for n in v)
+def _num(n):
+    return isinstance(n, (int, float)) and not isinstance(n, bool) and math.isfinite(n)
+
+
+def _is_point(v, size):
+    """[x, y] 有限數字，且在原圖周圍一倍範圍內（允許稍微超出圖片邊緣，擋掉誤植的極端值）。"""
+    w, h = size
+    return (isinstance(v, (list, tuple)) and len(v) == 2 and all(_num(n) for n in v)
+            and -w <= v[0] <= 2 * w and -h <= v[1] <= 2 * h)
 
 
 def check_parts(parts_doc, size, base_dir):
     """回傳 (正規化後的 parts 清單, 錯誤訊息清單)。mask 路徑會轉成絕對路徑。"""
     errors, out, seen, zs = [], [], set(), {}
     w, h = size
-    for i, p in enumerate(parts_doc.get("parts", [])):
+    if not isinstance(parts_doc, dict) or not isinstance(parts_doc.get("parts"), list):
+        return [], ["parts.json 必須是含有 parts 陣列的物件：{\"parts\": [...]}"]
+    for i, p in enumerate(parts_doc["parts"]):
+        if not isinstance(p, dict):
+            errors.append(f"parts[{i}]: 每個部件必須是物件，收到 {p!r}")
+            continue
         name = p.get("name", "")
         if not isinstance(name, str) or not name or not name.replace("_", "").isalnum() or not name.isascii():
             errors.append(f"parts[{i}]: name 必須是英數字與底線，收到 {name!r}")
@@ -72,7 +86,7 @@ def check_parts(parts_doc, size, base_dir):
         seen.add(name)
         q = dict(p)
         z = p.get("z")
-        if isinstance(z, (int, float)):
+        if _num(z):
             if z in zs:
                 errors.append(f"{name}: z={z} 與 {zs[z]} 相同，前後順序必須唯一")
             zs[z] = name
@@ -80,10 +94,10 @@ def check_parts(parts_doc, size, base_dir):
             errors.append(f"{name}: 需要數字 z（越大越前面）")
         if "role" in p and p["role"] not in ROLES:
             errors.append(f"{name}: role {p['role']!r} 不支援（可用：{', '.join(ROLES)}）")
-        if "motion" in p and (not isinstance(p["motion"], (int, float)) or p["motion"] < 0):
+        if "motion" in p and (not _num(p["motion"]) or p["motion"] < 0):
             errors.append(f"{name}: motion 必須是 >= 0 的數字")
-        if p.get("pivot") is not None and not _is_point(p["pivot"]):
-            errors.append(f"{name}: pivot 必須是 [x, y]")
+        if p.get("pivot") is not None and not _is_point(p["pivot"], size):
+            errors.append(f"{name}: pivot 必須是圖片範圍附近的 [x, y]")
         if "mask" in p:
             m = Path(p["mask"])
             m = m if m.is_absolute() else Path(base_dir) / m
@@ -94,8 +108,10 @@ def check_parts(parts_doc, size, base_dir):
             q["mask"] = str(m.resolve())
         else:
             poly = p.get("polygon")
-            if not isinstance(poly, list) or len(poly) < 3 or not all(_is_point(v) for v in poly):
-                errors.append(f"{name}: 需要 polygon（至少 3 個 [x, y] 點）或 mask")
+            if not isinstance(poly, list) or len(poly) < 3 or not all(_is_point(v, size) for v in poly):
+                errors.append(f"{name}: 需要 polygon（至少 3 個 [x, y] 點，座標在圖片範圍附近）或 mask")
+            elif max(v[0] for v in poly) < 0 or min(v[0] for v in poly) >= w or max(v[1] for v in poly) < 0 or min(v[1] for v in poly) >= h:
+                errors.append(f"{name}: polygon 完全在圖片範圍外（圖片 {w}x{h}）")
         out.append(q)
     return out, errors
 
@@ -133,7 +149,11 @@ def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
     found = next((c for c in candidates if c.exists()), None)
     names, errors = [], []
     if found:
-        parts, errors = check_parts(load_json(found), (w, h), found.parent)
+        try:
+            doc = load_json(found)
+        except (ValueError, UnicodeDecodeError) as e:  # JSONDecodeError 是 ValueError
+            doc, errors = None, [f"{found.name} 不是合法的 JSON：{e}"]
+        parts, errors = check_parts(doc, (w, h), found.parent) if doc is not None else ([], errors)
         names = [p["name"] for p in parts]
         if not errors:
             save_json(wd / "parts.json", {"version": 1, "image": image.name, "preset": preset, "parts": parts})

@@ -38,11 +38,15 @@
 | D-24 | 2026-11-23 | pstack 審查改由獨立子代理進行。 | `pstack:tdd`、`poteto-mode` 等 skill 設定為只能由使用者親自輸入，Agent 呼叫被拒，且被要求不要模仿其流程。 |
 | D-25 | 2026-11-23 | 驗證器只強制要求 `idle`；`happy` 存在時檢查至少 2 秒。`animations.json` 每次從頭重建。 | `--motion idle` 原本必定驗證失敗；合併舊檔會殘留以舊骨架算出的動畫。交付時一律用 `--motion happy`，兩個動畫都會產生。 |
 
+| D-26 | 2026-11-23 | `skeleton.spine` 預設 `4.3.26`。 | 原本的 `4.3.08` 是 Launcher 版本；試用版實際下載的 Editor 是 4.3.26（`~/SpineTrial/updates/4.3.26`）。正式授權環境用 `--spine-version` 配合實際 Editor。 |
+| D-27 | 2026-11-23 | 指定 `--workdir` 時仍在 `./output/.current` 記錄最後使用的工作目錄；spec 文字配合修改。 | 不記錄的話，下一個不帶參數的指令會回到舊目錄（第一次審查的發現）。這是唯一寫在工作目錄外的檔案。 |
+| D-28 | 2026-11-23 | `setup_pose` 改為「骨架初始姿勢算圖」對「原圖在部件範圍內的像素」比對。 | 最終驗收審查實測：舊版拿匯出圖片跟自己比，換成純色或翻轉都 PASS。和原圖比可同時抓到座標、順序與圖片內容的錯誤。 |
+
 ## 已確認的環境事實
 
 | 項目 | 事實 | 證據 |
 |---|---|---|
-| Spine | 只有試用版：`C:\Program Files\Spine Trial\SpineTrial.com`，Launcher 4.3.08 | `--help` 輸出 |
+| Spine | 只有試用版：`C:\Program Files\Spine Trial\SpineTrial.com`，Launcher 4.3.08，下載的 Editor 4.3.26（更新通道 latestbeta） | `--help` 輸出、`~/SpineTrial/updates/`、`version.txt` |
 | 試用版 CLI | `--help` 與 `--advanced` 都沒有 `-i/-o/-r/-e`；實際執行匯入指令 120 秒逾時、沒有產生檔案 | 2026-11-23 實測 |
 | 試用版限制 | 官方下載頁：試用版不含「saving projects, texture packing, and exporting animation data, images and video」 | esotericsoftware.com/spine-download |
 | 完整版 CLI 語法 | 匯入：`Spine -i <json> -o <project.spine> -r [name]`；匯出：`Spine -i <project.spine> -o <dir> -e json`；Windows 用 `Spine.com` | esotericsoftware.com/spine-command-line-interface |

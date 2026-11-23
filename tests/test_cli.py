@@ -83,3 +83,21 @@ def test_skill_copies_identical():
             assert copy.read_text(encoding="utf-8") == canonical, f"{copy} 與正本不同，請重新複製"
     for needed in ("parts.json", "c2s run", "layer_preview.png", "repair_tasks.md", "BLOCKED"):
         assert needed in canonical
+
+
+def test_validation_fail_exits_1_with_log(workcopy, tmp_path):
+    wd = workcopy("synth_a")
+    (wd / "spine" / "images" / "head.png").unlink()
+    code, out, _ = c2s("validate", "-w", wd, cwd=tmp_path)
+    assert code == 1 and json.loads(out)["status"] == "FAIL"
+    assert "image_references" in (wd / "c2s_error.log").read_text(encoding="utf-8")
+    c2s("export", "-w", wd, cwd=tmp_path)  # 補回圖片後成功
+    assert c2s("validate", "-w", wd, cwd=tmp_path)[0] == 0
+    assert not (wd / "c2s_error.log").exists()  # 不留過期的錯誤紀錄
+
+
+def test_tiny_and_unreadable_inputs_are_clean_errors(tmp_path):
+    tiny = tmp_path / "tiny.png"
+    Image.new("RGB", (1, 1), (9, 9, 9)).save(tiny)
+    code, _, err = c2s("analyze", tiny, cwd=tmp_path)
+    assert code == 1 and json.loads(err)["status"] == "error"  # 不是 unexpected_error

@@ -15,6 +15,10 @@
 - **WHEN** 把某個附件的位置偏移到明顯錯誤的地方
 - **THEN** `setup_pose` 為 FAIL
 
+#### Scenario: 抓到錯誤的圖片內容
+- **WHEN** 把 `spine/images/` 內某張圖換成純色或上下翻轉
+- **THEN** `setup_pose` 為 FAIL（骨架初始姿勢算圖與原圖在部件範圍內的像素比對）
+
 ### Requirement: 狀態與證據
 每個檢查項目的狀態 MUST 是 PASS、FAIL、BLOCKED、NOT_TESTED 其中之一，並附上說明。無法在目前環境執行的項目 MUST NOT 標為 PASS。
 

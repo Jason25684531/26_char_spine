@@ -10,8 +10,8 @@ from pathlib import Path
 
 from . import NeedsInput, load_json, save_json
 
-DEFAULT_SPINE_VERSION = "4.3.08"  # 寫進 skeleton.spine 的版本字串；用 --spine-version 配合實際安裝的 Editor
-TRIAL_NOTE = ("偵測到的是 Spine 試用版：2026-11-23 實測 SpineTrial.com 4.3.08 的 CLI 沒有 -i/-o/-r/-e 參數，"
+DEFAULT_SPINE_VERSION = "4.3.26"  # 試用版 Launcher 實際下載的 Editor 版本（~/SpineTrial/updates）；用 --spine-version 配合實際匯入的 Editor
+TRIAL_NOTE = ("偵測到的是 Spine 試用版：2026-11-23 實測 SpineTrial.com（Launcher 4.3.08，Editor 4.3.26）的 CLI 沒有 -i/-o/-r/-e 參數，"
               "官方也說明試用版不能儲存專案與匯出資料，無法產生 .spine")
 
 
@@ -69,7 +69,7 @@ def import_to_spine(json_path, spine_path, exe=None):
     if exe is None:
         exe, _ = find_spine()
     if exe is None:
-        return {"status": "BLOCKED", "detail": "找不到 Spine CLI。安裝並啟用完整版後設定環境變數 SPINE_EXE 指向 Spine.com，再重新執行 c2s export"}
+        return {"status": "BLOCKED", "detail": "找不到 Spine CLI。安裝並啟用完整版後，設定環境變數 SPINE_EXE 指向 Spine.com，或執行 c2s export --spine-exe <Spine.com 路徑>"}
     if _is_trial(exe):
         return {"status": "BLOCKED", "detail": TRIAL_NOTE, "exe": exe}
     out = spine_path.parent

@@ -1,4 +1,4 @@
-# 測試結果
+﻿# 測試結果
 
 狀態只用 PASS／FAIL／BLOCKED／NOT_TESTED。每一筆都對應實際執行的指令與輸出。
 
@@ -16,6 +16,9 @@
 | 2026-11-23 | `c2s run examples\real\人.png --parts examples\real\人.parts.json --workdir output\ren` | 結束碼 0；見下方「真實角色」 |
 | 2026-11-23 | `c2s run examples\real\转场2.png --parts examples\real\转场2.parts.json --workdir output\zc2` | 結束碼 0；見下方「真實角色」 |
 
+| 2026-11-23 | 最終驗收審查（獨立子代理）後修正 → `pytest -q` | **83 passed**（新增 14 個回歸測試；`test_validate_catches_wrong_image_content` 對舊版驗證器確認會失敗） |
+| 2026-11-23 | 重跑兩組真實角色 | 結束碼 0；setup_pose 改與原圖比對後為 0.0019／0.0018 PASS；其餘狀態不變 |
+
 環境：Windows 11、Python 3.11.9（`.venv`）、numpy 2.4.6、Pillow 13.0.0、opencv-python 5.1.0、pytest 9.2.0。Spine 只有試用版（Launcher 4.3.08）。
 
 ## Spec scenario 對照
@@ -30,7 +33,7 @@
 | 不透明的純色背景圖片 | `test_opaque_background_flood_fill` | PASS |
 | 圖片不存在或沒有前景 | `test_missing_or_empty_image` | PASS |
 | 合法的 parts.json | `test_valid_parts_normalized` | PASS |
-| 格式錯誤 | `test_parts_format_errors`（9 種）、`test_mask_size_mismatch` | PASS |
+| 格式錯誤 | `test_parts_format_errors`（9 種）、`test_mask_size_mismatch`、`test_malformed_parts_json_is_needs_parts`（7 種） | PASS |
 | 沒有 parts.json | `test_no_parts_json_template_and_exit_2` | PASS |
 | 缺少部分必要部件 | `test_partial_required` | PASS |
 
@@ -74,7 +77,7 @@
 | 不同大小的角色 | `test_amplitude_scales_with_height` | PASS |
 | 左右對稱 | `test_left_right_mirror` | PASS |
 | 持物角色降低手臂幅度 | `test_motion_factor` | PASS |
-| 頭髮與裙擺的次要動作 | `test_secondary_motion_for_hair`（只測了 hair；skirt 由同一段程式處理，尚無合成角色帶裙擺） | PASS（skirt NOT_TESTED） |
+| 頭髮與裙擺的次要動作 | `test_secondary_motion_for_hair`（只測 hair；skirt 由同一段程式處理，只有真實角色預覽的目視） | hair PASS；skirt 自動化 NOT_TESTED |
 | 骨頭不存在時略過 | `test_absent_bones_skipped` | PASS |
 
 ### spine-exporter
@@ -101,7 +104,8 @@
 | 指定工作目錄 | `test_run_with_workdir` | PASS |
 | 圖片尚未分層 | `test_run_without_parts_exit_2` | PASS |
 | 步驟順序錯誤 | `test_wrong_order_exit_2` | PASS |
-| 未預期的例外 | `test_unexpected_error_logged` | PASS |
+| 未預期的例外 | `test_unexpected_error_logged`、`test_tiny_and_unreadable_inputs_are_clean_errors` | PASS |
+| 驗證 FAIL 的結束碼與 log | `test_validation_fail_exits_1_with_log` | PASS |
 | Skill 內容一致 | `test_skill_copies_identical` | PASS |
 | Skill 說明完整流程 | `test_skill_copies_identical`（關鍵字）；實際由 Agent 依 Skill 處理真實角色 | 關鍵字 PASS；實際使用 NOT_TESTED |
 
@@ -112,12 +116,13 @@
 | 正常輸出 | `test_validate_ok` | PASS |
 | 抓到被破壞的輸出 | `test_validate_catches_missing_image`、`_bad_bone`、`_short_happy` | PASS |
 | 抓到錯誤的圖層位置 | `test_validate_catches_offset_attachment`、`_flipped_rotations` | PASS |
+| 抓到錯誤的圖片內容 | `test_validate_catches_wrong_image_content` | PASS |
 | 沒有完整版 Spine | `test_trial_environment_not_pass` | PASS |
 | 有待人工修補的圖層 | `test_manual_repairs_blocked` | PASS |
 | 測試結果紀錄 | 本文件 | PASS |
 | 兩組真實角色 | 見下方「真實角色」；兩組只有圖片與 parts.json 不同，處理第二組期間沒有修改程式 | PASS（Spine 匯入 BLOCKED） |
 | 程式沒有寫死座標 | `test_no_character_specific_code` | PASS |
-| 打包內容、缺少 .spine 時的標示、簡報內容 | 尚未進行（tasks 第 12 組） | NOT_TESTED |
+| 打包內容、缺少 .spine 時的標示、簡報內容 | `test_delivery.py::test_package_from_real_outputs`（合成角色）＋ 實際打包兩組真實角色 | PASS |
 
 ## 真實角色（2026-11-23）
 
@@ -129,7 +134,7 @@ parts.json 由 Claude Code 依 `grid_overlay.png` 目測撰寫，依 `layer_prev
 | 部件 | 10：hair_back、leg_l/r、body、skirt、head、flower_crown、guitar、arm_l/r | 11：hair_back、arm_extra、leg_l/r、body、skirt、head、flower_crown、arm_l、petals、arm_r |
 | parts.json 修正輪數 | 3（未分配像素 0.63% → 0.01%） | 2（角色本體無漏畫；其餘 12.4% 全是散落特效） |
 | 圖層重組差異 `recompose_mae` | 0.0014 | 0.0014 |
-| 骨架初始姿勢差異 `setup_pose` | 0.0005 PASS | 0.0005 PASS |
+| 骨架初始姿勢差異 `setup_pose`（與原圖比對） | 0.0019 PASS | 0.0018 PASS |
 | bones／slots／image_references／animations | PASS（12 骨、10 槽；idle 2.0 秒、happy 2.4 秒） | PASS（13 骨、11 槽；idle 2.0 秒、happy 2.4 秒） |
 | manual_repairs | BLOCKED：body（被吉他擋 87%）、hair_back（75%）、leg_l（56%）、leg_r（60%） | BLOCKED：body（55%）、hair_back（68%）、leg_l（50%） |
 | spine_import | BLOCKED（試用版） | BLOCKED（試用版） |

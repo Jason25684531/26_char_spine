@@ -39,6 +39,7 @@ def build_rig(workdir, preset=None):
     if not (wd / "metadata.json").exists():
         raise NeedsInput(f"{wd} 尚未切圖，請先執行 c2s prepare")
     meta = load_json(wd / "metadata.json")
+    (wd / "rig.json").unlink(missing_ok=True)  # 綁定失敗時不留下以舊圖層算出的骨架
     preset_name = preset or meta.get("preset", "humanoid-chibi")
     if preset_name not in PRESETS:
         raise C2SError(f"未知的 preset：{preset_name}")

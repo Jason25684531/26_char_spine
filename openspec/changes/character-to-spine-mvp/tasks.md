@@ -80,8 +80,8 @@
 
 ## 11. 雙重驗收
 
-- [ ] 11.1 pstack `/interrogate`（或等價的獨立子代理審查）：實際錯誤、未處理例外、寫死座標、缺少回歸測試、沒有證據的成功宣告
-- [ ] 11.2 修正審查發現的問題並重跑全部測試
+- [x] 11.1 pstack `/interrogate`（或等價的獨立子代理審查）：實際錯誤、未處理例外、寫死座標、缺少回歸測試、沒有證據的成功宣告
+- [x] 11.2 修正審查發現的問題並重跑全部測試
 - [ ] 11.3 OpenSpec 驗收：逐條對照每個 Requirement 與 Scenario 的測試證據，寫入 `docs/TEST_RESULTS.md`；`openspec validate --strict` 通過
 - [ ] 11.4 對 Definition of Done 表逐項給出狀態與證據
 

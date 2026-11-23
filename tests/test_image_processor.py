@@ -152,3 +152,21 @@ def test_replace_wrong_size(workcopy, tmp_path):
     assert (wd / "layers" / "head.png").read_bytes() == before
     prepare(wd)  # 錯誤的替換圖不能殘留下來害之後每次都失敗
     assert meta_parts(wd)["head"]["status"] == "ok"
+
+
+def test_removed_part_leaves_no_stale_layer(workcopy):
+    wd = workcopy("synth_b")
+    doc = load_json(wd / "parts.json")
+    doc["parts"] = [p for p in doc["parts"] if p["name"] != "flag"]
+    (wd / "parts.json").write_text(json.dumps(doc), encoding="utf-8")
+    prepare(wd)
+    assert not (wd / "layers" / "flag.png").exists()
+
+
+def test_replace_with_non_image(workcopy, tmp_path):
+    wd = workcopy("synth_a")
+    bad = tmp_path / "notes.png"
+    bad.write_text("not an image", encoding="utf-8")
+    with pytest.raises(C2SError, match="不是可讀取的圖片"):
+        prepare(wd, replace={"head": bad})
+    assert not (wd / "overrides" / "head.png").exists()
