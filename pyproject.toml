@@ -10,8 +10,7 @@ requires-python = ">=3.11"
 dependencies = ["numpy", "Pillow", "opencv-python"]
 
 [project.optional-dependencies]
-dev = ["pytest"]
-slides = ["python-pptx"]
+dev = ["pytest", "python-pptx"]  # python-pptx：交付簡報（scripts/make_slides.py）與其測試
 
 [project.scripts]
 c2s = "character_to_spine.cli:main"

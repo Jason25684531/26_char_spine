@@ -87,7 +87,7 @@
 
 ## 12. 交付
 
-- [ ] 12.1 安裝 python-pptx；`scripts/make_slides.py` 由實際輸出產生 `workflow.pptx`
-- [ ] 12.2 `scripts/package_deliverables.py` 組出 `Character-to-Spine-Deliverables/`
-- [ ] 12.3 測試：打包目錄結構、沒有 `.spine` 時 README 標明 BLOCKED 且目錄內沒有假檔案
+- [x] 12.1 安裝 python-pptx；`scripts/make_slides.py` 由實際輸出產生 `workflow.pptx`
+- [x] 12.2 `scripts/package_deliverables.py` 組出 `Character-to-Spine-Deliverables/`
+- [x] 12.3 測試：打包目錄結構、沒有 `.spine` 時 README 標明 BLOCKED 且目錄內沒有假檔案
 - [ ] 12.4 依最終回報格式整理完成狀態、BLOCKED 項目與下一步
