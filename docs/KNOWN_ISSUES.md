@@ -8,7 +8,10 @@
 | K-02 | 使用者把 `.claude/*`、`.codex/*` 加入 `.gitignore`（同時移除了先前加入的 `openspec`） | 已接受 | Skill 只有 `skills/character-to-spine/` 這份正本進版控；clone 後需要自行複製到 `.claude/skills/`、`.codex/skills/` | 見 README「安裝 Skill」 |
 | K-03 | Python Simulation Preview 只支援本專案輸出的功能（rotate／translate／scale、平切線 bezier） | 設計限制 | 在 Spine 裡手動改成其他曲線後，預覽會不準 | 預覽只用於自我檢查，正式預覽以 Spine 為準 |
 | K-04 | 自動填補只用 OpenCV Telea 邊緣延伸 | 設計限制 | 大面積遮擋的部件標為 `needs_manual`，需要人工修補 | 人工修好後 `c2s prepare --replace` |
-| K-05 | skirt 的次要動作沒有專門的測試角色 | NOT_TESTED | 與 hair 走同一段程式 | 真實角色（裙擺）跑通後補上 |
+| K-05 | skirt 的次要動作沒有合成測試角色 | 已由真實角色目視確認 | 兩組真實角色都有 skirt，預覽中裙擺有擠壓擺動 | 需要時再加合成角色 |
+| K-06 | `转场2.png` 是 AI 生成圖，有第三隻手（右側下垂） | 素材瑕疵 | 已獨立成 `arm_extra` 部件，跟著身體小幅擺動 | 美術在 Spine 刪除該插槽，或修圖後重跑 |
+| K-07 | 真實角色有被大面積遮擋的部件（`人.png`：body、hair_back、leg_l、leg_r；`转场2.png`：body、hair_back、leg_l） | BLOCKED（需人工） | 目前用 OpenCV 填補草稿；在動作幅度內大多不會露出，但品質未經人工確認 | 依各工作目錄的 `repair_tasks.md` 補畫，`c2s prepare --replace` 匯回 |
+| K-08 | 部件邊界由 Agent 目測多邊形，交界處（頭髮捲曲邊緣、蕾絲）不是像素級精準 | 設計限制 | 動畫時交界可能出現細縫或多帶一點相鄰部件 | 需要精準時改用遮罩（`mask`），或人工修圖後 `--replace` |
 
 ## 已修正
 
@@ -27,3 +30,4 @@
 | `--motion idle` 一定驗證失敗；動畫檔殘留舊內容 | `test_idle_only_is_valid` |
 | 可用 `root`／`hip` 當部件名稱、可有重複 z、多邊形格式不檢查 | `test_parts_format_errors` |
 | 預覽沒有「Python Simulation Preview」標示；大圖角色的預覽記憶體用量可達 GB 級 | `test_preview_labelled_and_moving` |
+| 擠壓伸展方向相反：Spine 的 scaleX 沿骨頭方向，直立的骨頭要對調 x／y（檢視主要角色預覽時發現） | `test_crouch_is_wider_on_screen` |

@@ -71,12 +71,12 @@
 
 ## 10. 真實角色
 
-- [ ] 10.1 檢視 `人.png`，撰寫 `examples/real/人.parts.json`（預計含 `hair_back`、`skirt`、`guitar`、`flower_crown` 等額外部件，手臂設定較低的 `motion`）
-- [ ] 10.2 執行 `c2s run`，檢視 `layer_preview.png` 並反覆修正 `parts.json`，最多三輪；仍不理想的部件改列人工修補任務
-- [ ] 10.3 檢視 `happy` 預覽，調整 pivot、`motion`、`role` 直到動作自然；記錄調整原因
-- [ ] 10.4 對 `转场2.png` 重複 10.1 到 10.3（只標角色本體，不含花瓣特效），期間不得修改 `src/character_to_spine/` 來遷就這張圖；若必須修改，要是對兩個角色都適用的通用修正
-- [ ] 10.5 檢查程式碼內沒有任何角色檔名或像素座標
-- [ ] 10.6 把兩組角色的驗證報告與待人工修補清單記入 `docs/TEST_RESULTS.md` 與 `docs/KNOWN_ISSUES.md`
+- [x] 10.1 檢視 `人.png`，撰寫 `examples/real/人.parts.json`（預計含 `hair_back`、`skirt`、`guitar`、`flower_crown` 等額外部件，手臂設定較低的 `motion`）
+- [x] 10.2 執行 `c2s run`，檢視 `layer_preview.png` 並反覆修正 `parts.json`，最多三輪；仍不理想的部件改列人工修補任務
+- [x] 10.3 檢視 `happy` 預覽，調整 pivot、`motion`、`role` 直到動作自然；記錄調整原因
+- [x] 10.4 對 `转场2.png` 重複 10.1 到 10.3（只標角色本體，不含花瓣特效），期間不得修改 `src/character_to_spine/` 來遷就這張圖；若必須修改，要是對兩個角色都適用的通用修正
+- [x] 10.5 檢查程式碼內沒有任何角色檔名或像素座標
+- [x] 10.6 把兩組角色的驗證報告與待人工修補清單記入 `docs/TEST_RESULTS.md` 與 `docs/KNOWN_ISSUES.md`
 
 ## 11. 雙重驗收
 

@@ -12,6 +12,10 @@
 | 2026-11-23 | `c2s run examples\synthetic\synth_b.png --workdir output\synth_b` | 結束碼 0；同上，但 manual_repairs BLOCKED（hair_back 被遮擋 >35%，符合預期） |
 | 2026-11-23 | 目視檢查 `output\synth_b\layer_preview.png`、`happy` 預覽抽格 | 圖層位置、前後順序、pivot、跳躍與舉手方向正確；預覽帶有「Python Simulation Preview」標示 |
 
+| 2026-11-23 | 修正擠壓伸展軸向後 `pytest -q` | **69 passed**（新增 `test_crouch_is_wider_on_screen`；拿掉修正時此測試失敗，已確認） |
+| 2026-11-23 | `c2s run examples\real\人.png --parts examples\real\人.parts.json --workdir output\ren` | 結束碼 0；見下方「真實角色」 |
+| 2026-11-23 | `c2s run examples\real\转场2.png --parts examples\real\转场2.parts.json --workdir output\zc2` | 結束碼 0；見下方「真實角色」 |
+
 環境：Windows 11、Python 3.11.9（`.venv`）、numpy 2.4.6、Pillow 13.0.0、opencv-python 5.1.0、pytest 9.2.0。Spine 只有試用版（Launcher 4.3.08）。
 
 ## Spec scenario 對照
@@ -111,6 +115,29 @@
 | 沒有完整版 Spine | `test_trial_environment_not_pass` | PASS |
 | 有待人工修補的圖層 | `test_manual_repairs_blocked` | PASS |
 | 測試結果紀錄 | 本文件 | PASS |
-| 兩組真實角色 | 尚未進行（tasks 第 10 組） | NOT_TESTED |
+| 兩組真實角色 | 見下方「真實角色」；兩組只有圖片與 parts.json 不同，處理第二組期間沒有修改程式 | PASS（Spine 匯入 BLOCKED） |
 | 程式沒有寫死座標 | `test_no_character_specific_code` | PASS |
 | 打包內容、缺少 .spine 時的標示、簡報內容 | 尚未進行（tasks 第 12 組） | NOT_TESTED |
+
+## 真實角色（2026-11-23）
+
+parts.json 由 Claude Code 依 `grid_overlay.png` 目測撰寫，依 `layer_preview.png`（洋紅＝未分配像素）與 `unassigned` 區塊清單修正。
+
+| 項目 | `人.png`（主要角色） | `转场2.png`（第二組） |
+|---|---|---|
+| 尺寸 | 630×887 | 942×1246 |
+| 部件 | 10：hair_back、leg_l/r、body、skirt、head、flower_crown、guitar、arm_l/r | 11：hair_back、arm_extra、leg_l/r、body、skirt、head、flower_crown、arm_l、petals、arm_r |
+| parts.json 修正輪數 | 3（未分配像素 0.63% → 0.01%） | 2（角色本體無漏畫；其餘 12.4% 全是散落特效） |
+| 圖層重組差異 `recompose_mae` | 0.0014 | 0.0014 |
+| 骨架初始姿勢差異 `setup_pose` | 0.0005 PASS | 0.0005 PASS |
+| bones／slots／image_references／animations | PASS（12 骨、10 槽；idle 2.0 秒、happy 2.4 秒） | PASS（13 骨、11 槽；idle 2.0 秒、happy 2.4 秒） |
+| manual_repairs | BLOCKED：body（被吉他擋 87%）、hair_back（75%）、leg_l（56%）、leg_r（60%） | BLOCKED：body（55%）、hair_back（68%）、leg_l（50%） |
+| spine_import | BLOCKED（試用版） | BLOCKED（試用版） |
+| spine_roundtrip、spine_editable | NOT_TESTED | NOT_TESTED |
+| 目視（Python Simulation Preview 4 個關鍵影格） | 蹲、跳、落地方向正確；雙手留在吉他上；頭髮、裙擺、花冠跟隨擺動 | 同左；舉高的手在跳躍頂點往上揮；花瓣跟著捧花的手 |
+
+動畫參數調整原因：
+
+- `人.png`：手臂抱著吉他，`arm_l` motion 0.1（撥弦）、`arm_r` 0.05（握琴頸），避免手離開吉他、露出被擋住的軀幹；`guitar` 0.2 只做輕微晃動；`skirt` 掛在 `hip`，不隨上身傾斜。
+- `转场2.png`：`arm_l` 已經舉高，照預設往外轉 110° 會甩過頭頂，motion 0.25 變成揮手；`arm_r` 0.15 捧著花瓣；`petals` 掛在 `arm_r`。
+- 第一次檢視主要角色時發現擠壓伸展方向相反（通用錯誤，已修正並加測試，見 KNOWN_ISSUES）。
