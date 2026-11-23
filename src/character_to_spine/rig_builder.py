@@ -86,6 +86,13 @@ def build_rig(workdir, preset=None):
     for name, e in parts.items():
         if name not in parents:
             parents[name] = e.get("parent") or "body"
+    roles = {n: e.get("role") or default_role(n) for n, e in parts.items()}
+    # 抱著道具的手掛在道具骨頭下：道具擺動時帶著手一起動，接觸處沒有相對移動，
+    # 手後方道具的草稿補圖也就不會露出（手與道具相對移動會露出它，見 quality 的 exposure）
+    for name, e in parts.items():
+        props = [t for t in e.get("attach") or [] if roles.get(t) == "prop" and t in parts]
+        if roles[name] == "arm" and props and parents.get(props[0]) != name:
+            parents[name] = props[0]
     all_parts = {e["name"] for e in meta["parts"]}
     for name, parent in parents.items():
         if parent == "root" or parent in parents:
@@ -132,7 +139,7 @@ def build_rig(workdir, preset=None):
              for e in sorted(parts.values(), key=lambda e: e["z"])]  # 由後到前
     rig = {"preset": preset_name, "height": meta["bbox"][3], "bbox": meta["bbox"], "origin": meta["origin"],
            "bones": bones, "slots": slots, "attachments": attachments,
-           "roles": {n: e.get("role") or default_role(n) for n, e in parts.items()},
+           "roles": roles,
            "motion": {n: e.get("motion", 1.0) for n, e in parts.items()},
            "contacts": _contacts(wd, meta, parts, world)}
     save_json(wd / "rig.json", rig)

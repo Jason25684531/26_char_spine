@@ -74,9 +74,20 @@ def contact_limits(rig, motion):
     template = TEMPLATES[motion][0]
     world = {b["name"]: b["world"] for b in rig["bones"] if "world" in b}
     h = rig["height"]
+    parent = {b["name"]: b.get("parent") for b in rig["bones"]}
+
+    def ancestors(n):
+        while parent.get(n):
+            n = parent[n]
+            yield n
     limits = {}
     for c in rig.get("contacts", []):
-        for bone in (c["a"], c["b"]):
+        # 道具帶著手時（手是道具的子骨頭），道具的旋轉連同手一起帶動、不影響接觸，只限制手自己的旋轉。
+        # 手拿著道具（道具是手的子骨頭）時維持原本做法：兩者都限制。
+        # ponytail: 後者的限制對接觸是多餘的，但目前碰巧壓住了身體草稿的露出；身體補畫後可一併拿掉
+        pair = (c["a"], c["b"])
+        carried = lambda b: rig["roles"].get(b) == "prop" and any(b in ancestors(o) for o in pair if o != b)
+        for bone in [b for b in pair if not carried(b)]:
             make = template.get(rig["roles"].get(bone), {}).get("rotate")
             if not make:
                 continue

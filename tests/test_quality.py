@@ -308,3 +308,23 @@ def test_override_backup(tmp_path):
     odir = tmp_path / "src" / "synth_a.overrides"
     assert Image.open(odir / "head.png.bak").getpixel((0, 0)) == (1, 2, 3, 255)
     assert Image.open(odir / "head.png").getpixel((0, 0)) == (9, 9, 9, 255)
+
+def test_prop_carries_attached_arm(tmp_path):
+    """抱著道具的手掛在道具骨頭下：道具擺動帶著手、接觸處沒有相對移動，所以道具不受接觸約束限制，手仍受限制。"""
+    img, _ = make("synth_a", tmp_path / "src")
+    doc = json.loads(img.with_suffix(".parts.json").read_text(encoding="utf-8"))
+    for p in doc["parts"]:
+        p["mask"] = str(img.parent / p["mask"])
+        if p["name"] == "arm_l":
+            p["attach"] = "stick"
+    doc["parts"].append({"name": "stick", "polygon": [[60, 250], [120, 250], [120, 262], [60, 262]], "z": 7, "role": "prop"})
+    path = tmp_path / "p.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    wd = tmp_path / "w"
+    analyze(img, wd, parts_path=path)
+    prepare(wd)
+    build_rig(wd)
+    rig = load_json(wd / "rig.json")
+    assert {b["name"]: b.get("parent") for b in rig["bones"]}["arm_l"] == "stick"
+    limits = contact_limits(rig, "happy")
+    assert "arm_l" in limits and "stick" not in limits

@@ -36,3 +36,5 @@ Thumbs.db
 *.key
 .codex/*
 .claude/*
+# pstack 決策記錄（工作用，不進版控）
+.audit/
