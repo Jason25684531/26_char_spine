@@ -35,7 +35,8 @@ SET = ROOT / "examples" / "generalization"
 OUT = ROOT / "output" / "generalization"
 DOCS = ROOT / "docs" / "generalization"
 C2S = ROOT / ".venv" / "Scripts" / "c2s.exe"
-LEGACY = {"ren": ROOT / "examples" / "real" / "人.png", "zc2": ROOT / "examples" / "real" / "转场2.png"}
+LEGACY = {"ren": ROOT / "examples" / "real" / "人.png", "zc2": ROOT / "examples" / "real" / "转场2.png",
+          "rq": ROOT / "examples" / "real" / "人物 拷贝.png", "yz": ROOT / "examples" / "real" / "预中奖.png"}
 FONT = "C:/Windows/Fonts/msjh.ttc"
 REQUIRED_FIELDS = ("id", "type", "file", "sha256", "origin", "source_url", "license", "author", "features", "expected_scope")
 # Spine 正式輸出需要完整版授權（K-01），與泛化能力無關，判定時不計
@@ -77,15 +78,19 @@ def check_case(case):
 # ---------- Skill 實測 ----------
 
 def skill(case_id, slash=False):
-    """在只有 Skill 與圖片的乾淨沙盒裡開一個全新的 Claude Code session（c2s 經由 PATH 可用）。
-    真實使用者的專案裡沒有本專案的範例角色、測試與案例描述，沙盒重現這個條件。"""
+    """在只有 Skill 與圖片的乾淨沙盒裡開一個全新的 Claude Code session。
+    Skill 依 README 安裝打包後的套件（scripts/build_skill.py 的輸出），c2s 由 Skill 自己建立的 .venv 提供；
+    PATH 移除本專案的路徑，不載入使用者層設定與 MCP。真實使用者的專案裡沒有本專案的範例角色、測試與案例描述。"""
     img, case = cases()[case_id]
     tag = "slash" if slash else "nl"
     box = Path(tempfile.gettempdir()) / "c2s_sandbox" / case_id / f"sandbox_{tag}"  # repo 外：看不到本專案的 git 與檔案
     shutil.rmtree(box, ignore_errors=True)
-    shutil.copytree(ROOT / "skills" / "character-to-spine", box / ".claude" / "skills" / "character-to-spine")
+    dist = ROOT / "dist" / "character-to-spine"
+    if not (dist / "core").is_dir():
+        sys.exit("找不到打包後的 Skill，請先執行 python scripts/build_skill.py")
+    shutil.copytree(dist, box / ".claude" / "skills" / "character-to-spine", ignore=shutil.ignore_patterns(".venv"))
     shutil.copy(img, box / img.name)
-    phrase = (case or {}).get("skill_prompt", "幫我把這張角色圖做成 Spine 動畫：{file}")
+    phrase = (case or {}).get("skill_prompt", "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}")
     prompt = f"/character-to-spine {img.name}" if slash else phrase.format(file=img.name)
     raw = OUT / case_id / f"skill_{tag}.jsonl"
     raw.parent.mkdir(parents=True, exist_ok=True)
@@ -94,9 +99,10 @@ def skill(case_id, slash=False):
         if old.exists():  # 重跑不覆寫先前的紀錄
             shutil.move(old, old.with_name(f"{old.stem}.run{n}{old.suffix}"))
     cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose", "--no-session-persistence",
-           "--permission-mode", "acceptEdits",
+           "--permission-mode", "acceptEdits", "--setting-sources", "project,local", "--strict-mcp-config",
            "--allowedTools", "Read", "Write", "Edit", "Glob", "Grep", "Skill", "Bash", "PowerShell"]
-    env = {**os.environ, "PATH": str(ROOT / ".venv" / "Scripts") + os.pathsep + os.environ["PATH"]}
+    path = os.pathsep.join(d for d in os.environ["PATH"].split(os.pathsep) if "26_char_spine" not in d.replace("\\", "/"))
+    env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"} | {"PATH": path}
     with raw.open("w", encoding="utf-8") as f:
         proc = subprocess.run(cmd, cwd=box, env=env, stdout=f, stderr=subprocess.STDOUT, timeout=3600,
                               shell=sys.platform == "win32")
@@ -533,7 +539,7 @@ def report(compare=None):
               "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in res.values():
         sk = r.get("skill", {}).get("nl", {})
-        trig = "—" if r["origin"] == "legacy" else ("是（c2s 由專案的 .venv 提供）" if sk.get("skill_tool_called") and sk.get("c2s_after_skill") else "否" if sk else "未測")
+        trig = "—" if r["origin"] == "legacy" else ("是（c2s 由 Skill 自己建立的 .venv 提供）" if sk.get("skill_tool_called") and sk.get("c2s_after_skill") else "否" if sk else "未測")
         rc = r.get("recompose", {})
         pct = lambda d: "、".join(f"{k} {v:.1%}" for k, v in d.items()) or "—"
         un = "—" if rc.get("unassigned_ratio") is None else f"{rc['unassigned_ratio']:.2%}"

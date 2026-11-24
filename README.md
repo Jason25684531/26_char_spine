@@ -2,35 +2,47 @@
 
 把一張 2D 角色圖片（PNG／JPG）做成可在 Spine 內編輯的骨架動畫：透明分層 PNG、骨架、Idle 與 Happy 動畫、Spine JSON，並在有完整版 Spine 時匯入成 `.spine` 專案。
 
-提供兩個入口，共用同一套 Python 核心：
-- **CLI**：`c2s`。
-- **Skill**：Claude Code 與 Codex 共用的 `character-to-spine`，Agent 看圖寫出部件描述，再呼叫 `c2s`。
+支援範圍是人形／Q 版角色（頭、身體、兩手、兩腳，可拿或抱道具）。
 
-## 安裝
+## 新使用者：安裝 Claude Skill
+
+需要：Claude Code、Python 3.11 以上（`python --version` 確認）、第一次使用時可連網（下載 numpy、Pillow、OpenCV）。不需要 API Key 或付費服務。
+
+1. 解壓 `character-to-spine-skill-v1.0.0.zip`，得到 `character-to-spine/` 資料夾。
+2. 放到下列其中一處：
+   - 只給某個專案用：`<專案>\.claude\skills\character-to-spine\`
+   - 所有專案都能用：`%USERPROFILE%\.claude\skills\character-to-spine\`（macOS／Linux：`~/.claude/skills/character-to-spine/`）
+
+   ```powershell
+   Expand-Archive character-to-spine-skill-v1.0.0.zip -DestinationPath .claude\skills
+   ```
+3. 把角色圖片放進專案資料夾，啟動 Claude Code，說一句話即可，例如：
+
+   > 請將 hero.png 拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果。
+
+   也可以用 `/character-to-spine hero.png`。
+
+Claude 會自己分析角色、寫部件描述、執行切圖到輸出的全部步驟，最後回報狀態、輸出位置與需要人工補畫的部件。你不需要執行任何 Python 指令。第一次使用時，Skill 會在自己的資料夾建立 `.venv` 安裝執行環境（約 1～3 分鐘），之後不再重裝。解除安裝就是刪掉 `character-to-spine/` 資料夾。
+
+人工補畫好某個部件後，把 PNG 交給 Claude，說「用 fixed_body.png 取代 body」即可匯回並重新產生動畫。
+
+### 完整版 Spine（選用）
+
+建立 `.spine` 需要 Spine Essential 或 Professional。設定環境變數 `SPINE_EXE` 指向 `Spine.com` 後，同樣的流程會一併建立 `.spine` 專案。只有試用版或沒有安裝時，這一項標示為 BLOCKED，其餘輸出照常產生。輸出的 Spine JSON 可以用 Spine Editor 的「匯入資料」開啟。
+
+## 開發者
 
 ```powershell
 uv venv .venv --python 3.11
 .venv\Scripts\python.exe -m ensurepip
 .venv\Scripts\python.exe -m pip install -e ".[dev]"
-.venv\Scripts\c2s.exe --version
+.venv\Scripts\python.exe -m pytest -q            # 回歸測試
+.venv\Scripts\python.exe scripts\build_skill.py  # 產生 dist\character-to-spine\ 與 Skill zip
 ```
 
-### 安裝 Skill
+Skill 的正本在 `skills/character-to-spine/`（`SKILL.md`、`references/`、啟動器 `scripts/c2s.py`）。`build_skill.py` 把 Python Core 打成 wheel 放進 `core/`，再壓成 zip。在本專案用 Claude Code 測 Skill 時，把 `dist\character-to-spine\` 複製到 `.claude\skills\`。
 
-正本在 `skills/character-to-spine/SKILL.md`。複製到 Agent 會讀取的位置：
-
-```powershell
-foreach ($d in ".claude\skills\character-to-spine", ".codex\skills\character-to-spine") {
-  New-Item -ItemType Directory -Force $d | Out-Null
-  Copy-Item skills\character-to-spine\SKILL.md $d\
-}
-```
-
-### 完整版 Spine（選用）
-
-建立 `.spine` 需要 Spine Essential 或 Professional。設定 `SPINE_EXE` 指向 `Spine.com`，或在 `c2s export` 加上 `--spine-exe`。只有試用版或沒有安裝時，匯入步驟會標示為 BLOCKED，其餘步驟照常執行。
-
-## 使用
+## CLI 用法（開發與除錯）
 
 ```powershell
 # 1. 分析：沒有 parts.json 時結束碼 2，並輸出範本與座標格線圖
