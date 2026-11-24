@@ -7,7 +7,7 @@
 **OpenSpec change `character-generalization`**：泛化測試集、Skill 實測、`unsupported`／`absent`、`role: ground`。結果與待辦見 `docs/GENERALIZATION_TEST_REPORT.md`；下一步依該報告第 10 節，先修 K-24（破洞誤判）與 K-28（持物骨架顛倒），再用**新的**保留集驗證（H1–H4 已用過）。
 
 - 泛化執行器：`scripts/generalization.py`（skill／run／snapshot／report）；manifest、目視紀錄在 `examples/generalization/`；證據匯出 `scripts/export_generalization_docs.py`。
-- 測試：147 passed。
+- 測試：148 passed。
 - 審查時發現先前報告沒提到的實況：preset 只有一個、pivot 預設是外框比例、motion_metrics 只量 attach 接觸點、`examples/real/` 四張圖是同一個角色。
 
 ## 前一階段：2026-11-23

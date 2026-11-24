@@ -127,7 +127,7 @@ B、C 第一次與 C 第二次的原始紀錄已被覆寫，上述內容來自�
 
 每項核心修改都有先失敗的測試：`test_scope.py` 5 個（實作前全部失敗）、`test_pose_aware_motion.py` 的 ground 測試（修改前 parent 是 body）。
 
-完整測試：基準 114 passed → 最終 147 passed（新增 33 個）。
+完整測試：基準 114 passed → 最終 148 passed（新增 34 個；`output/generalization/pytest_verify.txt`）。
 
 ## 6. 共通問題與特殊案例
 
