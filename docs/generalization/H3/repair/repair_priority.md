@@ -8,25 +8,25 @@
 
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `hair_back` | 高 | 4.11% | 588（約 4044） | happy t=1.8s | 0.7616 | 1.0 | 0.2474 | leg_l、leg_r、body、skirt、head、book、arm_r、arm_l |
-| 2 | `body` | 高 | 2.41% | 80（約 552） | happy t=0.6s | 0.7087 | 1.0 | 0.6545 | skirt、head、book、arm_r、arm_l |
-| 3 | `book` | 中 | 1.83% | 23（約 156） | idle t=1.0s | 0.3566 | 0.1729 | 0.165 | arm_r |
-
-### hair_back（高）
-
-補畫被 leg_l、leg_r、body、skirt、head、book、arm_r、arm_l 遮住的區域（約 76% 面積）；動畫中最多露出 4.11%（happy t=1.8s）。若暫不補，可降低 leg_l、leg_r、body、skirt、head、book、arm_r、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 1.0，自動填色會糊，要手繪紋理。
-
-![hair_back](repair_hair_back.png)
+| 1 | `body` | 高 | 12.04% | 401（約 2760） | happy t=1.7s | 0.7087 | 1.0 | 0.6545 | skirt、head、book、arm_r、arm_l |
+| 2 | `hair_back` | 高 | 2.90% | 414（約 2851） | happy t=1.8s | 0.7616 | 1.0 | 0.2474 | leg_l、leg_r、body、skirt、head、book、arm_r、arm_l |
+| 3 | `book` | 中 | 1.34% | 17（約 114） | happy t=0.6s | 0.3566 | 0.1729 | 0.165 | arm_r |
 
 ### body（高）
 
-補畫被 skirt、head、book、arm_r、arm_l 遮住的區域（約 71% 面積）；動畫中最多露出 2.41%（happy t=0.6s）。若暫不補，可降低 skirt、head、book、arm_r、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 65%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 1.0，自動填色會糊，要手繪紋理。
+補畫被 skirt、head、book、arm_r、arm_l 遮住的區域（約 71% 面積）；動畫中最多露出 12.04%（happy t=1.7s）。若暫不補，可降低 skirt、head、book、arm_r、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 65%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 1.0，自動填色會糊，要手繪紋理。
 
 ![body](repair_body.png)
 
+### hair_back（高）
+
+補畫被 leg_l、leg_r、body、skirt、head、book、arm_r、arm_l 遮住的區域（約 76% 面積）；動畫中最多露出 2.90%（happy t=1.8s）。若暫不補，可降低 leg_l、leg_r、body、skirt、head、book、arm_r、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 1.0，自動填色會糊，要手繪紋理。
+
+![hair_back](repair_hair_back.png)
+
 ### book（中）
 
-補畫被 arm_r 遮住的區域（約 36% 面積）；動畫中最多露出 1.83%（idle t=1.0s）。若暫不補，可降低 arm_r 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1729，自動填色會糊，要手繪紋理。
+補畫被 arm_r 遮住的區域（約 36% 面積）；動畫中最多露出 1.34%（happy t=0.6s）。若暫不補，可降低 arm_r 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1729，自動填色會糊，要手繪紋理。
 
 ![book](repair_book.png)
 
@@ -34,24 +34,24 @@
 
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `leg_l` | 中 | 1.60% | 36（約 248） | happy t=1.4s | 0.1364 | 0.1715 | 0.1439 | leg_r、skirt |
-| 2 | `leg_r` | 中 | 1.22% | 30（約 203） | happy t=0.2s | 0.1248 | 0.2579 | 0.1376 | skirt |
-| 3 | `head` | 中 | 1.11% | 30（約 208） | happy t=0.5s | 0.0725 | 0.1397 | 0.0712 | arm_l |
+| 1 | `leg_l` | 中 | 1.66% | 37（約 258） | happy t=1.4s | 0.1364 | 0.1715 | 0.1439 | leg_r、skirt |
+| 2 | `leg_r` | 中 | 1.51% | 37（約 253） | happy t=0.2s | 0.1248 | 0.2579 | 0.1376 | skirt |
+| 3 | `head` | 中 | 1.21% | 33（約 228） | happy t=0.5s | 0.0725 | 0.1397 | 0.0712 | arm_l |
 
 ### leg_l（中）
 
-補畫被 leg_r、skirt 遮住的區域（約 14% 面積）；動畫中最多露出 1.60%（happy t=1.4s）。若暫不補，可降低 leg_r、skirt 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1715，自動填色會糊，要手繪紋理。
+補畫被 leg_r、skirt 遮住的區域（約 14% 面積）；動畫中最多露出 1.66%（happy t=1.4s）。若暫不補，可降低 leg_r、skirt 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1715，自動填色會糊，要手繪紋理。
 
 ![leg_l](repair_leg_l.png)
 
 ### leg_r（中）
 
-補畫被 skirt 遮住的區域（約 12% 面積）；動畫中最多露出 1.22%（happy t=0.2s）。若暫不補，可降低 skirt 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.2579，自動填色會糊，要手繪紋理。
+補畫被 skirt 遮住的區域（約 12% 面積）；動畫中最多露出 1.51%（happy t=0.2s）。若暫不補，可降低 skirt 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.2579，自動填色會糊，要手繪紋理。
 
 ![leg_r](repair_leg_r.png)
 
 ### head（中）
 
-補畫被 arm_l 遮住的區域（約 7% 面積）；動畫中最多露出 1.11%（happy t=0.5s）。若暫不補，可降低 arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1397，自動填色會糊，要手繪紋理。
+補畫被 arm_l 遮住的區域（約 7% 面積）；動畫中最多露出 1.21%（happy t=0.5s）。若暫不補，可降低 arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1397，自動填色會糊，要手繪紋理。
 
 ![head](repair_head.png)

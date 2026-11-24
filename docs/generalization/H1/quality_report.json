@@ -16,11 +16,53 @@
       "arm_r": 0.5
     }
   },
+  "worst": {
+    "exposure:body": {
+      "value": 0.1778,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "exposure:leg_l": {
+      "value": 0.0166,
+      "anim": "happy",
+      "t": 0.2
+    },
+    "gap:arm_l": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "gap:arm_r": {
+      "value": 0.0027,
+      "anim": "idle",
+      "t": 0.2
+    },
+    "gap:head": {
+      "value": 0.0363,
+      "anim": "happy",
+      "t": 1.8
+    },
+    "gap:leg_l": {
+      "value": 0.0073,
+      "anim": "happy",
+      "t": 2.1
+    },
+    "gap:leg_r": {
+      "value": 0.007,
+      "anim": "idle",
+      "t": 0.4
+    },
+    "hole:character": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    }
+  },
   "rounds": [
     {
       "round": 0,
       "tuning": {},
-      "score": 15.3167,
+      "score": 15.05,
       "anomalies": [
         {
           "kind": "exposure",
@@ -43,17 +85,6 @@
           "violation": 0.1132,
           "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H1\\work\\quality\\round_0\\happy_t1.4_exposure_leg_l.png",
           "attributed_to": "body"
-        },
-        {
-          "kind": "hole",
-          "subject": "character",
-          "value": 0.0038,
-          "anim": "happy",
-          "t": 2.3,
-          "threshold": 0.003,
-          "violation": 0.0008,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H1\\work\\quality\\round_0\\happy_t2.3_hole_character.png",
-          "attributed_to": "arm_l"
         }
       ],
       "worst": {
@@ -93,9 +124,9 @@
           "t": 0.4
         },
         "hole:character": {
-          "value": 0.0038,
-          "anim": "happy",
-          "t": 2.3
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       },
       "fixes": [
@@ -119,7 +150,7 @@
           "body": 0.5
         }
       },
-      "score": 11.3867,
+      "score": 11.22,
       "anomalies": [
         {
           "kind": "exposure",
@@ -142,17 +173,6 @@
           "violation": 0.0447,
           "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H1\\work\\quality\\round_1\\happy_t1.4_exposure_leg_l.png",
           "attributed_to": "body"
-        },
-        {
-          "kind": "hole",
-          "subject": "character",
-          "value": 0.0035,
-          "anim": "happy",
-          "t": 1.8,
-          "threshold": 0.003,
-          "violation": 0.0005,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H1\\work\\quality\\round_1\\happy_t1.8_hole_character.png",
-          "attributed_to": "arm_l"
         }
       ],
       "worst": {
@@ -192,9 +212,9 @@
           "t": 0.4
         },
         "hole:character": {
-          "value": 0.0035,
-          "anim": "happy",
-          "t": 1.8
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       },
       "fixes": [
@@ -280,9 +300,9 @@
           "t": 0.3
         },
         "hole:character": {
-          "value": 0.0014,
-          "anim": "happy",
-          "t": 2.2
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       },
       "fixes": [
@@ -307,7 +327,7 @@
           "arm_r": 0.5
         }
       },
-      "score": 7.99,
+      "score": 7.89,
       "anomalies": [
         {
           "kind": "exposure",
@@ -318,16 +338,6 @@
           "threshold": 0.02,
           "violation": 0.1578,
           "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H1\\work\\quality\\round_3\\happy_t1.7_exposure_body.png"
-        },
-        {
-          "kind": "hole",
-          "subject": "character",
-          "value": 0.0033,
-          "anim": "happy",
-          "t": 2.1,
-          "threshold": 0.003,
-          "violation": 0.0003,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H1\\work\\quality\\round_3\\happy_t2.1_hole_character.png"
         }
       ],
       "worst": {
@@ -367,25 +377,37 @@
           "t": 0.4
         },
         "hole:character": {
-          "value": 0.0033,
-          "anim": "happy",
-          "t": 2.1
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       }
     }
   ],
-  "unresolved": [
+  "regrow": [
     {
-      "kind": "hole",
-      "subject": "character",
-      "value": 0.0033,
-      "anim": "happy",
-      "t": 2.1,
-      "threshold": 0.003,
-      "violation": 0.0003,
-      "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H1\\work\\quality\\round_3\\happy_t2.1_hole_character.png"
+      "animation": "happy",
+      "bone": "arm_l",
+      "factor": 0.3536,
+      "score": 8.335,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "arm_r",
+      "factor": 0.7071,
+      "score": 8.075,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "body",
+      "factor": 0.1768,
+      "score": 7.94,
+      "kept": false
     }
   ],
+  "unresolved": [],
   "downgraded_to_needs_manual": [
     "body"
   ],

@@ -12,31 +12,31 @@
 
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `arm_r` | 中 | 1.94% | 31（約 408） | happy t=0.5s | 0.1331 | 0.1881 | 0.1994 | body、hair_r |
-| 2 | `body` | 中 | 1.70% | 74（約 988） | happy t=0.5s | 0.0717 | 0.1 | 0.2269 | hair_l、hair_r、head |
-| 3 | `hair_l` | 中 | 1.12% | 21（約 279） | happy t=0.6s | 0.2906 | 0.1572 | 0.2105 | head |
-| 4 | `hair_r` | 中 | 0.82% | 14（約 187） | happy t=1.8s | 0.1553 | 0.081 | 0.153 | head |
+| 1 | `arm_r` | 中 | 1.97% | 31（約 413） | happy t=0.6s | 0.1331 | 0.1881 | 0.1994 | body、hair_r |
+| 2 | `body` | 中 | 1.65% | 71（約 955） | happy t=1.7s | 0.0717 | 0.1 | 0.2269 | hair_l、hair_r、head |
+| 3 | `hair_l` | 中 | 1.52% | 28（約 381） | happy t=0.6s | 0.2906 | 0.1572 | 0.2105 | head |
+| 4 | `hair_r` | 中 | 1.08% | 18（約 247） | happy t=1.8s | 0.1553 | 0.081 | 0.153 | head |
 
 ### arm_r（中）
 
-補畫被 body、hair_r 遮住的區域（約 13% 面積）；動畫中最多露出 1.94%（happy t=0.5s）。若暫不補，可降低 body、hair_r 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1881，自動填色會糊，要手繪紋理。
+補畫被 body、hair_r 遮住的區域（約 13% 面積）；動畫中最多露出 1.97%（happy t=0.6s）。若暫不補，可降低 body、hair_r 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1881，自動填色會糊，要手繪紋理。
 
 ![arm_r](repair_arm_r.png)
 
 ### body（中）
 
-補畫被 hair_l、hair_r、head 遮住的區域（約 7% 面積）；動畫中最多露出 1.70%（happy t=0.5s）。若暫不補，可降低 hair_l、hair_r、head 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1，自動填色會糊，要手繪紋理。
+補畫被 hair_l、hair_r、head 遮住的區域（約 7% 面積）；動畫中最多露出 1.65%（happy t=1.7s）。若暫不補，可降低 hair_l、hair_r、head 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1，自動填色會糊，要手繪紋理。
 
 ![body](repair_body.png)
 
 ### hair_l（中）
 
-補畫被 head 遮住的區域（約 29% 面積）；動畫中最多露出 1.12%（happy t=0.6s）。若暫不補，可降低 head 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1572，自動填色會糊，要手繪紋理。
+補畫被 head 遮住的區域（約 29% 面積）；動畫中最多露出 1.52%（happy t=0.6s）。若暫不補，可降低 head 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1572，自動填色會糊，要手繪紋理。
 
 ![hair_l](repair_hair_l.png)
 
 ### hair_r（中）
 
-補畫被 head 遮住的區域（約 16% 面積）；動畫中最多露出 0.82%（happy t=1.8s）。若暫不補，可降低 head 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.081，自動填色會糊，要手繪紋理。
+補畫被 head 遮住的區域（約 16% 面積）；動畫中最多露出 1.08%（happy t=1.8s）。若暫不補，可降低 head 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.081，自動填色會糊，要手繪紋理。
 
 ![hair_r](repair_hair_r.png)

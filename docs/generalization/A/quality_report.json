@@ -20,6 +20,83 @@
       "skirt": 0.5
     }
   },
+  "worst": {
+    "exposure:body": {
+      "value": 0.0273,
+      "anim": "happy",
+      "t": 0.5
+    },
+    "exposure:braid_l": {
+      "value": 0.0186,
+      "anim": "happy",
+      "t": 0.6
+    },
+    "exposure:braid_r": {
+      "value": 0.0129,
+      "anim": "happy",
+      "t": 1.8
+    },
+    "exposure:leg_l": {
+      "value": 0.0908,
+      "anim": "happy",
+      "t": 0.5
+    },
+    "exposure:leg_r": {
+      "value": 0.0264,
+      "anim": "happy",
+      "t": 0.2
+    },
+    "exposure:skirt": {
+      "value": 0.093,
+      "anim": "happy",
+      "t": 0.5
+    },
+    "gap:arm_l": {
+      "value": 0.022,
+      "anim": "idle",
+      "t": 1.3
+    },
+    "gap:arm_r": {
+      "value": 0.0026,
+      "anim": "happy",
+      "t": 1.3
+    },
+    "gap:braid_l": {
+      "value": 0.0146,
+      "anim": "happy",
+      "t": 0.2
+    },
+    "gap:braid_r": {
+      "value": 0.0084,
+      "anim": "idle",
+      "t": 1.2
+    },
+    "gap:head": {
+      "value": 0.0094,
+      "anim": "idle",
+      "t": 1.3
+    },
+    "gap:leg_l": {
+      "value": 0.0056,
+      "anim": "happy",
+      "t": 0.7
+    },
+    "gap:leg_r": {
+      "value": 0.0074,
+      "anim": "happy",
+      "t": 1.9
+    },
+    "gap:skirt": {
+      "value": 0.0013,
+      "anim": "idle",
+      "t": 0.6
+    },
+    "hole:character": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    }
+  },
   "rounds": [
     {
       "round": 0,
@@ -103,9 +180,9 @@
           "t": 1.8
         },
         "gap:arm_l": {
-          "value": 0.0091,
+          "value": 0.022,
           "anim": "idle",
-          "t": 0.8
+          "t": 1.3
         },
         "gap:arm_r": {
           "value": 0.0122,
@@ -123,9 +200,9 @@
           "t": 1.2
         },
         "gap:head": {
-          "value": 0.0129,
-          "anim": "happy",
-          "t": 0.9
+          "value": 0.0094,
+          "anim": "idle",
+          "t": 1.3
         },
         "gap:leg_l": {
           "value": 0.0056,
@@ -143,9 +220,9 @@
           "t": 0.5
         },
         "hole:character": {
-          "value": 0.0002,
-          "anim": "happy",
-          "t": 1.6
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       },
       "fixes": [
@@ -254,9 +331,9 @@
           "t": 0.5
         },
         "gap:arm_l": {
-          "value": 0.0091,
+          "value": 0.022,
           "anim": "idle",
-          "t": 0.8
+          "t": 1.3
         },
         "gap:arm_r": {
           "value": 0.0035,
@@ -274,9 +351,9 @@
           "t": 1.2
         },
         "gap:head": {
-          "value": 0.0137,
+          "value": 0.0112,
           "anim": "happy",
-          "t": 1.9
+          "t": 1.1
         },
         "gap:leg_l": {
           "value": 0.0056,
@@ -411,9 +488,9 @@
           "t": 0.5
         },
         "gap:arm_l": {
-          "value": 0.0091,
+          "value": 0.022,
           "anim": "idle",
-          "t": 0.8
+          "t": 1.3
         },
         "gap:arm_r": {
           "value": 0.0026,
@@ -431,9 +508,9 @@
           "t": 1.2
         },
         "gap:head": {
-          "value": 0.0103,
-          "anim": "happy",
-          "t": 1.1
+          "value": 0.0094,
+          "anim": "idle",
+          "t": 1.3
         },
         "gap:leg_l": {
           "value": 0.0084,
@@ -451,9 +528,9 @@
           "t": 0.6
         },
         "hole:character": {
-          "value": 0.0002,
-          "anim": "happy",
-          "t": 1.5
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       },
       "fixes": [
@@ -567,9 +644,9 @@
           "t": 0.5
         },
         "gap:arm_l": {
-          "value": 0.0091,
+          "value": 0.022,
           "anim": "idle",
-          "t": 0.8
+          "t": 1.3
         },
         "gap:arm_r": {
           "value": 0.0026,
@@ -587,9 +664,9 @@
           "t": 1.2
         },
         "gap:head": {
-          "value": 0.0146,
-          "anim": "happy",
-          "t": 0.2
+          "value": 0.0094,
+          "anim": "idle",
+          "t": 1.3
         },
         "gap:leg_l": {
           "value": 0.0056,
@@ -607,11 +684,62 @@
           "t": 0.6
         },
         "hole:character": {
-          "value": 0.0002,
-          "anim": "happy",
-          "t": 1.5
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       }
+    }
+  ],
+  "regrow": [
+    {
+      "animation": "happy",
+      "bone": "arm_l",
+      "factor": 0.1768,
+      "score": 8.76,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "arm_r",
+      "factor": 0.3536,
+      "score": 8.715,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "body",
+      "factor": 0.3536,
+      "score": 8.46,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "head",
+      "factor": 0.7071,
+      "score": 8.085,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "leg_l",
+      "factor": 0.7071,
+      "score": 8.265,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "leg_r",
+      "factor": 0.7071,
+      "score": 8.135,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "skirt",
+      "factor": 0.7071,
+      "score": 8.23,
+      "kept": false
     }
   ],
   "unresolved": [],

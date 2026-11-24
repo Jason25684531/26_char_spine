@@ -24,12 +24,12 @@
     {
       "check": "setup_pose",
       "status": "PASS",
-      "detail": "骨架初始姿勢與原圖（部件範圍內）差異 0.0019"
+      "detail": "骨架初始姿勢與原圖（部件範圍內）差異 0.0020"
     },
     {
       "check": "manual_repairs",
       "status": "BLOCKED",
-      "detail": "等待人工修補：shadow, cape, horn, leg_l, leg_r, arm_l（見 repair_tasks.md）"
+      "detail": "等待人工修補：cape, horn, leg_l, leg_r, arm_l（見 repair_tasks.md）"
     },
     {
       "check": "animation_quality",

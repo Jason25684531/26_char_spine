@@ -9,7 +9,7 @@
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | `leg_l` | 高 | 27.74% | 855（約 8120） | happy t=0.5s | 0.5636 | 1.0 | 0.4209 | leg_r、body |
-| 2 | `body` | 高 | 11.86% | 421（約 4000） | happy t=1.8s | 0.253 | 0.0649 | 0.4088 | arm_r、head、arm_l |
+| 2 | `body` | 高 | 10.31% | 366（約 3474） | happy t=1.7s | 0.253 | 0.0649 | 0.4088 | arm_r、head、arm_l |
 
 ### leg_l（高）
 
@@ -19,7 +19,7 @@
 
 ### body（高）
 
-補畫被 arm_r、head、arm_l 遮住的區域（約 25% 面積）；動畫中最多露出 11.86%（happy t=1.8s）。若暫不補，可降低 arm_r、head、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 41%，那段外形要看原圖重畫，自動補圖補不出來。
+補畫被 arm_r、head、arm_l 遮住的區域（約 25% 面積）；動畫中最多露出 10.31%（happy t=1.7s）。若暫不補，可降低 arm_r、head、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 41%，那段外形要看原圖重畫，自動補圖補不出來。
 
 ![body](repair_body.png)
 
@@ -27,10 +27,10 @@
 
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `clipboard` | 中 | 1.28% | 16（約 148） | idle t=1.0s | 0.1949 | 0.2975 | 0.1955 | arm_l |
+| 1 | `clipboard` | 中 | 1.60% | 19（約 185） | happy t=0.6s | 0.1949 | 0.2975 | 0.1955 | arm_l |
 
 ### clipboard（中）
 
-補畫被 arm_l 遮住的區域（約 19% 面積）；動畫中最多露出 1.28%（idle t=1.0s）。若暫不補，可降低 arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.2975，自動填色會糊，要手繪紋理。
+補畫被 arm_l 遮住的區域（約 19% 面積）；動畫中最多露出 1.60%（happy t=0.6s）。若暫不補，可降低 arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.2975，自動填色會糊，要手繪紋理。
 
 ![clipboard](repair_clipboard.png)

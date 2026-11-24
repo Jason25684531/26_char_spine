@@ -1,0 +1,1075 @@
+{
+  "fps": 10,
+  "thresholds": {
+    "hole": 0.003,
+    "gap": 0.1,
+    "attach": 0.6,
+    "intrude": 0.02,
+    "exposure": 0.02
+  },
+  "max_rounds": 3,
+  "chosen_round": 3,
+  "tuning": {
+    "happy": {
+      "guitar": 0.25,
+      "arm_r": 0.5,
+      "hair_back": 0.3536,
+      "body": 0.125,
+      "arm_l": 0.5,
+      "head": 0.7071,
+      "skirt": 0.5
+    },
+    "idle": {
+      "arm_l": 0.7071
+    }
+  },
+  "worst": {
+    "attach:arm_l+guitar": {
+      "value": 0.9916,
+      "anim": "happy",
+      "t": 1.0
+    },
+    "attach:arm_r+guitar": {
+      "value": 0.9671,
+      "anim": "happy",
+      "t": 1.6
+    },
+    "exposure:body": {
+      "value": 0.0197,
+      "anim": "happy",
+      "t": 0.6
+    },
+    "exposure:guitar": {
+      "value": 0.0197,
+      "anim": "idle",
+      "t": 1.0
+    },
+    "exposure:hair_back": {
+      "value": 0.0176,
+      "anim": "happy",
+      "t": 1.6
+    },
+    "exposure:leg_l": {
+      "value": 0.0149,
+      "anim": "happy",
+      "t": 2.15
+    },
+    "exposure:leg_r": {
+      "value": 0.0303,
+      "anim": "happy",
+      "t": 0.9
+    },
+    "exposure:skirt": {
+      "value": 0.0033,
+      "anim": "idle",
+      "t": 1.0
+    },
+    "gap:arm_l": {
+      "value": 0.0014,
+      "anim": "happy",
+      "t": 0.3
+    },
+    "gap:arm_r": {
+      "value": 0.0155,
+      "anim": "happy",
+      "t": 1.6
+    },
+    "gap:guitar": {
+      "value": 0.001,
+      "anim": "happy",
+      "t": 1.9
+    },
+    "gap:hair_back": {
+      "value": 0.0012,
+      "anim": "idle",
+      "t": 1.2
+    },
+    "gap:head": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "gap:leg_l": {
+      "value": 0.0022,
+      "anim": "idle",
+      "t": 1.6
+    },
+    "gap:leg_r": {
+      "value": 0.0017,
+      "anim": "idle",
+      "t": 1.9
+    },
+    "gap:skirt": {
+      "value": 0.0024,
+      "anim": "happy",
+      "t": 0.6
+    },
+    "hole:character": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+arm_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+head": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+leg_l": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+leg_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+head": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+leg_l": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+leg_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+skirt": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:guitar+head": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:guitar+leg_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    }
+  },
+  "rounds": [
+    {
+      "round": 0,
+      "tuning": {},
+      "score": 11.06,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0676,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0476,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_0\\happy_t0.6_exposure_body.png",
+          "attributed_to": "guitar"
+        },
+        {
+          "kind": "exposure",
+          "subject": "guitar",
+          "value": 0.0406,
+          "anim": "happy",
+          "t": 1.6,
+          "threshold": 0.02,
+          "violation": 0.0206,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_0\\happy_t1.6_exposure_guitar.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0383,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.0183,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_0\\happy_t1.8_exposure_hair_back.png",
+          "attributed_to": "hair_back"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.0635,
+          "anim": "happy",
+          "t": 1.4,
+          "threshold": 0.02,
+          "violation": 0.0435,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_0\\happy_t1.4_exposure_leg_l.png",
+          "attributed_to": "body"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.1112,
+          "anim": "happy",
+          "t": 0.2,
+          "threshold": 0.02,
+          "violation": 0.0912,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_0\\happy_t0.2_exposure_leg_r.png",
+          "attributed_to": "body"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+guitar": {
+          "value": 0.9694,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "attach:arm_r+guitar": {
+          "value": 0.9163,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "exposure:body": {
+          "value": 0.0676,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:guitar": {
+          "value": 0.0406,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "exposure:hair_back": {
+          "value": 0.0383,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:leg_l": {
+          "value": 0.0635,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "exposure:leg_r": {
+          "value": 0.1112,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "exposure:skirt": {
+          "value": 0.0113,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "gap:arm_l": {
+          "value": 0.0374,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "gap:arm_r": {
+          "value": 0.0166,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "gap:guitar": {
+          "value": 0.0085,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "gap:hair_back": {
+          "value": 0.0012,
+          "anim": "idle",
+          "t": 1.2
+        },
+        "gap:head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_l": {
+          "value": 0.0022,
+          "anim": "idle",
+          "t": 1.6
+        },
+        "gap:leg_r": {
+          "value": 0.0092,
+          "anim": "happy",
+          "t": 2.15
+        },
+        "gap:skirt": {
+          "value": 0.0158,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+skirt": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:guitar+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:guitar+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "guitar",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "hair_back",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "body",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "tuning": {
+        "happy": {
+          "guitar": 0.5,
+          "arm_r": 0.5,
+          "hair_back": 0.5,
+          "body": 0.5
+        }
+      },
+      "score": 5.02,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0376,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0176,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_1\\happy_t0.6_exposure_body.png",
+          "attributed_to": "guitar"
+        },
+        {
+          "kind": "exposure",
+          "subject": "guitar",
+          "value": 0.0288,
+          "anim": "happy",
+          "t": 0.4,
+          "threshold": 0.02,
+          "violation": 0.0088,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_1\\happy_t0.4_exposure_guitar.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0219,
+          "anim": "happy",
+          "t": 1.6,
+          "threshold": 0.02,
+          "violation": 0.0019,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_1\\happy_t1.6_exposure_hair_back.png",
+          "attributed_to": "head"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.0394,
+          "anim": "happy",
+          "t": 2.15,
+          "threshold": 0.02,
+          "violation": 0.0194,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_1\\happy_t2.1_exposure_leg_l.png",
+          "attributed_to": "skirt"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0727,
+          "anim": "happy",
+          "t": 0.2,
+          "threshold": 0.02,
+          "violation": 0.0527,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_1\\happy_t0.2_exposure_leg_r.png",
+          "attributed_to": "body"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+guitar": {
+          "value": 0.9826,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "attach:arm_r+guitar": {
+          "value": 0.9709,
+          "anim": "happy",
+          "t": 0.8
+        },
+        "exposure:body": {
+          "value": 0.0376,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:guitar": {
+          "value": 0.0288,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "exposure:hair_back": {
+          "value": 0.0219,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "exposure:leg_l": {
+          "value": 0.0394,
+          "anim": "happy",
+          "t": 2.15
+        },
+        "exposure:leg_r": {
+          "value": 0.0727,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "exposure:skirt": {
+          "value": 0.0061,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "gap:arm_l": {
+          "value": 0.0119,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "gap:arm_r": {
+          "value": 0.0178,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "gap:guitar": {
+          "value": 0.0014,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:hair_back": {
+          "value": 0.0014,
+          "anim": "happy",
+          "t": 2.0
+        },
+        "gap:head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_l": {
+          "value": 0.0022,
+          "anim": "idle",
+          "t": 1.6
+        },
+        "gap:leg_r": {
+          "value": 0.0052,
+          "anim": "happy",
+          "t": 0.95
+        },
+        "gap:skirt": {
+          "value": 0.0062,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+skirt": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:guitar+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:guitar+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "guitar",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "head",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "skirt",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "body",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "tuning": {
+        "happy": {
+          "guitar": 0.25,
+          "arm_r": 0.5,
+          "hair_back": 0.5,
+          "body": 0.25,
+          "arm_l": 0.5,
+          "head": 0.5,
+          "skirt": 0.5
+        }
+      },
+      "score": 1.36,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "guitar",
+          "value": 0.0249,
+          "anim": "idle",
+          "t": 1.0,
+          "threshold": 0.02,
+          "violation": 0.0049,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_2\\idle_t1.0_exposure_guitar.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.022,
+          "anim": "happy",
+          "t": 1.5,
+          "threshold": 0.02,
+          "violation": 0.002,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_2\\happy_t1.5_exposure_hair_back.png",
+          "attributed_to": "hair_back"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0403,
+          "anim": "happy",
+          "t": 0.95,
+          "threshold": 0.02,
+          "violation": 0.0203,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_2\\happy_t0.9_exposure_leg_r.png",
+          "attributed_to": "body"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+guitar": {
+          "value": 0.9916,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "attach:arm_r+guitar": {
+          "value": 0.9649,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "exposure:body": {
+          "value": 0.0179,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:guitar": {
+          "value": 0.0249,
+          "anim": "idle",
+          "t": 1.0
+        },
+        "exposure:hair_back": {
+          "value": 0.022,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:leg_l": {
+          "value": 0.0179,
+          "anim": "happy",
+          "t": 2.15
+        },
+        "exposure:leg_r": {
+          "value": 0.0403,
+          "anim": "happy",
+          "t": 0.95
+        },
+        "exposure:skirt": {
+          "value": 0.0033,
+          "anim": "idle",
+          "t": 1.0
+        },
+        "gap:arm_l": {
+          "value": 0.0061,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "gap:arm_r": {
+          "value": 0.0107,
+          "anim": "idle",
+          "t": 1.8
+        },
+        "gap:guitar": {
+          "value": 0.001,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "gap:hair_back": {
+          "value": 0.0012,
+          "anim": "idle",
+          "t": 1.2
+        },
+        "gap:head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_l": {
+          "value": 0.0022,
+          "anim": "idle",
+          "t": 1.6
+        },
+        "gap:leg_r": {
+          "value": 0.0017,
+          "anim": "idle",
+          "t": 1.9
+        },
+        "gap:skirt": {
+          "value": 0.0024,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+skirt": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:guitar+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:guitar+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "idle",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "hair_back",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "body",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "tuning": {
+        "happy": {
+          "guitar": 0.25,
+          "arm_r": 0.5,
+          "hair_back": 0.25,
+          "body": 0.125,
+          "arm_l": 0.5,
+          "head": 0.5,
+          "skirt": 0.5
+        },
+        "idle": {
+          "arm_l": 0.5
+        }
+      },
+      "score": 0.515,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0303,
+          "anim": "happy",
+          "t": 0.9,
+          "threshold": 0.02,
+          "violation": 0.0103,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\rq\\work\\quality\\round_3\\happy_t0.9_exposure_leg_r.png"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+guitar": {
+          "value": 0.9916,
+          "anim": "happy",
+          "t": 1.0
+        },
+        "attach:arm_r+guitar": {
+          "value": 0.9671,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "exposure:body": {
+          "value": 0.0189,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:guitar": {
+          "value": 0.0194,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "exposure:hair_back": {
+          "value": 0.0161,
+          "anim": "idle",
+          "t": 1.6
+        },
+        "exposure:leg_l": {
+          "value": 0.0149,
+          "anim": "happy",
+          "t": 2.15
+        },
+        "exposure:leg_r": {
+          "value": 0.0303,
+          "anim": "happy",
+          "t": 0.9
+        },
+        "exposure:skirt": {
+          "value": 0.0033,
+          "anim": "idle",
+          "t": 1.0
+        },
+        "gap:arm_l": {
+          "value": 0.0014,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "gap:arm_r": {
+          "value": 0.0131,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "gap:guitar": {
+          "value": 0.001,
+          "anim": "happy",
+          "t": 1.9
+        },
+        "gap:hair_back": {
+          "value": 0.0012,
+          "anim": "idle",
+          "t": 1.2
+        },
+        "gap:head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_l": {
+          "value": 0.0022,
+          "anim": "idle",
+          "t": 1.6
+        },
+        "gap:leg_r": {
+          "value": 0.0017,
+          "anim": "idle",
+          "t": 1.9
+        },
+        "gap:skirt": {
+          "value": 0.0024,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+skirt": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:guitar+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:guitar+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      }
+    }
+  ],
+  "regrow": [
+    {
+      "animation": "happy",
+      "bone": "arm_l",
+      "factor": 0.7071,
+      "score": 0.685,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "arm_r",
+      "factor": 0.7071,
+      "score": 0.715,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "body",
+      "factor": 0.1768,
+      "score": 0.855,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "guitar",
+      "factor": 0.3536,
+      "score": 0.75,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "hair_back",
+      "factor": 0.3536,
+      "score": 0.515,
+      "kept": true
+    },
+    {
+      "animation": "happy",
+      "bone": "hair_back",
+      "factor": 0.5001,
+      "score": 0.635,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "head",
+      "factor": 0.7071,
+      "score": 0.515,
+      "kept": true
+    },
+    {
+      "animation": "happy",
+      "bone": "head",
+      "factor": 1.0,
+      "score": 0.635,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "skirt",
+      "factor": 0.7071,
+      "score": 0.965,
+      "kept": false
+    },
+    {
+      "animation": "idle",
+      "bone": "arm_l",
+      "factor": 0.7071,
+      "score": 0.515,
+      "kept": true
+    },
+    {
+      "animation": "idle",
+      "bone": "arm_l",
+      "factor": 1.0,
+      "score": 0.76,
+      "kept": false
+    }
+  ],
+  "unresolved": [],
+  "downgraded_to_needs_manual": [],
+  "unreliable_exposed_within_threshold": {
+    "skirt": 0.0033,
+    "guitar": 0.0197
+  }
+}

@@ -8,18 +8,11 @@
 
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `shadow` | 高 | 35.04% | 1005（約 5790） | happy t=0.4s | 0.4858 | 0.034 | 0.1939 | tail、leg_l、leg_r |
-| 2 | `cape` | 高 | 7.09% | 259（約 1490） | happy t=0.6s | 0.5786 | 1.0 | 0.6445 | tail、body、head、scarf、arm_r |
-| 3 | `horn` | 高 | 2.90% | 60（約 347） | idle t=0.4s | 0.1186 | 0.0872 | 0.1261 | head、arm_r |
-| 4 | `arm_l` | 高 | 2.07% | 23（約 132） | happy t=0.2s | 0.2814 | 0.0502 | 0.261 | scarf |
-| 5 | `leg_l` | 中 | 1.50% | 35（約 202） | happy t=1.7s | 0.3889 | 0.0533 | 0.296 | body、arm_l |
-| 6 | `leg_r` | 中 | 0.52% | 11（約 65） | happy t=0.9s | 0.4489 | 0.0594 | 0.4043 | body |
-
-### shadow（高）
-
-補畫被 tail、leg_l、leg_r 遮住的區域（約 49% 面積）；動畫中最多露出 35.04%（happy t=0.4s）。若暫不補，可降低 tail、leg_l、leg_r 的 motion（parts.json），讓遮擋者別移開那麼多。
-
-![shadow](repair_shadow.png)
+| 1 | `cape` | 高 | 7.09% | 259（約 1490） | happy t=0.6s | 0.5786 | 1.0 | 0.6445 | tail、body、head、scarf、arm_r |
+| 2 | `horn` | 高 | 2.90% | 60（約 347） | idle t=0.4s | 0.1186 | 0.0872 | 0.1261 | head、arm_r |
+| 3 | `arm_l` | 高 | 2.08% | 23（約 132） | happy t=0.2s | 0.2814 | 0.0502 | 0.261 | scarf |
+| 4 | `leg_l` | 中 | 1.87% | 44（約 252） | happy t=1.7s | 0.3816 | 0.0533 | 0.2247 | body、arm_l |
+| 5 | `leg_r` | 中 | 0.51% | 11（約 65） | happy t=0.9s | 0.4298 | 0.0592 | 0.3255 | body |
 
 ### cape（高）
 
@@ -35,19 +28,19 @@
 
 ### arm_l（高）
 
-補畫被 scarf 遮住的區域（約 28% 面積）；動畫中最多露出 2.07%（happy t=0.2s）。若暫不補，可降低 scarf 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 26%，那段外形要看原圖重畫，自動補圖補不出來。
+補畫被 scarf 遮住的區域（約 28% 面積）；動畫中最多露出 2.08%（happy t=0.2s）。若暫不補，可降低 scarf 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 26%，那段外形要看原圖重畫，自動補圖補不出來。
 
 ![arm_l](repair_arm_l.png)
 
 ### leg_l（中）
 
-補畫被 body、arm_l 遮住的區域（約 39% 面積）；動畫中最多露出 1.50%（happy t=1.7s）。若暫不補，可降低 body、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 30%，那段外形要看原圖重畫，自動補圖補不出來。
+補畫被 body、arm_l 遮住的區域（約 38% 面積）；動畫中最多露出 1.87%（happy t=1.7s）。若暫不補，可降低 body、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。
 
 ![leg_l](repair_leg_l.png)
 
 ### leg_r（中）
 
-補畫被 body 遮住的區域（約 45% 面積）；動畫中最多露出 0.52%（happy t=0.9s）。若暫不補，可降低 body 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 40%，那段外形要看原圖重畫，自動補圖補不出來。
+補畫被 body 遮住的區域（約 43% 面積）；動畫中最多露出 0.51%（happy t=0.9s）。若暫不補，可降低 body 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 33%，那段外形要看原圖重畫，自動補圖補不出來。
 
 ![leg_r](repair_leg_r.png)
 
@@ -55,8 +48,8 @@
 
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `head` | 中 | 1.94% | 195（約 1122） | happy t=1.8s | 0.1032 | 0.0869 | 0.3726 | scarf、arm_r |
-| 2 | `body` | 中 | 1.48% | 134（約 771） | happy t=0.6s | 0.285 | 0.0668 | 0.3319 | arm_l、head、scarf、arm_r |
+| 1 | `head` | 中 | 1.94% | 195（約 1121） | happy t=1.8s | 0.1032 | 0.0869 | 0.3726 | scarf、arm_r |
+| 2 | `body` | 中 | 1.48% | 134（約 771） | happy t=0.6s | 0.2848 | 0.0668 | 0.3226 | arm_l、head、scarf、arm_r |
 | 3 | `scarf` | 低 | 0.12% | 4（約 21） | happy t=0.5s | 0.0616 | 0.0822 | 0.1114 | arm_r |
 
 ### head（中）
@@ -67,7 +60,7 @@
 
 ### body（中）
 
-補畫被 arm_l、head、scarf、arm_r 遮住的區域（約 28% 面積）；動畫中最多露出 1.48%（happy t=0.6s）。若暫不補，可降低 arm_l、head、scarf、arm_r 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 33%，那段外形要看原圖重畫，自動補圖補不出來。
+補畫被 arm_l、head、scarf、arm_r 遮住的區域（約 28% 面積）；動畫中最多露出 1.48%（happy t=0.6s）。若暫不補，可降低 arm_l、head、scarf、arm_r 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 32%，那段外形要看原圖重畫，自動補圖補不出來。
 
 ![body](repair_body.png)
 

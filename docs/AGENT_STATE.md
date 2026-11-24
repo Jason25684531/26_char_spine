@@ -1,8 +1,19 @@
 # Agent 狀態（Checkpoint）
 
-新的 session 先讀這份，再看 `git log`、兩個 OpenSpec change 的 `tasks.md`、`docs/TEST_RESULTS.md`，從最近的未完成任務繼續。不要重新規劃整個專案。
+新的 session 先讀這份，再看 `git log`、`docs/SKILL_V1_REPORT.md`、`docs/KNOWN_ISSUES.md`。不要重新規劃整個專案。
 
-## 最後更新：2026-11-24（泛化測試）
+## 最後更新：2026-11-24（Skill v1.0）
+
+**交付物**：`dist/character-to-spine-skill-v1.0.0.zip`（`scripts/build_skill.py`）與 `Character-to-Spine-Deliverables/`（`scripts/package_deliverables.py --chars output/generalization/{ren,zc2,rq,yz}/work`），兩者都不進版控、可重建。實測報告 `docs/SKILL_V1_REPORT.md`。
+
+- Skill 正本 `skills/character-to-spine/`：`SKILL.md`、`references/parts-format.md`、啟動器 `scripts/c2s.py`。改完要重跑 `build_skill.py`，再把 `dist/character-to-spine/` 複製到 `.claude/skills/`、`.codex/skills/`（`test_skill_copies_identical`）。
+- 新使用者驗收：`python scripts/acceptance.py <圖片> [--slash]`（真正的 `claude -p`，照 README 解壓 zip）。
+- 泛化：`scripts/generalization.py`，快照 `v1_before`（HEAD 基準）、`v1_final`（N1–N4 第一次執行）、`v1_final2`（影子修正後）。N1–N4 已用過，下一輪要新的保留集。
+- 測試：153 passed。
+- 唯一外部阻礙仍是完整版 Spine（K-01）。其餘未解見 KNOWN_ISSUES K-31～K-38。
+- **不要在 Skill session 執行期間重建 `dist/`**：沙盒會複製到半成品（yz 第一次失敗的原因）。
+
+## 前一階段：2026-11-24（泛化測試）
 
 **OpenSpec change `character-generalization`**：泛化測試集、Skill 實測、`unsupported`／`absent`、`role: ground`。結果與待辦見 `docs/GENERALIZATION_TEST_REPORT.md`；下一步依該報告第 10 節，先修 K-24（破洞誤判）與 K-28（持物骨架顛倒），再用**新的**保留集驗證（H1–H4 已用過）。
 

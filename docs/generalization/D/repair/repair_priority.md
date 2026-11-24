@@ -9,7 +9,7 @@
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | `hair_back` | 高 | 2.54% | 194（約 3442） | idle t=0.6s | 0.7827 | 1.0 | 0.6377 | body、skirt、head、arm_r、arm_l、camera |
-| 2 | `body` | 中 | 1.26% | 39（約 689） | happy t=0.5s | 0.5598 | 1.0 | 0.651 | skirt、head、arm_r、arm_l、camera |
+| 2 | `body` | 中 | 1.92% | 59（約 1047） | happy t=0.5s | 0.5598 | 1.0 | 0.651 | skirt、head、arm_r、arm_l、camera |
 
 ### hair_back（高）
 
@@ -19,7 +19,7 @@
 
 ### body（中）
 
-補畫被 skirt、head、arm_r、arm_l、camera 遮住的區域（約 56% 面積）；動畫中最多露出 1.26%（happy t=0.5s）。若暫不補，可降低 skirt、head、arm_r、arm_l、camera 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 65%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 1.0，自動填色會糊，要手繪紋理。
+補畫被 skirt、head、arm_r、arm_l、camera 遮住的區域（約 56% 面積）；動畫中最多露出 1.92%（happy t=0.5s）。若暫不補，可降低 skirt、head、arm_r、arm_l、camera 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 65%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 1.0，自動填色會糊，要手繪紋理。
 
 ![body](repair_body.png)
 
@@ -27,17 +27,17 @@
 
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `head` | 中 | 1.41% | 48（約 862） | happy t=1.7s | 0.1433 | 0.1723 | 0.218 | arm_r、camera |
-| 2 | `arm_l` | 中 | 0.71% | 9（約 166） | happy t=0.6s | 0.1257 | 0.1076 | 0.1376 | camera |
+| 1 | `head` | 中 | 1.93% | 66（約 1176） | happy t=1.7s | 0.1433 | 0.1723 | 0.218 | arm_r、camera |
+| 2 | `arm_l` | 中 | 0.88% | 12（約 206） | happy t=0.6s | 0.1257 | 0.1076 | 0.1376 | camera |
 
 ### head（中）
 
-補畫被 arm_r、camera 遮住的區域（約 14% 面積）；動畫中最多露出 1.41%（happy t=1.7s）。若暫不補，可降低 arm_r、camera 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1723，自動填色會糊，要手繪紋理。
+補畫被 arm_r、camera 遮住的區域（約 14% 面積）；動畫中最多露出 1.93%（happy t=1.7s）。若暫不補，可降低 arm_r、camera 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1723，自動填色會糊，要手繪紋理。
 
 ![head](repair_head.png)
 
 ### arm_l（中）
 
-補畫被 camera 遮住的區域（約 13% 面積）；動畫中最多露出 0.71%（happy t=0.6s）。若暫不補，可降低 camera 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1076，自動填色會糊，要手繪紋理。
+補畫被 camera 遮住的區域（約 13% 面積）；動畫中最多露出 0.88%（happy t=0.6s）。若暫不補，可降低 camera 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：紋理延伸誤差 0.1076，自動填色會糊，要手繪紋理。
 
 ![arm_l](repair_arm_l.png)

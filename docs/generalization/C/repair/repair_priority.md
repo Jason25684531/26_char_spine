@@ -8,36 +8,29 @@
 
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `shadow` | 高 | 59.03% | 1559（約 10759） | happy t=0.4s | 0.8178 | 1.0 | 0.4767 | skirt |
-| 2 | `hair_back` | 高 | 3.85% | 92（約 636） | happy t=0.3s | 0.9039 | 1.0 | 0.5701 | skirt、body、head、arm_r、arm_l |
-| 3 | `body` | 高 | 2.14% | 64（約 444） | happy t=0.6s | 0.2686 | 0.1773 | 0.336 | head、arm_r、arm_l |
-
-### shadow（高）
-
-補畫被 skirt 遮住的區域（約 82% 面積）；動畫中最多露出 59.03%（happy t=0.4s）。若暫不補，可降低 skirt 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 48%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 1.0，自動填色會糊，要手繪紋理。
-
-![shadow](repair_shadow.png)
-
-### hair_back（高）
-
-補畫被 skirt、body、head、arm_r、arm_l 遮住的區域（約 90% 面積）；動畫中最多露出 3.85%（happy t=0.3s）。若暫不補，可降低 skirt、body、head、arm_r、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 57%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 1.0，自動填色會糊，要手繪紋理。
-
-![hair_back](repair_hair_back.png)
+| 1 | `body` | 高 | 2.64% | 79（約 546） | happy t=1.7s | 0.2686 | 0.1773 | 0.336 | head、arm_r、arm_l |
+| 2 | `hair_back` | 高 | 2.58% | 62（約 425） | idle t=0.7s | 0.9039 | 1.0 | 0.5701 | skirt、body、head、arm_r、arm_l |
 
 ### body（高）
 
-補畫被 head、arm_r、arm_l 遮住的區域（約 27% 面積）；動畫中最多露出 2.14%（happy t=0.6s）。若暫不補，可降低 head、arm_r、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 34%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 0.1773，自動填色會糊，要手繪紋理。
+補畫被 head、arm_r、arm_l 遮住的區域（約 27% 面積）；動畫中最多露出 2.64%（happy t=1.7s）。若暫不補，可降低 head、arm_r、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 34%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 0.1773，自動填色會糊，要手繪紋理。
 
 ![body](repair_body.png)
+
+### hair_back（高）
+
+補畫被 skirt、body、head、arm_r、arm_l 遮住的區域（約 90% 面積）；動畫中最多露出 2.58%（idle t=0.7s）。若暫不補，可降低 skirt、body、head、arm_r、arm_l 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 57%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 1.0，自動填色會糊，要手繪紋理。
+
+![hair_back](repair_hair_back.png)
 
 ## 自動補但不可靠
 
 | 順位 | 部件 | 優先 | 最大露出 | 露出像素 | 發生於 | hidden_ratio | holdout_error | contour_hidden | 遮擋者 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | `head` | 中 | 0.83% | 13（約 92） | happy t=0.6s | 0.2289 | 0.2011 | 0.3284 | hat |
+| 1 | `head` | 中 | 0.53% | 9（約 59） | happy t=1.8s | 0.2289 | 0.2011 | 0.3284 | hat |
 
 ### head（中）
 
-補畫被 hat 遮住的區域（約 23% 面積）；動畫中最多露出 0.83%（happy t=0.6s）。若暫不補，可降低 hat 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 33%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 0.2011，自動填色會糊，要手繪紋理。
+補畫被 hat 遮住的區域（約 23% 面積）；動畫中最多露出 0.53%（happy t=1.8s）。若暫不補，可降低 hat 的 motion（parts.json），讓遮擋者別移開那麼多。補畫時注意：被遮住的輪廓佔 33%，那段外形要看原圖重畫，自動補圖補不出來；紋理延伸誤差 0.2011，自動填色會糊，要手繪紋理。
 
 ![head](repair_head.png)

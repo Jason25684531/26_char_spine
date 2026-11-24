@@ -8,33 +8,123 @@
     "exposure": 0.02
   },
   "max_rounds": 3,
-  "chosen_round": 1,
+  "chosen_round": 3,
   "tuning": {
     "happy": {
-      "arm_r": 0.5,
-      "head": 0.5,
-      "body": 0.5
+      "arm_l": 0.25,
+      "head": 0.25,
+      "hair_back": 0.5,
+      "arm_r": 0.5
+    }
+  },
+  "worst": {
+    "attach:arm_l+staff": {
+      "value": 0.9529,
+      "anim": "happy",
+      "t": 1.5
     },
-    "idle": {
-      "hat": 0.5
+    "exposure:body": {
+      "value": 0.0264,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "exposure:hair_back": {
+      "value": 0.0258,
+      "anim": "idle",
+      "t": 0.7
+    },
+    "exposure:head": {
+      "value": 0.0053,
+      "anim": "happy",
+      "t": 1.8
+    },
+    "gap:arm_l": {
+      "value": 0.0078,
+      "anim": "idle",
+      "t": 0.3
+    },
+    "gap:arm_r": {
+      "value": 0.0114,
+      "anim": "happy",
+      "t": 1.4
+    },
+    "gap:hair_back": {
+      "value": 0.0151,
+      "anim": "happy",
+      "t": 0.5
+    },
+    "gap:hat": {
+      "value": 0.0114,
+      "anim": "happy",
+      "t": 0.2
+    },
+    "gap:head": {
+      "value": 0.0111,
+      "anim": "happy",
+      "t": 1.8
+    },
+    "gap:skirt": {
+      "value": 0.0178,
+      "anim": "happy",
+      "t": 0.5
+    },
+    "gap:staff": {
+      "value": 0.0095,
+      "anim": "happy",
+      "t": 1.8
+    },
+    "hole:character": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+arm_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+hat": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+head": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+staff": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:body+staff": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:head+staff": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
     }
   },
   "rounds": [
     {
       "round": 0,
       "tuning": {},
-      "score": 69.4567,
+      "score": 11.605,
       "anomalies": [
         {
           "kind": "exposure",
           "subject": "body",
-          "value": 0.0353,
+          "value": 0.0641,
           "anim": "happy",
-          "t": 0.6,
+          "t": 1.7,
           "threshold": 0.02,
-          "violation": 0.0153,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_0\\happy_t0.6_exposure_body.png",
-          "attributed_to": "arm_r"
+          "violation": 0.0441,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_0\\happy_t1.7_exposure_body.png",
+          "attributed_to": "arm_l"
         },
         {
           "kind": "exposure",
@@ -48,38 +138,27 @@
           "attributed_to": "head"
         },
         {
-          "kind": "exposure",
-          "subject": "shadow",
-          "value": 0.6624,
+          "kind": "intrude",
+          "subject": "head+staff",
+          "value": 0.1799,
           "anim": "happy",
-          "t": 1.5,
+          "t": 0.5,
           "threshold": 0.02,
-          "violation": 0.6424,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_0\\happy_t1.5_exposure_shadow.png",
-          "attributed_to": "body"
-        },
-        {
-          "kind": "hole",
-          "subject": "character",
-          "value": 0.1085,
-          "anim": "idle",
-          "t": 0.8,
-          "threshold": 0.003,
-          "violation": 0.1055,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_0\\idle_t0.8_hole_character.png",
-          "attributed_to": "hat"
+          "violation": 0.1599,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_0\\happy_t0.5_intrude_head-staff.png",
+          "attributed_to": "arm_l"
         }
       ],
       "worst": {
         "attach:arm_l+staff": {
-          "value": 0.9373,
+          "value": 0.9686,
           "anim": "happy",
-          "t": 2.0
+          "t": 1.1
         },
         "exposure:body": {
-          "value": 0.0353,
+          "value": 0.0641,
           "anim": "happy",
-          "t": 0.6
+          "t": 1.7
         },
         "exposure:hair_back": {
           "value": 0.0481,
@@ -91,15 +170,10 @@
           "anim": "happy",
           "t": 0.6
         },
-        "exposure:shadow": {
-          "value": 0.6624,
-          "anim": "happy",
-          "t": 1.5
-        },
         "gap:arm_l": {
-          "value": 0.0125,
-          "anim": "happy",
-          "t": 0.5
+          "value": 0.0078,
+          "anim": "idle",
+          "t": 0.3
         },
         "gap:arm_r": {
           "value": 0.027,
@@ -107,9 +181,9 @@
           "t": 1.4
         },
         "gap:hair_back": {
-          "value": 0.0039,
-          "anim": "happy",
-          "t": 0.2
+          "value": 0.0145,
+          "anim": "idle",
+          "t": 0.5
         },
         "gap:hat": {
           "value": 0.0125,
@@ -117,24 +191,301 @@
           "t": 2.1
         },
         "gap:head": {
-          "value": 0.0145,
-          "anim": "idle",
-          "t": 0.5
+          "value": 0.0152,
+          "anim": "happy",
+          "t": 1.8
         },
         "gap:skirt": {
-          "value": 0.0036,
+          "value": 0.0178,
           "anim": "happy",
           "t": 0.6
         },
         "gap:staff": {
-          "value": 0.0333,
+          "value": 0.0714,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+hat": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+staff": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+staff": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+staff": {
+          "value": 0.1799,
+          "anim": "happy",
+          "t": 0.5
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "head",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "tuning": {
+        "happy": {
+          "arm_l": 0.5,
+          "head": 0.5
+        }
+      },
+      "score": 2.265,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0467,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.0267,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_1\\happy_t1.7_exposure_body.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0386,
+          "anim": "happy",
+          "t": 0.3,
+          "threshold": 0.02,
+          "violation": 0.0186,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_1\\happy_t0.3_exposure_hair_back.png",
+          "attributed_to": "hair_back"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+staff": {
+          "value": 0.9569,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:body": {
+          "value": 0.0467,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:hair_back": {
+          "value": 0.0386,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:head": {
+          "value": 0.0063,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:arm_l": {
+          "value": 0.0078,
+          "anim": "idle",
+          "t": 0.3
+        },
+        "gap:arm_r": {
+          "value": 0.037,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:hair_back": {
+          "value": 0.0145,
+          "anim": "idle",
+          "t": 0.5
+        },
+        "gap:hat": {
+          "value": 0.0125,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:head": {
+          "value": 0.0194,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "gap:skirt": {
+          "value": 0.0166,
           "anim": "happy",
           "t": 0.5
         },
+        "gap:staff": {
+          "value": 0.0405,
+          "anim": "happy",
+          "t": 0.6
+        },
         "hole:character": {
-          "value": 0.1085,
+          "value": 0.0,
           "anim": "idle",
-          "t": 0.8
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+hat": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+staff": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+staff": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+staff": {
+          "value": 0.0044,
+          "anim": "happy",
+          "t": 0.5
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "hair_back",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "tuning": {
+        "happy": {
+          "arm_l": 0.25,
+          "head": 0.5,
+          "hair_back": 0.5
+        }
+      },
+      "score": 1.215,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0366,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.0166,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_2\\happy_t1.7_exposure_body.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0277,
+          "anim": "happy",
+          "t": 0.4,
+          "threshold": 0.02,
+          "violation": 0.0077,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_2\\happy_t0.4_exposure_hair_back.png",
+          "attributed_to": "head"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+staff": {
+          "value": 0.9529,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:body": {
+          "value": 0.0366,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:hair_back": {
+          "value": 0.0277,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "exposure:head": {
+          "value": 0.0063,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:arm_l": {
+          "value": 0.0078,
+          "anim": "idle",
+          "t": 0.3
+        },
+        "gap:arm_r": {
+          "value": 0.027,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:hair_back": {
+          "value": 0.0145,
+          "anim": "idle",
+          "t": 0.5
+        },
+        "gap:hat": {
+          "value": 0.0125,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:head": {
+          "value": 0.0111,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "gap:skirt": {
+          "value": 0.0201,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:staff": {
+          "value": 0.0095,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         },
         "intrude:arm_l+arm_r": {
           "value": 0.0,
@@ -177,143 +528,102 @@
           "animation": "happy",
           "bone": "head",
           "factor": 0.5
-        },
-        {
-          "animation": "happy",
-          "bone": "body",
-          "factor": 0.5
-        },
-        {
-          "animation": "idle",
-          "bone": "hat",
-          "factor": 0.5
         }
       ]
     },
     {
-      "round": 1,
+      "round": 3,
       "tuning": {
         "happy": {
-          "arm_r": 0.5,
-          "head": 0.5,
-          "body": 0.5
-        },
-        "idle": {
-          "hat": 0.5
+          "arm_l": 0.25,
+          "head": 0.25,
+          "hair_back": 0.5,
+          "arm_r": 0.5
         }
       },
-      "score": 64.4767,
+      "score": 0.61,
       "anomalies": [
         {
           "kind": "exposure",
           "subject": "body",
-          "value": 0.0214,
+          "value": 0.0264,
           "anim": "happy",
-          "t": 0.6,
+          "t": 1.7,
           "threshold": 0.02,
-          "violation": 0.0014,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_1\\happy_t0.6_exposure_body.png",
-          "attributed_to": "arm_r"
+          "violation": 0.0064,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_3\\happy_t1.7_exposure_body.png"
         },
         {
           "kind": "exposure",
           "subject": "hair_back",
-          "value": 0.0385,
-          "anim": "happy",
-          "t": 0.3,
-          "threshold": 0.02,
-          "violation": 0.0185,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_1\\happy_t0.3_exposure_hair_back.png",
-          "attributed_to": "hair_back"
-        },
-        {
-          "kind": "exposure",
-          "subject": "shadow",
-          "value": 0.5903,
-          "anim": "happy",
-          "t": 0.4,
-          "threshold": 0.02,
-          "violation": 0.5703,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_1\\happy_t0.4_exposure_shadow.png",
-          "attributed_to": null
-        },
-        {
-          "kind": "hole",
-          "subject": "character",
-          "value": 0.1079,
+          "value": 0.0258,
           "anim": "idle",
           "t": 0.7,
-          "threshold": 0.003,
-          "violation": 0.1049,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_1\\idle_t0.7_hole_character.png",
-          "attributed_to": "body"
+          "threshold": 0.02,
+          "violation": 0.0058,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_3\\idle_t0.7_exposure_hair_back.png"
         }
       ],
       "worst": {
         "attach:arm_l+staff": {
-          "value": 0.9608,
+          "value": 0.9529,
           "anim": "happy",
-          "t": 2.0
+          "t": 1.5
         },
         "exposure:body": {
-          "value": 0.0214,
+          "value": 0.0264,
           "anim": "happy",
-          "t": 0.6
+          "t": 1.7
         },
         "exposure:hair_back": {
-          "value": 0.0385,
-          "anim": "happy",
-          "t": 0.3
+          "value": 0.0258,
+          "anim": "idle",
+          "t": 0.7
         },
         "exposure:head": {
-          "value": 0.0083,
+          "value": 0.0053,
           "anim": "happy",
-          "t": 0.6
-        },
-        "exposure:shadow": {
-          "value": 0.5903,
-          "anim": "happy",
-          "t": 0.4
+          "t": 1.8
         },
         "gap:arm_l": {
-          "value": 0.0093,
-          "anim": "happy",
-          "t": 0.5
+          "value": 0.0078,
+          "anim": "idle",
+          "t": 0.3
         },
         "gap:arm_r": {
-          "value": 0.0213,
+          "value": 0.0114,
           "anim": "happy",
           "t": 1.4
         },
         "gap:hair_back": {
-          "value": 0.002,
-          "anim": "idle",
-          "t": 1.9
+          "value": 0.0151,
+          "anim": "happy",
+          "t": 0.5
         },
         "gap:hat": {
           "value": 0.0114,
           "anim": "happy",
-          "t": 0.7
+          "t": 0.2
         },
         "gap:head": {
-          "value": 0.0145,
-          "anim": "idle",
-          "t": 0.5
+          "value": 0.0111,
+          "anim": "happy",
+          "t": 1.8
         },
         "gap:skirt": {
-          "value": 0.0024,
+          "value": 0.0178,
           "anim": "happy",
-          "t": 0.6
+          "t": 0.5
         },
         "gap:staff": {
-          "value": 0.019,
+          "value": 0.0095,
           "anim": "happy",
-          "t": 0.3
+          "t": 1.8
         },
         "hole:character": {
-          "value": 0.1079,
+          "value": 0.0,
           "anim": "idle",
-          "t": 0.7
+          "t": 0.0
         },
         "intrude:arm_l+arm_r": {
           "value": 0.0,
@@ -345,189 +655,44 @@
           "anim": "idle",
           "t": 0.0
         }
-      },
-      "fixes": [
-        {
-          "animation": "happy",
-          "bone": "arm_r",
-          "factor": 0.5
-        },
-        {
-          "animation": "happy",
-          "bone": "hair_back",
-          "factor": 0.5
-        },
-        {
-          "animation": "idle",
-          "bone": "body",
-          "factor": 0.5
-        }
-      ]
+      }
+    }
+  ],
+  "regrow": [
+    {
+      "animation": "happy",
+      "bone": "arm_l",
+      "factor": 0.3536,
+      "score": 0.835,
+      "kept": false
     },
     {
-      "round": 2,
-      "tuning": {
-        "happy": {
-          "arm_r": 0.25,
-          "head": 0.5,
-          "body": 0.5,
-          "hair_back": 0.5
-        },
-        "idle": {
-          "hat": 0.5,
-          "body": 0.5
-        }
-      },
-      "score": 67.2533,
-      "anomalies": [
-        {
-          "kind": "exposure",
-          "subject": "hair_back",
-          "value": 0.0261,
-          "anim": "idle",
-          "t": 0.6,
-          "threshold": 0.02,
-          "violation": 0.0061,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_2\\idle_t0.6_exposure_hair_back.png"
-        },
-        {
-          "kind": "exposure",
-          "subject": "shadow",
-          "value": 0.5903,
-          "anim": "happy",
-          "t": 0.4,
-          "threshold": 0.02,
-          "violation": 0.5703,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_2\\happy_t0.4_exposure_shadow.png"
-        },
-        {
-          "kind": "hole",
-          "subject": "character",
-          "value": 0.1183,
-          "anim": "happy",
-          "t": 0.6,
-          "threshold": 0.003,
-          "violation": 0.1153,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_2\\happy_t0.6_hole_character.png"
-        }
-      ],
-      "worst": {
-        "attach:arm_l+staff": {
-          "value": 0.9608,
-          "anim": "happy",
-          "t": 2.0
-        },
-        "exposure:body": {
-          "value": 0.0144,
-          "anim": "happy",
-          "t": 0.6
-        },
-        "exposure:hair_back": {
-          "value": 0.0261,
-          "anim": "idle",
-          "t": 0.6
-        },
-        "exposure:head": {
-          "value": 0.0083,
-          "anim": "happy",
-          "t": 0.6
-        },
-        "exposure:shadow": {
-          "value": 0.5903,
-          "anim": "happy",
-          "t": 0.4
-        },
-        "gap:arm_l": {
-          "value": 0.0093,
-          "anim": "happy",
-          "t": 0.5
-        },
-        "gap:arm_r": {
-          "value": 0.0128,
-          "anim": "happy",
-          "t": 1.4
-        },
-        "gap:hair_back": {
-          "value": 0.0028,
-          "anim": "idle",
-          "t": 1.2
-        },
-        "gap:hat": {
-          "value": 0.0114,
-          "anim": "happy",
-          "t": 0.7
-        },
-        "gap:head": {
-          "value": 0.0145,
-          "anim": "happy",
-          "t": 0.5
-        },
-        "gap:skirt": {
-          "value": 0.0059,
-          "anim": "happy",
-          "t": 0.6
-        },
-        "gap:staff": {
-          "value": 0.019,
-          "anim": "happy",
-          "t": 0.3
-        },
-        "hole:character": {
-          "value": 0.1183,
-          "anim": "happy",
-          "t": 0.6
-        },
-        "intrude:arm_l+arm_r": {
-          "value": 0.0,
-          "anim": "idle",
-          "t": 0.0
-        },
-        "intrude:arm_l+hat": {
-          "value": 0.0,
-          "anim": "idle",
-          "t": 0.0
-        },
-        "intrude:arm_l+head": {
-          "value": 0.0,
-          "anim": "idle",
-          "t": 0.0
-        },
-        "intrude:arm_r+staff": {
-          "value": 0.0,
-          "anim": "idle",
-          "t": 0.0
-        },
-        "intrude:body+staff": {
-          "value": 0.0,
-          "anim": "idle",
-          "t": 0.0
-        },
-        "intrude:head+staff": {
-          "value": 0.0,
-          "anim": "idle",
-          "t": 0.0
-        }
-      },
-      "note": "這一輪的調整沒有降低總異常量，還原到第 1 輪並停止"
-    }
-  ],
-  "unresolved": [
+      "animation": "happy",
+      "bone": "arm_r",
+      "factor": 0.7071,
+      "score": 0.825,
+      "kept": false
+    },
     {
-      "kind": "hole",
-      "subject": "character",
-      "value": 0.1079,
-      "anim": "idle",
-      "t": 0.7,
-      "threshold": 0.003,
-      "violation": 0.1049,
-      "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\C\\work\\quality\\round_1\\idle_t0.7_hole_character.png",
-      "attributed_to": "body"
+      "animation": "happy",
+      "bone": "hair_back",
+      "factor": 0.7071,
+      "score": 0.835,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "head",
+      "factor": 0.3536,
+      "score": 0.645,
+      "kept": false
     }
   ],
+  "unresolved": [],
   "downgraded_to_needs_manual": [
     "body"
   ],
   "unreliable_exposed_within_threshold": {
-    "head": 0.0083
+    "head": 0.0053
   }
 }

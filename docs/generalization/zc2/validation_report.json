@@ -29,12 +29,12 @@
     {
       "check": "manual_repairs",
       "status": "BLOCKED",
-      "detail": "等待人工修補：hair_back, leg_l, leg_r, body（見 repair_tasks.md）"
+      "detail": "等待人工修補：hair_back, leg_l, leg_r, body, petals（見 repair_tasks.md）"
     },
     {
       "check": "animation_quality",
       "status": "PASS",
-      "detail": "10 fps＋所有關鍵影格逐格檢查：破洞、關節縫隙、接觸分離、穿插皆在門檻內（採用第 3 輪）；補圖露出超過門檻、已改為需人工：leg_r；注意：不可靠的補圖在動畫中有少量露出（門檻內，建議目視）：skirt 0.4%、head 1.2%、petals 1.0%"
+      "detail": "10 fps＋所有關鍵影格逐格檢查：破洞、關節縫隙、接觸分離、穿插皆在門檻內（採用第 3 輪）；補圖露出超過門檻、已改為需人工：leg_r、petals；注意：不可靠的補圖在動畫中有少量露出（門檻內，建議目視）：skirt 0.4%、head 1.1%"
     },
     {
       "check": "spine_import",

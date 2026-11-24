@@ -19,7 +19,7 @@
     {
       "check": "animations",
       "status": "PASS",
-      "detail": "idle 2.0 秒、26 個關鍵影格；happy 2.4 秒、99 個關鍵影格"
+      "detail": "idle 2.0 秒、26 個關鍵影格；happy 2.4 秒、97 個關鍵影格"
     },
     {
       "check": "setup_pose",
@@ -34,7 +34,7 @@
     {
       "check": "animation_quality",
       "status": "PASS",
-      "detail": "10 fps＋所有關鍵影格逐格檢查：破洞、關節縫隙、接觸分離、穿插皆在門檻內（採用第 3 輪）；注意：不可靠的補圖在動畫中有少量露出（門檻內，建議目視）：leg_l 1.6%、leg_r 1.2%、head 1.1%"
+      "detail": "10 fps＋所有關鍵影格逐格檢查：破洞、關節縫隙、接觸分離、穿插皆在門檻內（採用第 3 輪）；注意：不可靠的補圖在動畫中有少量露出（門檻內，建議目視）：leg_l 1.7%、leg_r 1.5%、head 1.2%"
     },
     {
       "check": "spine_import",

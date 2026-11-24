@@ -16,11 +16,73 @@
       "arm_r": 0.125
     }
   },
+  "worst": {
+    "exposure:body": {
+      "value": 0.0473,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "exposure:head": {
+      "value": 0.0023,
+      "anim": "happy",
+      "t": 1.8
+    },
+    "exposure:leg_l": {
+      "value": 0.0148,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "exposure:leg_r": {
+      "value": 0.0471,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "exposure:tail": {
+      "value": 0.0255,
+      "anim": "happy",
+      "t": 0.2
+    },
+    "gap:arm_l": {
+      "value": 0.0165,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "gap:arm_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "gap:head": {
+      "value": 0.0024,
+      "anim": "idle",
+      "t": 1.2
+    },
+    "gap:leg_l": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "gap:leg_r": {
+      "value": 0.0007,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "gap:tail": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "hole:character": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    }
+  },
   "rounds": [
     {
       "round": 0,
       "tuning": {},
-      "score": 17.868,
+      "score": 136.78,
       "anomalies": [
         {
           "kind": "exposure",
@@ -69,12 +131,12 @@
         {
           "kind": "gap",
           "subject": "tail",
-          "value": 0.1088,
+          "value": 12.0,
           "anim": "happy",
-          "t": 1.9,
+          "t": 1.8,
           "threshold": 0.1,
-          "violation": 0.0088,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H4\\work\\quality\\round_0\\happy_t1.9_gap_tail.png",
+          "violation": 11.9,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H4\\work\\quality\\round_0\\happy_t1.8_gap_tail.png",
           "attributed_to": "arm_r"
         }
       ],
@@ -130,14 +192,14 @@
           "t": 1.8
         },
         "gap:tail": {
-          "value": 0.1088,
+          "value": 12.0,
           "anim": "happy",
-          "t": 1.9
+          "t": 1.8
         },
         "hole:character": {
-          "value": 0.0027,
-          "anim": "happy",
-          "t": 0.5
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       },
       "fixes": [
@@ -167,7 +229,7 @@
           "arm_r": 0.5
         }
       },
-      "score": 8.517,
+      "score": 127.34,
       "anomalies": [
         {
           "kind": "exposure",
@@ -216,12 +278,12 @@
         {
           "kind": "gap",
           "subject": "tail",
-          "value": 0.1177,
+          "value": 12.0,
           "anim": "happy",
-          "t": 1.6,
+          "t": 1.8,
           "threshold": 0.1,
-          "violation": 0.0177,
-          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H4\\work\\quality\\round_1\\happy_t1.6_gap_tail.png",
+          "violation": 11.9,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H4\\work\\quality\\round_1\\happy_t1.8_gap_tail.png",
           "attributed_to": "arm_r"
         }
       ],
@@ -277,14 +339,14 @@
           "t": 1.6
         },
         "gap:tail": {
-          "value": 0.1177,
+          "value": 12.0,
           "anim": "happy",
-          "t": 1.6
+          "t": 1.8
         },
         "hole:character": {
-          "value": 0.0012,
-          "anim": "happy",
-          "t": 0.6
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       },
       "fixes": [
@@ -408,14 +470,14 @@
           "t": 1.9
         },
         "gap:tail": {
-          "value": 0.0429,
-          "anim": "happy",
-          "t": 1.6
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         },
         "hole:character": {
-          "value": 0.0022,
-          "anim": "happy",
-          "t": 1.8
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       },
       "fixes": [
@@ -525,16 +587,39 @@
           "t": 1.7
         },
         "gap:tail": {
-          "value": 0.0301,
-          "anim": "happy",
-          "t": 0.6
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         },
         "hole:character": {
-          "value": 0.001,
-          "anim": "happy",
-          "t": 0.5
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
         }
       }
+    }
+  ],
+  "regrow": [
+    {
+      "animation": "happy",
+      "bone": "arm_l",
+      "factor": 0.3536,
+      "score": 3.14,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "arm_r",
+      "factor": 0.1768,
+      "score": 3.895,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "body",
+      "factor": 0.3536,
+      "score": 3.3,
+      "kept": false
     }
   ],
   "unresolved": [],

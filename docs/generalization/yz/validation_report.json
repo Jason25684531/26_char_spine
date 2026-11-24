@@ -1,0 +1,55 @@
+{
+  "status": "BLOCKED",
+  "checks": [
+    {
+      "check": "bones",
+      "status": "PASS",
+      "detail": "11 根骨頭，階層順序正確"
+    },
+    {
+      "check": "slots",
+      "status": "PASS",
+      "detail": "9 個插槽都對應到骨頭與附件"
+    },
+    {
+      "check": "image_references",
+      "status": "PASS",
+      "detail": "所有附件圖片存在、尺寸相符且不是空白"
+    },
+    {
+      "check": "animations",
+      "status": "PASS",
+      "detail": "idle 2.0 秒、26 個關鍵影格；happy 2.4 秒、97 個關鍵影格"
+    },
+    {
+      "check": "setup_pose",
+      "status": "PASS",
+      "detail": "骨架初始姿勢與原圖（部件範圍內）差異 0.0014"
+    },
+    {
+      "check": "manual_repairs",
+      "status": "BLOCKED",
+      "detail": "等待人工修補：hair_back, leg_l, leg_r, body, arm_r（見 repair_tasks.md）"
+    },
+    {
+      "check": "animation_quality",
+      "status": "PASS",
+      "detail": "10 fps＋所有關鍵影格逐格檢查：破洞、關節縫隙、接觸分離、穿插皆在門檻內（採用第 3 輪）"
+    },
+    {
+      "check": "spine_import",
+      "status": "BLOCKED",
+      "detail": "偵測到的是 Spine 試用版：2026-11-23 實測 SpineTrial.com（Launcher 4.3.08，Editor 4.3.26）的 CLI 沒有 -i/-o/-r/-e 參數，官方也說明試用版不能儲存專案與匯出資料，無法產生 .spine"
+    },
+    {
+      "check": "spine_roundtrip",
+      "status": "NOT_TESTED",
+      "detail": "未建立 .spine，無法往返驗證"
+    },
+    {
+      "check": "spine_editable",
+      "status": "NOT_TESTED",
+      "detail": "需要在 Spine Editor 內人工開啟專案並修改關鍵影格確認，程式無法代為宣稱"
+    }
+  ]
+}
