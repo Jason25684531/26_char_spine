@@ -14,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from make_slides import CHECK_LABELS, build  # noqa: E402
+from build_skill import build as build_skill  # noqa: E402
 from character_to_spine.report import report as visual_report  # noqa: E402
 
 
@@ -30,10 +31,13 @@ def package(chars, out, originals=ROOT / "examples" / "real", run_tests=True):
     out = Path(out)
     if out.exists():
         shutil.rmtree(out)
-    d = {k: out / k for k in ("01_Original_Images", "02_Layered_Assets", "03_Spine_Project", "04_Animation_Preview",
+    d = {k: out / k for k in ("00_Skill_v1.0", "01_Original_Images", "02_Layered_Assets", "03_Spine_Project", "04_Animation_Preview",
                               "05_Presentation", "06_Development", "07_Test_Reports")}
     for p in d.values():
         p.mkdir(parents=True)
+
+    build_skill(d["00_Skill_v1.0"])  # 可安裝的 Skill：資料夾與 zip（新使用者照 README 解壓到 .claude/skills/）
+    shutil.copy2(ROOT / "README.md", d["00_Skill_v1.0"] / "INSTALL_README.md")
 
     for img in sorted(Path(originals).glob("*.png")):
         shutil.copy2(img, d["01_Original_Images"])
@@ -138,6 +142,7 @@ def _readme(rows, junit):
     lines += ["", f"自動化測試：{tests['passed']}/{tests['total']} 通過（`07_Test_Reports/pytest.xml`）" if tests else "自動化測試：未執行", "",
               "## 目錄", "",
               "| 目錄 | 內容 |", "|---|---|",
+              "| `00_Skill_v1.0/` | **可安裝的 Claude Skill**：`character-to-spine-skill-v1.0.0.zip`（解壓到 `.claude/skills/`）、解壓後的資料夾、安裝說明 `INSTALL_README.md` |",
               "| `01_Original_Images/` | 原始角色圖片（未修改） |",
               "| `02_Layered_Assets/<角色>/` | `PNG/` 透明分層圖、`metadata.json`、`parts.json`、`repair_tasks.md`（待人工修補）、`layer_preview.png` |",
               "| `03_Spine_Project/<角色>/` | `character.json`（Spine 4.3 JSON）、`images/`；有完整版 Spine 時另有 `character.spine` |",

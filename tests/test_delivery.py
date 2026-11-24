@@ -7,7 +7,7 @@ from pptx import Presentation
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
 from package_deliverables import package  # noqa: E402
 
-DIRS = ["01_Original_Images", "02_Layered_Assets", "03_Spine_Project", "04_Animation_Preview",
+DIRS = ["00_Skill_v1.0", "01_Original_Images", "02_Layered_Assets", "03_Spine_Project", "04_Animation_Preview",
         "05_Presentation", "06_Development", "07_Test_Reports"]
 
 
@@ -25,6 +25,10 @@ def test_package_from_real_outputs(built, tmp_path):
     imp = (out / "03_Spine_Project" / "synth_b" / "IMPORT.md").read_text(encoding="utf-8")
     assert hashlib.sha256((b / "spine" / "character.json").read_bytes()).hexdigest() in imp and "BLOCKED" in imp
     assert (out / "02_Layered_Assets" / "synth_b" / "report" / "repair_priority.md").exists()
+    # 可安裝的 Skill：zip 與解壓後的資料夾都帶著 Python Core 的 wheel
+    skill = out / "00_Skill_v1.0"
+    assert list(skill.glob("character-to-spine-skill-v*.zip"))
+    assert list((skill / "character-to-spine" / "core").glob("*.whl")) and (skill / "character-to-spine" / "SKILL.md").exists()
     # 沒有 .spine：不放替代檔，README 標明 BLOCKED
     assert not list(out.rglob("*.spine"))
     readme = (out / "README.md").read_text(encoding="utf-8")
