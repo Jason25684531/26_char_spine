@@ -180,7 +180,9 @@ def test_manual_repairs_blocked(built):
 def test_no_character_specific_code():
     src = Path(__file__).parents[1] / "src" / "character_to_spine"
     text = "".join(p.read_text(encoding="utf-8") for p in src.rglob("*.py"))
-    for marker in ("人.png", "转场", "预中奖", "synth_", "guitar", "hair_back"):
+    test_set = ("generalization", "gen_a", "gen_b", "gen_c", "gen_d", "gen_e", "gen_h", "Wikipe", "Konqi", "Monfer",
+                "Commons-tan", "Wikidata", "Wiktionary", "Wikinews", "Ares_", "staff", "camera", "antler", "clipboard")
+    for marker in ("人.png", "转场", "预中奖", "synth_", "guitar", "hair_back", *test_set):
         assert marker not in text, marker
 
 
