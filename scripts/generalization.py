@@ -219,10 +219,14 @@ def provenance(img, parts_path):
             continue
         a, sa = _shape(poly)
         for o in olds:
-            if len(o["polygon"]) == len(poly):
-                b, _ = _shape(o["polygon"])
-                if np.abs(a - b).max() * sa < 3:
-                    problems.append(f"{p['name']} 與既有部件 {o['name']} 的多邊形雷同")
+            if len(o["polygon"]) != len(poly):
+                continue
+            q0, q1 = np.array(poly, float), np.array(o["polygon"], float)
+            moved = np.abs((q0 - q0.mean(0)) - (q1 - q1.mean(0))).max() < 3  # 原樣搬過來（只平移）
+            # 允許縮放的比對只看 6 點以上的多邊形：長寬比相同的四邊形縮放後本來就一樣，不代表抄襲
+            scaled = len(poly) >= 6 and np.abs(a - _shape(o["polygon"])[0]).max() * sa < 3
+            if moved or scaled:
+                problems.append(f"{p['name']} 與既有部件 {o['name']} 的多邊形雷同")
         q = np.array(poly)
         if (q[:, 0] < xs.min() - margin).any() or (q[:, 0] > xs.max() + margin).any() or \
                 (q[:, 1] < ys.min() - margin).any() or (q[:, 1] > ys.max() + margin).any():
@@ -293,7 +297,7 @@ def measure(wd):
                         "downgraded": q["downgraded_to_needs_manual"]},
             "motion": travel, "free_arms": {n: t.get("happy", 0) for n, t in travel.items() if roles.get(n) == "arm" and n not in attached},
             "bounce_only": all(t.get("happy", 0) < criteria()["bounce_only_max"] for t in travel.values()),
-            "over_reduced": over, "loop_ok": bool(loop),
+            "over_reduced": over, "loop_ok": bool(loop), "tuning_causes": {b: sorted(k) for b, k in cause.items()},
             "exposure": fill_exposure(wd, skel),
             "manual": [e["name"] for e in meta["parts"] if e["status"] == "needs_manual"],
             "parts": [e["name"] for e in meta["parts"]]}
@@ -329,10 +333,22 @@ def _algo_failures(r, c):
         out.append("動畫首尾不一致，不能循環")
     if r["bounce_only"]:
         out.append("所有肢體相對身體幾乎不動，只剩整體跳動")
-    out += [f"未持物手臂 {n} 動作量 {t:.1%} < {c['free_arm_min']:.0%}" for n, t in r["free_arms"].items() if t < c["free_arm_min"]]
+    out += [f"未持物手臂 {n} 動作量 {t:.1%} < {c['free_arm_min']:.0%}" for n, t in r["free_arms"].items()
+            if t < c["free_arm_min"] and not _material_only(r, n)]
     out += [f"品質未解：{u}" for u in r["quality"]["unresolved"]]
     out += [f"{b} 被自我修正縮到 ×{o['factor']}（{o['limit']}：{o['caused_by']}）" for b, o in r["over_reduced"].items() if o["limit"] == "演算法限制"]
     return out
+
+
+def _material_only(r, bone):
+    """這根骨頭被自我修正縮小，且原因全是補圖露出（素材限制，見規格「區分素材限制與演算法限制」）。"""
+    causes = r.get("tuning_causes", {}).get(bone)
+    return bool(causes) and set(causes) <= {"exposure"}
+
+
+def _low_arms_material(r, c):
+    return [f"未持物手臂 {n} 動作量 {t:.1%} < {c['free_arm_min']:.0%}（素材限制：被草稿露出拖累）"
+            for n, t in r.get("free_arms", {}).items() if t < c["free_arm_min"] and _material_only(r, n)]
 
 
 def _bad_validator(r):
@@ -355,8 +371,9 @@ GRADE_RULES = [
     ("FAIL", lambda r, c: _bad_validator(r) + _algo_failures(r, c) + _vis(r, "BAD")),
     ("NOT_TESTED", lambda r, c: ["沒有目視紀錄"] if not r.get("visual") else []),
     ("PARTIAL", lambda r, c: [f"需人工修補：{', '.join(r['manual'])}"] * bool(r["manual"])
-     + [f"宣告看不到：{', '.join(r['absent'])}"] * bool(r.get("absent"))
+     + [f"宣告看不到：{', '.join(r.get('absent') or [])}"] * bool(r.get("absent"))
      + [f"{b} 被自我修正縮到 ×{o['factor']}（素材限制：{o['caused_by']}）" for b, o in r["over_reduced"].items()]
+     + _low_arms_material(r, c)
      + _vis(r, "MINOR") + _vis(r, "UNKNOWN")),
     ("PASS", lambda r, c: ["所有登記門檻與目視項目通過"]),
 ]
@@ -416,7 +433,7 @@ def sheet(wd, out_path, title):
     tiles = [("原圖", white(src)), ("圖層重組（骨架初始姿勢算圖）", recomposed), ("骨架：藍點=pivot、紅=骨頭方向、灰=父子", faded)] + frames
     tiles = [(label, _fit(im, H)) for label, im in tiles]
     row1, row2 = tiles[:3], tiles[3:]
-    width = max(sum(im.width for _, im in row1), sum(im.width for _, im in row2)) + 10 * 8
+    width = max(sum(im.width for _, im in row1), sum(im.width for _, im in row2)) + 10 * 8 + 400
     out = Image.new("RGB", (width, 40 + (H + 34) * 2), "white")
     dd = ImageDraw.Draw(out)
     dd.text((8, 6), f"{title}｜Python Simulation Preview，不是 Spine 算圖", fill=(0, 0, 0), font=_font(22))
@@ -425,7 +442,7 @@ def sheet(wd, out_path, title):
         for label, im in row:
             out.paste(im, (x, y + 28))
             dd.text((x, y + 4), label, fill=(60, 60, 60), font=_font(18))
-            x += im.width + 10
+            x += max(im.width, round(dd.textlength(label, font=_font(18)))) + 10  # 窄圖時標題不重疊
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out.save(out_path)
 
