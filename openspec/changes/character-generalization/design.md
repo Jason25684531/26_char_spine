@@ -86,16 +86,25 @@
 claude -p "幫我把這張角色圖做成 Spine 動畫：<圖片路徑>" --output-format stream-json --verbose
 ```
 
-工作目錄是本專案，所以 session 看得到 `.claude/skills/character-to-spine/`。提示不提 `SKILL.md`、`c2s`、`parts.json`。案例 A 另跑一次 `/character-to-spine <圖片路徑>`。
+提示不提 `SKILL.md`、`c2s`、`parts.json`。案例 A 另跑一次 `/character-to-spine <圖片路徑>`；保留集的提示寫在 manifest 的 `skill_prompt`，刻意用不同說法（中文、英文、間接描述）。
+
+**實作後修訂。** 一開始的做法是讓工作目錄就是本專案，結果 session 讀了 manifest 的案例描述、其他案例與舊角色的 `parts.json`。所以改在沙盒執行：
+
+- 沙盒的位置是 `%TEMP%/c2s_sandbox/<案例>/sandbox_<nl|slash>`，在 repo 之外。
+- 沙盒裡只有 `.claude/skills/character-to-spine/SKILL.md` 與圖片；`c2s` 經由 PATH 取得（本專案的 `.venv\Scripts`）。
+- 每個案例每一輪只採用第一次有效執行，重跑時舊紀錄保留為 `skill_*.runN.*`。
+
+殘留限制見 K-26、K-30：沙盒仍使用使用者的全域 Claude 設定，`SKILL.md` 引用的 `scripts/visual_report.py` 不在 Skill 內，session 會去專案找。
 
 證據是 stream-json 的工具呼叫：
 
 - Skill 觸發：有 `Skill` 工具呼叫，參數 `skill` 為 `character-to-spine`。只用 Read 讀 `SKILL.md` 不算。
 - CLI 執行：之後有含 `c2s` 的 Bash／PowerShell 呼叫。
-- 來源：沒有讀取 `examples/real/`、`examples/synthetic/`、`tests/` 或其他案例的 `parts.json`。
+- 來源：沒有讀取 `examples/real/`、`examples/synthetic/`、`tests/`、manifest 或其他案例的 `parts.json`。比對前先把反斜線正規化，因為 JSON 裡的 Windows 路徑是雙反斜線。越界分成「讀答案」與「使用工具」（呼叫專案的 c2s／python）兩類，只有前者影響盲測判定。
+- slash：headless 模式不記錄被展開的 slash 提示，只能取得間接證據。條件是 Skill 指令可用、沒有 Skill 工具呼叫、沒有讀 `SKILL.md`，卻在前兩個指令內就照 Skill 使用 `c2s`。
 - 失敗回報：最後一則回覆的內容與 `validation_report.json` 一致。
 
-程式查核另外比對多邊形雷同（逐點相同，或平移縮放後殘差低於 3px）與座標是否落在前景外框內。
+程式查核另外比對多邊形雷同與座標是否落在前景外框內。比對規則是「逐點相同或只平移後殘差 < 3px；允許縮放的比對只用於 6 點以上的多邊形」。這是凍結後的修訂，已登記於 criteria_changes。
 
 這仍是同一家模型，報告寫成「同模型的獨立 Claude Code session」。不選 Agent 工具的子代理：子代理沒有自然語言觸發 Skill 的路徑，測不到使用者實際的入口。
 
@@ -106,11 +115,16 @@ claude -p "幫我把這張角色圖做成 Spine 動畫：<圖片路徑>" --outpu
 目視紀錄放在 `examples/generalization/visual_review.json`，與自動量測分開：
 
 ```json
-{"A": {"reviewer": "agent", "layers": ["OK|ISSUE|UNKNOWN", "依據"],
-       "joints": [...], "motion": [...], "occlusion": [...]}}
+{"A": [{"reviewer": "agent", "sheet_sha256": "<看過的 visual_sheet.png>", "rubric": "criteria.visual_rubric",
+        "layers": ["OK|MINOR|BAD|UNKNOWN", "依據"], "joints": [...], "motion": [...], "occlusion": [...]}]}
 ```
 
-`reviewer` 只有 `agent` 與 `user` 兩種值。使用者尚未看過的案例，`user` 欄位整個缺席，報告顯示 NOT_TESTED。判定規則：任一項 ISSUE 時不得 PASS；沒有目視紀錄時上限 NOT_TESTED。
+**實作後修訂。** 原設計的 ISSUE 拆成 MINOR 與 BAD。判準清單凍結在 manifest 的 `criteria.visual_rubric`。每筆紀錄綁定它看過的驗收圖 sha256，圖變了就視為沒有目視。
+
+- `reviewer` 只有 `agent` 與 `user` 兩種值。
+- 使用者尚未看過的案例沒有 `user` 紀錄，報告顯示 NOT_TESTED。
+- 判定規則：BAD 判 FAIL；MINOR 或 UNKNOWN 不得 PASS；沒有目視紀錄時上限 NOT_TESTED。
+- 最終輪的目視由兩個沒看過先前判斷的子代理進行。
 
 ### D4 執行器：一支腳本、一份結果
 
@@ -185,6 +199,14 @@ claude -p "幫我把這張角色圖做成 Spine 動畫：<圖片路徑>" --outpu
 6. 同一問題最多三輪有實質差異的嘗試，之後採用表中的備案並記錄。
 
 禁止事項以測試守住：擴充既有的 `test_no_character_specific_code`，把 `examples/generalization/` 的檔名與 manifest id 加入禁用字串；座標寫死仍需人工審查（K-11 的限制不變）。
+
+**實作後結果。** 基準的失敗沒有對應到 H1–H6，所以都沒有實作。實際處理的是：
+
+- 依基準證據新增的 H7（`role: ground`）：採用。
+- H8（依手臂靜止角度縮小舉手幅度）：因 zc2 反例回退。
+- H9（縫隙只依父子關係配對）：判為特殊案例，不採用。
+
+見 `docs/DECISIONS.md` D-40、D-41。保留集揭露的 K-24（碰巧接觸圍出的背景被判破洞）與 K-28（持物骨架顛倒）留到下一階段，因為保留集已經用目前的程式執行。
 
 ### D8 技術審查
 

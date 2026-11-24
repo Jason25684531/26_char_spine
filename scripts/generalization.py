@@ -282,16 +282,19 @@ def measure(wd):
     roles = load_json(wd / "rig.json")["roles"]
     attached = {e["name"] for e in meta["parts"] if e.get("attach")}
     # 自我修正把哪根骨頭降了多少、是被哪一類異常拖累（素材限制 = 補圖露出；其他 = 演算法限制）
-    cause = {}
+    cause, drafts = {}, {}  # drafts：拖累這根骨頭的是哪些部件的草稿露出
     for rnd in q["rounds"]:
         if rnd["round"] >= q["chosen_round"]:  # 只算最後採用的那幾輪修正；被還原的輪次不算
             continue
         for a in rnd["anomalies"]:
             if a.get("attributed_to"):
                 cause.setdefault(a["attributed_to"], set()).add(a["kind"])
+                if a["kind"] == "exposure":
+                    drafts.setdefault(a["attributed_to"], set()).add(a["subject"])
     tuning = q["tuning"].get("happy", {})
     limit = lambda k: "未歸因" if not k else "素材限制" if k <= {"exposure"} else "演算法限制"
-    over = {b: {"factor": f, "limit": limit(cause.get(b, set())), "caused_by": sorted(cause.get(b, set()))}
+    over = {b: {"factor": f, "limit": limit(cause.get(b, set())), "caused_by": sorted(cause.get(b, set())),
+                "drafts": sorted(drafts.get(b, set()))}
             for b, f in tuning.items() if roles.get(b) == "arm" and f < criteria()["over_reduced_factor"]}
     loop = all(np.allclose(world_matrices(skel, n, 0)[b], world_matrices(skel, n, duration(a))[b], atol=1e-3)
                for n, a in skel["animations"].items() for b in world_matrices(skel))
@@ -346,8 +349,12 @@ def _algo_failures(r, c):
     out += [f"未持物手臂 {n} 動作量 {t:.1%} < {c['free_arm_min']:.0%}" for n, t in r["free_arms"].items()
             if t < c["free_arm_min"]]
     out += [f"品質未解：{u}" for u in r["quality"]["unresolved"]]
-    out += [f"{b} 被自我修正縮到 ×{o['factor']}（{o['limit']}：{o['caused_by']}）" for b, o in r["over_reduced"].items() if o["limit"] != "素材限制"]
+    out += [f"{b} 被自我修正縮到 ×{o['factor']}（{o['limit']}：{o['caused_by']}{_drafts(o)}）" for b, o in r["over_reduced"].items() if o["limit"] != "素材限制"]
     return out
+
+
+def _drafts(o):
+    return f"，被 {'、'.join(o['drafts'])} 的草稿露出拖累" if o.get("drafts") else ""
 
 
 def _bad_validator(r):
@@ -361,6 +368,7 @@ def _vis(r, level):
 
 # 由上往下，第一條回傳非空理由的規則決定等級。合成角色與既有角色也走同一張表。
 GRADE_RULES = [
+    ("BLOCKED", lambda r, c: [p for p in r.get("problems") or [] if p.startswith("找不到圖片")]),
     ("NOT_TESTED", lambda r, c: r.get("problems") or []),
     ("UNSUPPORTED", lambda r, c: [f"宣告超出範圍：{r['unsupported']}"] if r.get("unsupported") and r["expected_scope"] == "unsupported" else []),
     ("FAIL", lambda r, c: [f"預期 {r['expected_scope']} 卻宣告超出範圍：{r['unsupported']}"] if r.get("unsupported") else []),
@@ -374,7 +382,7 @@ GRADE_RULES = [
     ("NOT_TESTED", lambda r, c: ["沒有目視紀錄"] if not r.get("visual") else []),
     ("PARTIAL", lambda r, c: [f"需人工修補：{', '.join(r['manual'])}"] * bool(r["manual"])
      + [f"宣告看不到：{', '.join(r.get('absent') or [])}"] * bool(r.get("absent"))
-     + [f"{b} 被自我修正縮到 ×{o['factor']}（素材限制：{o['caused_by']}）" for b, o in r["over_reduced"].items()]
+     + [f"{b} 被自我修正縮到 ×{o['factor']}（素材限制{_drafts(o)}）" for b, o in r["over_reduced"].items()]
      + _vis(r, "MINOR") + _vis(r, "UNKNOWN")),
     ("PASS", lambda r, c: ["所有登記門檻與目視項目通過"]),
 ]

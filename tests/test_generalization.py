@@ -47,6 +47,7 @@ def ran(**kw):
     (ran(visual={**REVIEW_OK, "joints": ["BAD", "手臂繞手肘轉"]}), "FAIL"),
     (ran(visual={**REVIEW_OK, "occlusion": ["MINOR", "裙下有草稿痕跡"]}), "PARTIAL"),
     ({"id": "X", "origin": "public", "expected_scope": "supported", "problems": ["圖片雜湊與 manifest 不符"]}, "NOT_TESTED"),
+    ({"id": "X", "origin": "public", "expected_scope": "supported", "problems": ["找不到圖片 E/gen_e.png"]}, "BLOCKED"),
 ])
 def test_grade_table(r, level):
     assert g.grade(r, C)[0] == level
