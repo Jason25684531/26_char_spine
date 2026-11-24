@@ -18,6 +18,11 @@
 
 | 2026-11-23 | 最終驗收審查（獨立子代理）後修正 → `pytest -q` | **83 passed**（新增 14 個回歸測試；`test_validate_catches_wrong_image_content` 對舊版驗證器確認會失敗） |
 | 2026-11-23 | 重跑兩組真實角色 | 結束碼 0；setup_pose 改與原圖比對後為 0.0019／0.0018 PASS；其餘狀態不變 |
+| 2026-11-24 | 泛化階段開始前 `pytest -q` | **114 passed**（246 秒，`output/generalization/pytest_baseline.txt`） |
+| 2026-11-24 | `test_scope.py` 實作前 | 5 failed（預期：結束碼不是 3、absent 不被接受）；實作後 5 passed |
+| 2026-11-24 | `unsupported`／`absent` 後 `pytest -q` | **142 passed**；ren、zc2 的 Spine JSON 與驗證狀態與改前相同 |
+| 2026-11-24 | `role: ground` 後 `pytest -q` | **147 passed**（274 秒）；ren、zc2 輸出仍相同 |
+| 2026-11-24 | 泛化測試（`scripts/generalization.py`） | 開發集第一次盲測：成功 0/5、可處理 1/5；保留集：成功 0/4、可處理 1/4。詳見 `docs/GENERALIZATION_TEST_REPORT.md` |
 
 環境：Windows 11、Python 3.11.9（`.venv`）、numpy 2.4.6、Pillow 13.0.0、opencv-python 5.1.0、pytest 9.2.0。Spine 只有試用版（Launcher 4.3.08）。
 

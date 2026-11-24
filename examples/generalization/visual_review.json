@@ -22,6 +22,29 @@
       ],
       "sheet_sha256": "5d8c92fab9aafdd4967a134dd2b51cd204c4f828d4dd4f8278b3631fb133e28b",
       "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    },
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "OK",
+        "圖層重組與原圖幾乎一致；帽子、雙辮、手臂、裙子、雙腿分開，前後順序正確，沒看到漏切或重複"
+      ],
+      "joints": [
+        "MINOR",
+        "骨架圖 leg_l/leg_r 的 pivot 在裙襬下緣（可見部分起點），大腿上段被裙子遮住；arm 在肩、braid 在耳側、head 在頸，位置正確"
+      ],
+      "motion": [
+        "OK",
+        "happy t=0.5 雙臂比 t=0 外展約 20–30°、雙辮擺動、頭側傾、雙腳略收，不是只有整體跳動；t=0.2 有下蹲預備"
+      ],
+      "occlusion": [
+        "MINOR",
+        "happy t=0.5 右手旁裙側出現淡色補圖、兩腿間有補圖縫（repair_skirt/leg_l 紅區），skirt、leg_l 都已列 needs_manual"
+      ],
+      "sheet_sha256": "e5765760f0a429a63aff1eae50ff4420e38a897af49c31be580c29f501019c9a",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
     }
   ],
   "B": [
@@ -45,6 +68,29 @@
         "所有補圖露出 < 2%，驗收圖尺寸看不出痕跡（未逐格放大）"
       ],
       "sheet_sha256": "bebead0ddbfb6d9b5b25d97c5491ee243459962b82e3b4a07b723202fe2470fb",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    },
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "MINOR",
+        "初始姿勢重組與原圖一致；但 happy t=0.2/0.5 左前臂抬起後，手與裙緣之間露出一道黑色楔形線（疑似裙子圖層殘留手臂輪廓或裙內陰影），不在補畫清單"
+      ],
+      "joints": [
+        "OK",
+        "arm_l/arm_r pivot 在肩、雙馬尾 pivot 在髮束根部、head 在頸；長裙蓋住腿，沒有捏造腿"
+      ],
+      "motion": [
+        "OK",
+        "happy t=0.5 右拳明顯上舉、提裙的左臂上抬、雙馬尾擺動、身體微傾；四肢在關鍵影格看得出動作"
+      ],
+      "occlusion": [
+        "OK",
+        "自動補圖（arm_r 肩部、body、頭髮）在 happy t=0.5 放大後只有極小色塊，肉眼幾乎看不出；上面那道黑線已計入 layers"
+      ],
+      "sheet_sha256": "5bd4e21d5c990a49b8ab9c83dcb43f94d9dc2bcb918c66a8bc05670194b09a93",
       "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
     }
   ],
@@ -70,6 +116,29 @@
       ],
       "sheet_sha256": "45372c6db8643995506e84d4263b998c93a23266a8fcf035e162ef892de176a5",
       "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    },
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "MINOR",
+        "初始姿勢重組時裙襬下緣多了一圈深色帶（原圖是淺灰影子），是影子圖層草稿在靜止姿勢就露出；帽子、法杖、手臂分層正確"
+      ],
+      "joints": [
+        "OK",
+        "arm_l/arm_r 在肩、staff 在握杖手、hat 在頭頂、shadow 在地面；長袍蓋腳，沒有捏造腿"
+      ],
+      "motion": [
+        "OK",
+        "happy t=0.5 插腰的右手明顯外擺離開腰、法杖上移、帽子跟著頭；不是只有跳動（右臂幅度被 tuning 減半但仍看得出）"
+      ],
+      "occlusion": [
+        "MINOR",
+        "happy t=0.4–0.6 地上留下一塊深藍色影子草稿（不像影子），袍子下緣同時帶一條淡灰影子離地；shadow 已列 needs_manual，但非常顯眼，建議優先補"
+      ],
+      "sheet_sha256": "c7e59e7cf39629929f38d385390f39a05aa41596aa4f5ac7b8f42df0b26a46c9",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
     }
   ],
   "D": [
@@ -93,6 +162,29 @@
         "腿的可靠補圖露出 17% 但放大後看不出接縫（exposure_legs.png）；hair_back、body 草稿已列人工修補"
       ],
       "sheet_sha256": "6eebbbd89ef008d56f38464cfd8dadd9320690d34755ea29c23e7db1f4f795ef",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    },
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "OK",
+        "圖層重組與原圖一致；相機、雙臂、圍裙、裙、腿、後髮分開，前後順序正確"
+      ],
+      "joints": [
+        "MINOR",
+        "leg_l/leg_r pivot 在裙襬下緣；arm_l pivot 落在白袖口與胸前交界附近，雙手舉相機的姿勢下看不出是否在肩，無法確認"
+      ],
+      "motion": [
+        "MINOR",
+        "持相機的雙臂在 happy t=0.5 與 t=0 幾乎相同，只隨身體上移；雙腿在 t=0.5 略張開、頭髮跟隨，屬持物手臂小幅動作"
+      ],
+      "occlusion": [
+        "MINOR",
+        "hair_back（idle t=0.6）、body（happy t=0.5）草稿露出只有細紅線，動畫中不明顯；兩者都已列 needs_manual"
+      ],
+      "sheet_sha256": "e1d38125a5826887cda45fcd9740e5cb42bfa1173e6f254cc4585f2e6f330289",
       "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
     }
   ],
@@ -118,6 +210,29 @@
       ],
       "sheet_sha256": "19f4a2f0e69a831ce9cda645a7ca19ad92a9f12dce96167a64aad48b8b5b7236",
       "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    },
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "MINOR",
+        "影子像素被切進 leg_l：happy t=0.4–0.6 左腳底下黏著一塊灰影子一起離地；初始姿勢右腿多一道原圖沒有的白色短線；其餘分層正確"
+      ],
+      "joints": [
+        "OK",
+        "leg_l/leg_r 在胯下腿根、arm_r 在舉起手臂的肩、arm_l 在小手肩部、tail 在尾根、horn 在頭頂、head 在頸，都對"
+      ],
+      "motion": [
+        "OK",
+        "happy t=0.5 指天的手臂舉得更高、雙腿張開、尾巴與披風跟著動；不是只有整體跳動"
+      ],
+      "occlusion": [
+        "MINOR",
+        "happy t=0.4–0.6 地上留下一塊像腳尖的綠色影子草稿，看起來像斷掉的腳；cape 草稿在 t=0.6 露出紅邊。shadow、cape 都已列 needs_manual，但腳尖草稿非常顯眼"
+      ],
+      "sheet_sha256": "b3132e24928e8a6fdacadc3949b1a6423ee94885306d78ddea6a27525559cef8",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
     }
   ],
   "ren": [
@@ -142,6 +257,29 @@
       ],
       "sheet_sha256": "06a5c5d96dda6c5fb2c8026f1f1ca52c07b6d98e888cf8f75bc6213bd181f5d3",
       "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    },
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "MINOR",
+        "hair_back 圖層保留了吉他琴頸與琴頭像素：happy t=0.4/0.5 吉他轉動後出現兩個琴頭（重影），手與琴頸間還有一道白縫；hair_back 已列 needs_manual，露出位置與 repair_hair_back (c) 紅區一致"
+      ],
+      "joints": [
+        "MINOR",
+        "leg_l/leg_r pivot 在裙襬下緣（只露出靴子）；arm 在肩、guitar 在琴身中心、head 在頸，正確"
+      ],
+      "motion": [
+        "MINOR",
+        "雙臂綁在吉他上，happy t=0.5 隨吉他轉約 15° 立起，幅度小；頭、花冠、頭髮跟著動，雙腳微動，屬持物手臂小幅動作"
+      ],
+      "occlusion": [
+        "MINOR",
+        "琴頭重影與 hair_back 草稿在 happy t=0.4–0.5 看得到；leg、body 草稿在裙下緣只有小片；全都已列 needs_manual"
+      ],
+      "sheet_sha256": "40918c5d74a77bbb3c785547cb02bc74180e07b21ecb245d0678977c6af145c4",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
     }
   ],
   "zc2": [
@@ -165,6 +303,129 @@
         "被遮的身體、腿、頭髮草稿已列人工修補（已知 K-07）"
       ],
       "sheet_sha256": "c0f6144acf0325fe8b443ce5ebc3777104ec2a4cf299bc81a3a819fc9c1b43c3",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    },
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "MINOR",
+        "圖層重組沒有原圖的發光球與滿地飛散花瓣（missing_parts 列為未分配 12%），角色本體（包括原圖就有的第三隻下垂手 arm_extra）切得正確、順序正確"
+      ],
+      "joints": [
+        "MINOR",
+        "leg_l/leg_r pivot 在裙襬下緣（只露出鞋）；arm_l 在肩、arm_extra 在肩後、head 在頸，正確"
+      ],
+      "motion": [
+        "OK",
+        "happy t=0.5 上舉的手臂更直立、下垂的 arm_extra 外擺、捧的花瓣上移、頭髮擺動；四肢動作看得出"
+      ],
+      "occlusion": [
+        "MINOR",
+        "happy t=0.4 兩鞋之間露出 leg_l 草稿、t=0.5 arm_extra 肩部露出一條淡色縫（body/hair_back 草稿）；都已列 needs_manual，不算顯眼"
+      ],
+      "sheet_sha256": "fb735560ea1b727641048d31f1440cfac7c177b4dda213e592eac263aa405356",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "H1": [
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "OK",
+        "圖層重組格和原圖幾乎一致。前後順序正確：腿在裙下，手臂在身體前，頭和領口荷葉邊在最上層。分層合理：手臂含袖子和手套、body 含圍裙和裙子、腿只有裙襬以下的襪子和鞋。沒看到漏切或重複。body 圖層裡的灰黑條紋屬於補圖，歸在 occlusion 判。"
+      ],
+      "joints": [
+        "MINOR",
+        "骨架格中 arm_l 和 arm_r 的 pivot 在肩頭，head 在頸部，body/hip 在腰帶，父子關係都是 hip→body→head/arms 和 hip→legs，正確。leg_l 和 leg_r 的 pivot 在裙襬下緣（膝上），大腿被裙子遮住，屬於判準中的 MINOR。"
+      ],
+      "motion": [
+        "OK",
+        "happy t=0.5 雙臂明顯向外張開（左右幅度不對稱，但看起來自然），t=0.2 和 t=0.9 有身體傾斜和頭部擺動，GIF 中腳也有小幅開合，不只是整體跳動。idle 的手臂和頭部有輕微擺動。裙子和身體同一層，沒有額外的擺動。"
+      ],
+      "occlusion": [
+        "MINOR",
+        "body 的自動補圖是灰黑色的模糊條紋，在 happy t=0.4–0.7 和 t=1.6–2.0 明顯露出在腰和手臂兩側，idle t=0.67/1.33 的手臂邊緣也看得到。quality round_3 的 happy t=2.1 在左手套附近有破洞（hole:character）。body 已列入 needs_manual（高，露出 17.78%），所以判 MINOR；不過草稿非常醒目，必須人工補。"
+      ],
+      "sheet_sha256": "8b3ebbaad54adca56856595e8a01bf53915c51e391f9e9864cbd8277f41b6fbe",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "H2": [
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "MINOR",
+        "圖層重組接近原圖。不過 arm_l（拿夾板的手）只切出前臂和捲袖口，上臂袖子留在 body 圖層裡。body 圖層的頸部和右側有暗色抹糊的填色，clipboard 圖層的照片處有一團模糊塗抹，這兩處在初始姿勢時被遮住。前後順序正確。"
+      ],
+      "joints": [
+        "BAD",
+        "骨架格中 arm_l 的 pivot 在捲袖口，也就是手肘處，上臂留在 body，等於手臂繞手肘轉。而且 rig 的父子關係是反的：arm_l 的 parent 是 clipboard，clipboard 的 pivot 在手上、parent 是 body，所以手臂掛在夾板底下（灰線從 hip 拉到夾板，再接到 arm_l）。其餘部位正常：arm_r 在肩、雙腿在胯、head 在頸。"
+      ],
+      "motion": [
+        "MINOR",
+        "happy t=0.2 有整體傾斜，t=0.5 叉腰的 arm_r 明顯向外擺出（約 14°），夾板有小幅翻轉。拿夾板的 arm_l 幾乎不動（約 ±1°），交叉的雙腿在關鍵影格中也幾乎不動。有可見的手臂動作，不算只剩跳動；持物手臂只有小幅動作，判 MINOR。"
+      ],
+      "occlusion": [
+        "MINOR",
+        "repair_leg_l (c)：happy t=0.5 雙腿之間露出 leg_l 的補圖長條，佔 27.74%。round_3 的 happy t=0.4 在軀幹右側和叉腰手臂之間有破洞，GIF 中是一條白縫。repair_body (c)：t=1.8 兩側露出草稿。leg_l 和 body 都列在 needs_manual（高），所以判 MINOR。"
+      ],
+      "sheet_sha256": "c7a38747faecb43c67a9ab8f5ceb02e1271e3e299ccfa203621ab73aab829be0",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "H3": [
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "MINOR",
+        "圖層重組和原圖幾乎一致，前後順序正確（hair_back 最底，裙子在腿和身體前，書在身體前，手臂最上層）。不過 arm_l 圖層夾帶了一大片藍色頭髮，arm_r 圖層右緣也帶了一縷頭髮，頭髮會跟著手臂動。body 和 hair_back 圖層的大面積補圖都是糊色塊。"
+      ],
+      "joints": [
+        "MINOR",
+        "骨架格中 head 在頸，arm_l 和 arm_r 在肩附近，hair_back 掛在 head 下，skirt 掛在 body 下。leg_l 和 leg_r 的 pivot 在裙襬下緣（大腿中段），大腿上半被裙子遮住，屬於 MINOR。另外 rig 的父子關係是反的：arm_r 的 parent 是 book（應該是書掛在手下）。目前書只轉約 ±2°，預覽中看不出肩膀脫離，所以沒判 BAD，但這是結構錯誤。"
+      ],
+      "motion": [
+        "MINOR",
+        "happy t=0.5 雙腿從裙下明顯向外張開，裙子有縮放，頭髮跟著頭動（約 ±3°）。推眼鏡的 arm_l 只有約 8°，抱書的 arm_r 只有約 1°，關鍵影格中手臂幾乎看不出變化，屬於持物手臂只有小幅動作。"
+      ],
+      "occlusion": [
+        "MINOR",
+        "repair_hair_back (c)：t=1.8 身體兩側露出少量頭髮草稿的細邊。repair_body (c)：t=0.6 書和手臂周圍露出細碎的草稿紅點。這兩處加上 book 都列在 needs_manual。正常大小的影格中不太醒目，round_3 沒有破洞，判 MINOR。"
+      ],
+      "sheet_sha256": "28cc4b0834494ce04f1a70c3520fc4f209922bd1d59d028a2cec43ac277d10a5",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "H4": [
+    {
+      "reviewer": "agent",
+      "by": "獨立子代理（同模型，未看過先前的目視紀錄）",
+      "sheet": "final",
+      "layers": [
+        "MINOR",
+        "坐姿角色，圖層重組格和原圖幾乎一致，前後順序正確（tail 最底，手臂在腿前）。不過 arm_l 只切出拿筆的手，而且手的下緣夾帶了一點牛仔褲碎片。body 圖層有大面積灰白抹糊的補圖。兩條腿靠兩隻鞋分開，這有畫面依據，不算捏造。"
+      ],
+      "joints": [
+        "MINOR",
+        "骨架格中 hip 和雙腿 pivot 在臀部附近。坐姿的臀部本來就貼地，所以合理。head 在頸。arm_r 的 pivot 在短袖下緣（上臂中段），上臂在 body 裡，屬於「可見部分起點」的情況。arm_l 只有一隻手，pivot 在手背上方靠近軀幹處，看不到手腕和肩膀，無法確認是否對到關節。tail 的 pivot 在可見的尾巴根部，被手遮住的位置。沒看到明顯錯位，但 arm_l 的判斷沒把握。"
+      ],
+      "motion": [
+        "BAD",
+        "happy 4 格中整個坐姿角色原樣跳離地面（t=0.5 連腳一起騰空）。雙腿幾乎不動（約 ±2°），右臂只有約 7°，拿筆的手約 8°。比對 t=0、0.2、0.5、0.9，四肢位置幾乎沒有變化，只剩頭部傾斜和尾巴小擺。符合「動作只剩整體跳動，四肢在關鍵影格中看不出動作」。"
+      ],
+      "occlusion": [
+        "MINOR",
+        "happy t=0.5 鞋底下有一條灰色長條跟著角色騰空，這是 leg_r 鞋下補圖的露出，乍看像離地的影子。round_3 的 t=1.7 在軀幹和衣服接縫、右臂旁、拿筆的手旁露出 body 草稿（4.73%）。t=0.2 尾巴根部露出草稿。body、leg_r、tail 都列在 needs_manual，所以判 MINOR。"
+      ],
+      "sheet_sha256": "e2aab4e128d238255a99e7bb7762c2e8301dfeab8022935108cb4580f0c7fd78",
       "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
     }
   ]

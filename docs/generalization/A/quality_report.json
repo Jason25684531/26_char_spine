@@ -1,0 +1,627 @@
+{
+  "fps": 10,
+  "thresholds": {
+    "hole": 0.003,
+    "gap": 0.1,
+    "attach": 0.6,
+    "intrude": 0.02,
+    "exposure": 0.02
+  },
+  "max_rounds": 3,
+  "chosen_round": 3,
+  "tuning": {
+    "happy": {
+      "arm_r": 0.25,
+      "body": 0.25,
+      "arm_l": 0.125,
+      "leg_l": 0.5,
+      "head": 0.5,
+      "leg_r": 0.5,
+      "skirt": 0.5
+    }
+  },
+  "rounds": [
+    {
+      "round": 0,
+      "tuning": {},
+      "score": 24.735,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.1251,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.1051,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_0\\happy_t1.7_exposure_body.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.158,
+          "anim": "happy",
+          "t": 1.4,
+          "threshold": 0.02,
+          "violation": 0.138,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_0\\happy_t1.4_exposure_leg_l.png",
+          "attributed_to": "body"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0893,
+          "anim": "happy",
+          "t": 0.2,
+          "threshold": 0.02,
+          "violation": 0.0693,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_0\\happy_t0.2_exposure_leg_r.png",
+          "attributed_to": "body"
+        },
+        {
+          "kind": "exposure",
+          "subject": "skirt",
+          "value": 0.2023,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.1823,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_0\\happy_t1.8_exposure_skirt.png",
+          "attributed_to": "arm_l"
+        }
+      ],
+      "worst": {
+        "exposure:body": {
+          "value": 0.1251,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:braid_l": {
+          "value": 0.0185,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:braid_r": {
+          "value": 0.0129,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:leg_l": {
+          "value": 0.158,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "exposure:leg_r": {
+          "value": 0.0893,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "exposure:skirt": {
+          "value": 0.2023,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "gap:arm_l": {
+          "value": 0.0091,
+          "anim": "idle",
+          "t": 0.8
+        },
+        "gap:arm_r": {
+          "value": 0.0122,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "gap:braid_l": {
+          "value": 0.0129,
+          "anim": "happy",
+          "t": 0.9
+        },
+        "gap:braid_r": {
+          "value": 0.0084,
+          "anim": "idle",
+          "t": 1.2
+        },
+        "gap:head": {
+          "value": 0.0129,
+          "anim": "happy",
+          "t": 0.9
+        },
+        "gap:leg_l": {
+          "value": 0.0056,
+          "anim": "idle",
+          "t": 1.8
+        },
+        "gap:leg_r": {
+          "value": 0.0025,
+          "anim": "idle",
+          "t": 0.3
+        },
+        "gap:skirt": {
+          "value": 0.0533,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "hole:character": {
+          "value": 0.0002,
+          "anim": "happy",
+          "t": 1.6
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "body",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.5,
+          "body": 0.5,
+          "arm_l": 0.5
+        }
+      },
+      "score": 18.795,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0736,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.0536,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_1\\happy_t1.7_exposure_body.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.1343,
+          "anim": "happy",
+          "t": 1.5,
+          "threshold": 0.02,
+          "violation": 0.1143,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_1\\happy_t1.5_exposure_leg_l.png",
+          "attributed_to": "leg_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0546,
+          "anim": "happy",
+          "t": 0.2,
+          "threshold": 0.02,
+          "violation": 0.0346,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_1\\happy_t0.2_exposure_leg_r.png",
+          "attributed_to": "body"
+        },
+        {
+          "kind": "exposure",
+          "subject": "skirt",
+          "value": 0.1934,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.1734,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_1\\happy_t0.5_exposure_skirt.png",
+          "attributed_to": "arm_l"
+        }
+      ],
+      "worst": {
+        "exposure:body": {
+          "value": 0.0736,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:braid_l": {
+          "value": 0.02,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:braid_r": {
+          "value": 0.013,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:leg_l": {
+          "value": 0.1343,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:leg_r": {
+          "value": 0.0546,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "exposure:skirt": {
+          "value": 0.1934,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:arm_l": {
+          "value": 0.0091,
+          "anim": "idle",
+          "t": 0.8
+        },
+        "gap:arm_r": {
+          "value": 0.0035,
+          "anim": "happy",
+          "t": 0.1
+        },
+        "gap:braid_l": {
+          "value": 0.0137,
+          "anim": "happy",
+          "t": 1.9
+        },
+        "gap:braid_r": {
+          "value": 0.0084,
+          "anim": "idle",
+          "t": 1.2
+        },
+        "gap:head": {
+          "value": 0.0137,
+          "anim": "happy",
+          "t": 1.9
+        },
+        "gap:leg_l": {
+          "value": 0.0056,
+          "anim": "happy",
+          "t": 0.7
+        },
+        "gap:leg_r": {
+          "value": 0.0025,
+          "anim": "idle",
+          "t": 0.3
+        },
+        "gap:skirt": {
+          "value": 0.0031,
+          "anim": "happy",
+          "t": 0.1
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "body",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.25,
+          "body": 0.25,
+          "arm_l": 0.25,
+          "leg_l": 0.5
+        }
+      },
+      "score": 12.27,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0415,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.0215,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_2\\happy_t1.7_exposure_body.png",
+          "attributed_to": "head"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.1134,
+          "anim": "happy",
+          "t": 1.5,
+          "threshold": 0.02,
+          "violation": 0.0934,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_2\\happy_t1.5_exposure_leg_l.png",
+          "attributed_to": "leg_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0405,
+          "anim": "happy",
+          "t": 0.3,
+          "threshold": 0.02,
+          "violation": 0.0205,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_2\\happy_t0.3_exposure_leg_r.png",
+          "attributed_to": "skirt"
+        },
+        {
+          "kind": "exposure",
+          "subject": "skirt",
+          "value": 0.13,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.11,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_2\\happy_t0.5_exposure_skirt.png",
+          "attributed_to": "arm_l"
+        }
+      ],
+      "worst": {
+        "exposure:body": {
+          "value": 0.0415,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:braid_l": {
+          "value": 0.0187,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:braid_r": {
+          "value": 0.0124,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:leg_l": {
+          "value": 0.1134,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:leg_r": {
+          "value": 0.0405,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:skirt": {
+          "value": 0.13,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:arm_l": {
+          "value": 0.0091,
+          "anim": "idle",
+          "t": 0.8
+        },
+        "gap:arm_r": {
+          "value": 0.0026,
+          "anim": "happy",
+          "t": 1.3
+        },
+        "gap:braid_l": {
+          "value": 0.0103,
+          "anim": "happy",
+          "t": 1.1
+        },
+        "gap:braid_r": {
+          "value": 0.0084,
+          "anim": "idle",
+          "t": 1.2
+        },
+        "gap:head": {
+          "value": 0.0103,
+          "anim": "happy",
+          "t": 1.1
+        },
+        "gap:leg_l": {
+          "value": 0.0084,
+          "anim": "happy",
+          "t": 0.7
+        },
+        "gap:leg_r": {
+          "value": 0.0074,
+          "anim": "happy",
+          "t": 1.9
+        },
+        "gap:skirt": {
+          "value": 0.0013,
+          "anim": "idle",
+          "t": 0.6
+        },
+        "hole:character": {
+          "value": 0.0002,
+          "anim": "happy",
+          "t": 1.5
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "head",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "skirt",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.25,
+          "body": 0.25,
+          "arm_l": 0.125,
+          "leg_l": 0.5,
+          "head": 0.5,
+          "leg_r": 0.5,
+          "skirt": 0.5
+        }
+      },
+      "score": 7.875,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0273,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.0073,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_3\\happy_t0.5_exposure_body.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.0908,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.0708,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_3\\happy_t0.5_exposure_leg_l.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0264,
+          "anim": "happy",
+          "t": 0.2,
+          "threshold": 0.02,
+          "violation": 0.0064,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_3\\happy_t0.2_exposure_leg_r.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "skirt",
+          "value": 0.093,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.073,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\work\\quality\\round_3\\happy_t0.5_exposure_skirt.png"
+        }
+      ],
+      "worst": {
+        "exposure:body": {
+          "value": 0.0273,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "exposure:braid_l": {
+          "value": 0.0186,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:braid_r": {
+          "value": 0.0129,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:leg_l": {
+          "value": 0.0908,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "exposure:leg_r": {
+          "value": 0.0264,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "exposure:skirt": {
+          "value": 0.093,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:arm_l": {
+          "value": 0.0091,
+          "anim": "idle",
+          "t": 0.8
+        },
+        "gap:arm_r": {
+          "value": 0.0026,
+          "anim": "happy",
+          "t": 1.3
+        },
+        "gap:braid_l": {
+          "value": 0.0146,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "gap:braid_r": {
+          "value": 0.0084,
+          "anim": "idle",
+          "t": 1.2
+        },
+        "gap:head": {
+          "value": 0.0146,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "gap:leg_l": {
+          "value": 0.0056,
+          "anim": "happy",
+          "t": 0.7
+        },
+        "gap:leg_r": {
+          "value": 0.0074,
+          "anim": "happy",
+          "t": 1.9
+        },
+        "gap:skirt": {
+          "value": 0.0013,
+          "anim": "idle",
+          "t": 0.6
+        },
+        "hole:character": {
+          "value": 0.0002,
+          "anim": "happy",
+          "t": 1.5
+        }
+      }
+    }
+  ],
+  "unresolved": [],
+  "downgraded_to_needs_manual": [
+    "leg_l",
+    "leg_r",
+    "skirt"
+  ],
+  "unreliable_exposed_within_threshold": {
+    "braid_l": 0.0186,
+    "braid_r": 0.0129
+  }
+}

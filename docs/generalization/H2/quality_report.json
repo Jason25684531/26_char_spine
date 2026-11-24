@@ -1,0 +1,696 @@
+{
+  "fps": 10,
+  "thresholds": {
+    "hole": 0.003,
+    "gap": 0.1,
+    "attach": 0.6,
+    "intrude": 0.02,
+    "exposure": 0.02
+  },
+  "max_rounds": 3,
+  "chosen_round": 3,
+  "tuning": {
+    "happy": {
+      "arm_r": 0.125,
+      "arm_l": 0.25,
+      "leg_l": 0.25,
+      "leg_r": 0.5
+    },
+    "idle": {
+      "arm_l": 0.5
+    }
+  },
+  "rounds": [
+    {
+      "round": 0,
+      "tuning": {},
+      "score": 27.27,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.1595,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.1395,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_0\\happy_t1.8_exposure_body.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "clipboard",
+          "value": 0.0472,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0272,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_0\\happy_t0.6_exposure_clipboard.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.3987,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.3787,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_0\\happy_t0.5_exposure_leg_l.png",
+          "attributed_to": "leg_l"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+clipboard": {
+          "value": 0.8933,
+          "anim": "happy",
+          "t": 1.0
+        },
+        "exposure:body": {
+          "value": 0.1595,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:clipboard": {
+          "value": 0.0472,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:leg_l": {
+          "value": 0.3987,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:arm_l": {
+          "value": 0.0114,
+          "anim": "happy",
+          "t": 0.9
+        },
+        "gap:arm_r": {
+          "value": 0.0108,
+          "anim": "happy",
+          "t": 0.1
+        },
+        "gap:clipboard": {
+          "value": 0.0114,
+          "anim": "happy",
+          "t": 0.9
+        },
+        "gap:head": {
+          "value": 0.0239,
+          "anim": "happy",
+          "t": 1.1
+        },
+        "gap:leg_l": {
+          "value": 0.0013,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:leg_r": {
+          "value": 0.0013,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "hole:character": {
+          "value": 0.002,
+          "anim": "happy",
+          "t": 1.1
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+clipboard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+clipboard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_l",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.5,
+          "arm_l": 0.5,
+          "leg_l": 0.5
+        }
+      },
+      "score": 27.1683,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.1495,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.1295,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_1\\happy_t1.8_exposure_body.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "clipboard",
+          "value": 0.0303,
+          "anim": "idle",
+          "t": 1.0,
+          "threshold": 0.02,
+          "violation": 0.0103,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_1\\idle_t1.0_exposure_clipboard.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.3689,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.3489,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_1\\happy_t0.5_exposure_leg_l.png",
+          "attributed_to": "leg_r"
+        },
+        {
+          "kind": "hole",
+          "subject": "character",
+          "value": 0.0112,
+          "anim": "happy",
+          "t": 1.0,
+          "threshold": 0.003,
+          "violation": 0.0082,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_1\\happy_t1.0_hole_character.png",
+          "attributed_to": "arm_r"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+clipboard": {
+          "value": 0.94,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "exposure:body": {
+          "value": 0.1495,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:clipboard": {
+          "value": 0.0303,
+          "anim": "idle",
+          "t": 1.0
+        },
+        "exposure:leg_l": {
+          "value": 0.3689,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:arm_l": {
+          "value": 0.0114,
+          "anim": "happy",
+          "t": 0.9
+        },
+        "gap:arm_r": {
+          "value": 0.0128,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:clipboard": {
+          "value": 0.0114,
+          "anim": "happy",
+          "t": 0.9
+        },
+        "gap:head": {
+          "value": 0.0239,
+          "anim": "happy",
+          "t": 1.1
+        },
+        "gap:leg_l": {
+          "value": 0.0105,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "gap:leg_r": {
+          "value": 0.0105,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "hole:character": {
+          "value": 0.0112,
+          "anim": "happy",
+          "t": 1.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+clipboard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+clipboard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "idle",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_r",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.25,
+          "arm_l": 0.5,
+          "leg_l": 0.5,
+          "leg_r": 0.5
+        },
+        "idle": {
+          "arm_l": 0.5
+        }
+      },
+      "score": 20.87,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.1336,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.1136,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_2\\happy_t1.8_exposure_body.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "clipboard",
+          "value": 0.022,
+          "anim": "happy",
+          "t": 1.6,
+          "threshold": 0.02,
+          "violation": 0.002,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_2\\happy_t1.6_exposure_clipboard.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.3218,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.3018,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_2\\happy_t0.5_exposure_leg_l.png",
+          "attributed_to": "leg_l"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+clipboard": {
+          "value": 0.94,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "exposure:body": {
+          "value": 0.1336,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:clipboard": {
+          "value": 0.022,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "exposure:leg_l": {
+          "value": 0.3218,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:arm_l": {
+          "value": 0.0129,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:arm_r": {
+          "value": 0.0101,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:clipboard": {
+          "value": 0.0129,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:head": {
+          "value": 0.0239,
+          "anim": "happy",
+          "t": 1.1
+        },
+        "gap:leg_l": {
+          "value": 0.006,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "gap:leg_r": {
+          "value": 0.006,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "hole:character": {
+          "value": 0.0023,
+          "anim": "happy",
+          "t": 2.1
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+clipboard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+clipboard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_l",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.125,
+          "arm_l": 0.25,
+          "leg_l": 0.25,
+          "leg_r": 0.5
+        },
+        "idle": {
+          "arm_l": 0.5
+        }
+      },
+      "score": 19.5667,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.1186,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.0986,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_3\\happy_t1.8_exposure_body.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.2774,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.2574,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_3\\happy_t0.5_exposure_leg_l.png"
+        },
+        {
+          "kind": "hole",
+          "subject": "character",
+          "value": 0.0083,
+          "anim": "happy",
+          "t": 0.4,
+          "threshold": 0.003,
+          "violation": 0.0053,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_3\\happy_t0.4_hole_character.png"
+        }
+      ],
+      "worst": {
+        "attach:arm_l+clipboard": {
+          "value": 0.9733,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "exposure:body": {
+          "value": 0.1186,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:clipboard": {
+          "value": 0.0128,
+          "anim": "idle",
+          "t": 1.0
+        },
+        "exposure:leg_l": {
+          "value": 0.2774,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:arm_l": {
+          "value": 0.0129,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:arm_r": {
+          "value": 0.0027,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "gap:clipboard": {
+          "value": 0.0129,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:head": {
+          "value": 0.0239,
+          "anim": "happy",
+          "t": 1.1
+        },
+        "gap:leg_l": {
+          "value": 0.0013,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:leg_r": {
+          "value": 0.0013,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "hole:character": {
+          "value": 0.0083,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+clipboard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+clipboard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:clipboard+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      }
+    }
+  ],
+  "unresolved": [
+    {
+      "kind": "hole",
+      "subject": "character",
+      "value": 0.0083,
+      "anim": "happy",
+      "t": 0.4,
+      "threshold": 0.003,
+      "violation": 0.0053,
+      "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\H2\\work\\quality\\round_3\\happy_t0.4_hole_character.png"
+    }
+  ],
+  "downgraded_to_needs_manual": [
+    "body"
+  ],
+  "unreliable_exposed_within_threshold": {
+    "clipboard": 0.0128
+  }
+}

@@ -88,6 +88,7 @@ def skill(case_id, slash=False):
     phrase = (case or {}).get("skill_prompt", "幫我把這張角色圖做成 Spine 動畫：{file}")
     prompt = f"/character-to-spine {img.name}" if slash else phrase.format(file=img.name)
     raw = OUT / case_id / f"skill_{tag}.jsonl"
+    raw.parent.mkdir(parents=True, exist_ok=True)
     n = 1 + len(list(raw.parent.glob(f"skill_{tag}.run*.jsonl")))
     for old in (raw, raw.with_suffix(".json"), DOCS / case_id / f"skill_session_{tag}.md"):
         if old.exists():  # 重跑不覆寫先前的紀錄
@@ -560,7 +561,10 @@ def compare_lines(a, b):
     ra, rb = graded(a), graded(b)
     out = [f"## 前後比較：{a} → {b}", "", "| 案例 | 等級 | 重組 MAE | 未分配 | 未持物手臂動作量 | 需人工 | 品質未解 |", "|---|---|---|---|---|---|---|"]
     for k in rb:
-        x, y = ra.get(k, {}), rb[k]
+        if k not in ra:
+            out.append(f"| {k} | （{a} 沒有此案例）→ {rb[k].get('grade', '—')} | | | | | |")
+            continue
+        x, y = ra[k], rb[k]
         f = lambda r, key, sub: (r.get(key) or {}).get(sub, "—")
         arms = lambda r: "、".join(f"{n} {v:.1%}" for n, v in r.get("free_arms", {}).items()) or "—"
         out.append(f"| {k} | {x.get('grade', '—')} → {y.get('grade', '—')} | {f(x, 'recompose', 'setup_mae')} → {f(y, 'recompose', 'setup_mae')} | "

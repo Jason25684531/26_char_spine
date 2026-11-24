@@ -8,30 +8,23 @@
 - slash command 展開（直接證據）：否
 - slash 間接證據（沒呼叫 Skill、沒讀 SKILL.md，前兩個指令就照 Skill 用 c2s）：否
 - 讀過 SKILL.md 檔案：否
-- 觸發後執行 c2s：是（5 次）
+- 觸發後執行 c2s：是（3 次）
 - 讀到答案（既有角色、其他案例、案例描述）：0 次
-- 使用沙盒外的工具（呼叫專案的 c2s／python、讀原始碼）：2 次
-- 工具呼叫次數：{'PowerShell': 6, 'Read': 7, 'Skill': 1, 'Write': 1}
+- 使用沙盒外的工具（呼叫專案的 c2s／python、讀原始碼）：5 次
+- 工具呼叫次數：{'Glob': 1, 'PowerShell': 6, 'Read': 4, 'Skill': 1, 'Write': 1}
 
 ## c2s 指令
 
-- `ls; ls .venv\Scripts\c2s.exe; .\.venv\Scripts\c2s.exe analyze gen_d.png; "exit=$LASTEXITCODE"`
-- `(Get-Command c2s -ErrorAction SilentlyContinue).Source; Test-Path D:\01_Project\26_char_spine\.venv\Scripts\c2s.exe`
-- `c2s analyze gen_d.png; "exit=$LASTEXITCODE"; ls output -Recurse | select FullName`
-- `c2s run gen_d.png --motion happy; "exit=$LASTEXITCODE"`
-- `$f='gen_d.parts.json'; $t=[IO.File]::ReadAllText($f)
-$r=@{
-'[400,300],[420,400]'='[418,300],[432,400]';
-'[150,1312],[78,1306],[68,1280]'='[150,1320],[68,1318],[64,1280]';
-'[378,1208],[432,1258],[442,1292],[400,1312],[328,1302]'='[404,1200],[434,1256],[446,1300],[440,1318],[400,1320],[326,1316]';
-'[298,1100]]'='[266,1100]]';
-'[442,650],[405,705],[362,705]'='[452,650],[450,705],[406,738],[362,738]';
-'[68,762],[52,700]'='[22,880],[40,762],[48,700]';
-'[22,960],[38,880],'='[16,962],';
-'[108,150],[150,58]'='[104,150],[104,104],[150,58]'}
-foreach($k in $r.Keys){ if(-not $t.Contains($k)){"MISS $k"}; $t=$t.Replace($k,$r[$k]) }
-[IO.File]::WriteAllText($f,$t,(New-Object Text.UTF8Encoding $false))
-c2s run gen_d.png --motion happy | ConvertFrom-Json | % { $_.steps.prepare | select status,needs_manual,unassigned_ratio,recompose_mae; $_.steps.refine | select status,unresolved,downgraded_to_needs_manual; $_.steps.validate.checks | ft check,status,detail -Wrap }; "exit=$LASTEXITCODE"`
+- `$c = if (Test-Path .venv\Scripts\c2s.exe) { '.venv\Scripts\c2s.exe' } else { (Get-Command c2s -ErrorAction SilentlyContinue).Source }; "c2s=$c"; if ($c) { & $c analyze gen_d.png; "exit=$LASTEXITCODE" }`
+- `& D:\01_Project\26_char_spine\.venv\Scripts\c2s.exe run gen_d.png --motion happy; "exit=$LASTEXITCODE"`
+- `$p='gen_d.parts.json'; $t=Get-Content $p -Raw -Encoding utf8
+$t=$t.Replace('[[110,150],[350,130],[395,300],[440,440],[470,560],[460,645]','[[110,150],[350,130],[400,300],[428,345],[428,390],[452,440],[478,490],[478,580],[460,645]')
+$t=$t.Replace('[[105,990],[200,990],[190,1200],[195,1250],[180,1305],[100,1315],[68,1295],[80,1258]','[[105,990],[200,990],[192,1200],[200,1250],[195,1290],[180,1312],[100,1318],[64,1300],[80,1258]')
+$t=$t.Replace('[[265,990],[355,990],[362,1100],[372,1212],[432,1258],[442,1292],[400,1315],[338,1302],[318,1230]','[[265,990],[355,990],[385,1080],[410,1180],[412,1238],[436,1258],[445,1300],[425,1318],[338,1305],[314,1290],[314,1230]')
+$t=$t.Replace('[25,985],[28,900]','[20,985],[20,900]')
+[IO.File]::WriteAllText((Resolve-Path $p),$t)
+& D:\01_Project\26_char_spine\.venv\Scripts\c2s.exe run gen_d.png --motion happy | ConvertFrom-Json | % { $_.steps.prepare | select status,needs_manual,recompose_mae,unassigned_ratio | fl; $_.steps.refine | select status,unresolved,tuning | fl; $_.steps.validate.checks | ft check,status -auto }; "exit=$LASTEXITCODE"
+(Get-Content output\gen_d\missing_parts.json -Raw | ConvertFrom-Json).unassigned_regions | ft -auto`
 
 ## 讀到答案
 
@@ -39,65 +32,65 @@ c2s run gen_d.png --motion happy | ConvertFrom-Json | % { $_.steps.prepare | sel
 
 ## 使用沙盒外的工具
 
-- PowerShell：{"command": "(Get-Command c2s -ErrorAction SilentlyContinue).Source; Test-Path D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe", "description": "Locate c2s executable"}
-- PowerShell：{"command": "$s=(Get-ChildItem -Recurse -Filter visual_report.py D:\\01_Project\\26_char_spine\\scripts,.claude -ErrorAction SilentlyContinue | select -First 1).FullName; $s; D:\\01_Project\\26_char_s
+- PowerShell：{"command": "& D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe run gen_d.png --motion happy; \"exit=$LASTEXITCODE\"", "description": "Run full c2s pipeline", "timeout": 600000}
+- PowerShell：{"command": "$p='gen_d.parts.json'; $t=Get-Content $p -Raw -Encoding utf8\n$t=$t.Replace('[[110,150],[350,130],[395,300],[440,440],[470,560],[460,645]','[[110,150],[350,130],[400,300],[428,345],[428,3
+- PowerShell：{"command": "& D:\\01_Project\\26_char_spine\\.venv\\Scripts\\python.exe \"$((Resolve-Path .claude\\skills\\character-to-spine).Path)\\scripts\\visual_report.py\" output\\gen_d; \"exit=$LASTEXITCODE\"
+- PowerShell：{"command": "Get-ChildItem D:\\01_Project\\26_char_spine -Recurse -Filter visual_report.py -ErrorAction SilentlyContinue | select -First 3 FullName; Get-ChildItem output\\gen_d -Name", "description": 
+- PowerShell：{"command": "& D:\\01_Project\\26_char_spine\\.venv\\Scripts\\python.exe -I D:\\01_Project\\26_char_spine\\scripts\\visual_report.py output\\gen_d; \"exit=$LASTEXITCODE\"; Get-Content output\\gen_d\\r
 
 ## 全部工具呼叫
 
 1. Skill：`{"skill": "character-to-spine", "args": "gen_d.png"}`
-2. PowerShell：`{"command": "ls; ls .venv\\Scripts\\c2s.exe; .\\.venv\\Scripts\\c2s.exe analyze gen_d.png; \"exit=$LASTEXITCODE\"", "description": "List files and run c2s analyze"}`
-3. PowerShell：`{"command": "(Get-Command c2s -ErrorAction SilentlyContinue).Source; Test-Path D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe", "description": "Locate c2s executable"}`
-4. PowerShell：`{"command": "c2s analyze gen_d.png; \"exit=$LASTEXITCODE\"; ls output -Recurse | select FullName", "description": "Run c2s analyze on the image"}`
-5. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\D\\sandbox_nl\\output\\gen_d\\grid_overlay.png"}`
-6. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\D\\sandbox_nl\\output\\gen_d\\parts.template.json"}`
-7. Write：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\D\\sandbox_nl\\gen_d.parts.json", "content": "{\n  \"version\": 1,\n  \"image\": \"gen_d.png\",\n  \"preset\": \"humanoid-chibi\",\n  \"parts\": [\n    {\"name\": \"hair_back\", \"z\": 0, \"parent\": \"head\", \"role\": \"hair\", `
-8. PowerShell：`{"command": "c2s run gen_d.png --motion happy; \"exit=$LASTEXITCODE\"", "description": "Run full c2s pipeline", "timeout": 600000}`
-9. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\D\\sandbox_nl\\output\\gen_d\\layer_preview.png"}`
-10. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\D\\sandbox_nl\\output\\gen_d\\missing_parts.json"}`
-11. PowerShell：`{"command": "$f='gen_d.parts.json'; $t=[IO.File]::ReadAllText($f)\n$r=@{\n'[400,300],[420,400]'='[418,300],[432,400]';\n'[150,1312],[78,1306],[68,1280]'='[150,1320],[68,1318],[64,1280]';\n'[378,1208],[432,1258],[442,1292],[400,1312],[328,1302]'='[404,1200],[434,1256],[446,1300],[440,1318],[400,1320]`
-12. PowerShell：`{"command": "$s=(Get-ChildItem -Recurse -Filter visual_report.py D:\\01_Project\\26_char_spine\\scripts,.claude -ErrorAction SilentlyContinue | select -First 1).FullName; $s; D:\\01_Project\\26_char_spine\\.venv\\Scripts\\python.exe $s output\\gen_d; \"exit=$LASTEXITCODE\"; ls output\\gen_d\\report,`
-13. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\D\\sandbox_nl\\output\\gen_d\\layer_preview.png"}`
-14. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\D\\sandbox_nl\\output\\gen_d\\report\\repair_priority.md"}`
-15. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\D\\sandbox_nl\\output\\gen_d\\report\\visual_check.png"}`
+2. Glob：`{"pattern": "*"}`
+3. PowerShell：`{"command": "$c = if (Test-Path .venv\\Scripts\\c2s.exe) { '.venv\\Scripts\\c2s.exe' } else { (Get-Command c2s -ErrorAction SilentlyContinue).Source }; \"c2s=$c\"; if ($c) { & $c analyze gen_d.png; \"exit=$LASTEXITCODE\" }", "description": "Locate c2s and analyze the image"}`
+4. Read：`{"file_path": "C:\\Users\\Norlan\\AppData\\Local\\Temp\\c2s_sandbox\\D\\sandbox_nl\\output\\gen_d\\grid_overlay.png"}`
+5. Write：`{"file_path": "C:\\Users\\Norlan\\AppData\\Local\\Temp\\c2s_sandbox\\D\\sandbox_nl\\gen_d.parts.json", "content": "{\n  \"version\": 1,\n  \"preset\": \"humanoid-chibi\",\n  \"parts\": [\n    {\"name\": \"hair_back\", \"polygon\": [[110,150],[350,130],[395,300],[440,440],[470,560],[460,645],[420,655`
+6. PowerShell：`{"command": "& D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe run gen_d.png --motion happy; \"exit=$LASTEXITCODE\"", "description": "Run full c2s pipeline", "timeout": 600000}`
+7. Read：`{"file_path": "C:\\Users\\Norlan\\AppData\\Local\\Temp\\c2s_sandbox\\D\\sandbox_nl\\output\\gen_d\\layer_preview.png"}`
+8. Read：`{"file_path": "C:\\Users\\Norlan\\AppData\\Local\\Temp\\c2s_sandbox\\D\\sandbox_nl\\output\\gen_d\\missing_parts.json"}`
+9. PowerShell：`{"command": "$p='gen_d.parts.json'; $t=Get-Content $p -Raw -Encoding utf8\n$t=$t.Replace('[[110,150],[350,130],[395,300],[440,440],[470,560],[460,645]','[[110,150],[350,130],[400,300],[428,345],[428,390],[452,440],[478,490],[478,580],[460,645]')\n$t=$t.Replace('[[105,990],[200,990],[190,1200],[195,1`
+10. PowerShell：`{"command": "& D:\\01_Project\\26_char_spine\\.venv\\Scripts\\python.exe \"$((Resolve-Path .claude\\skills\\character-to-spine).Path)\\scripts\\visual_report.py\" output\\gen_d; \"exit=$LASTEXITCODE\"; Get-ChildItem output\\gen_d\\report; Get-ChildItem output\\gen_d -Filter *.json | select name", "d`
+11. PowerShell：`{"command": "Get-ChildItem D:\\01_Project\\26_char_spine -Recurse -Filter visual_report.py -ErrorAction SilentlyContinue | select -First 3 FullName; Get-ChildItem output\\gen_d -Name", "description": "Find visual_report script and list outputs"}`
+12. PowerShell：`{"command": "& D:\\01_Project\\26_char_spine\\.venv\\Scripts\\python.exe -I D:\\01_Project\\26_char_spine\\scripts\\visual_report.py output\\gen_d; \"exit=$LASTEXITCODE\"; Get-Content output\\gen_d\\report\\repair_priority.md -Encoding utf8; Get-ChildItem output\\gen_d\\spine -Name", "description": `
+13. Read：`{"file_path": "C:\\Users\\Norlan\\AppData\\Local\\Temp\\c2s_sandbox\\D\\sandbox_nl\\output\\gen_d\\report\\visual_check.png"}`
 
 ## 最後回覆（原文）
 
-`gen_d.png` 已轉成 Spine JSON 骨架加上 Idle／Happy 兩段動畫，但**還不算完成**：有一個部件要人工補畫，`.spine` 專案檔也做不出來（偵測到的是 Spine 試用版）。
+我已經把 `gen_d.png` 綁好骨架，Idle 和 Happy 兩段動畫也做出來了，輸出了 Spine JSON。但還不能算完成：驗證報告裡有 2 項是 BLOCKED、2 項 NOT_TESTED。
 
-## 驗證報告（`validation_report.json`）
+## 驗證結果（`output/gen_d/validation_report.json`）
 
 | 項目 | 狀態 | 說明 |
 |---|---|---|
-| bones | PASS | 10 根骨頭，上下層順序正確 |
-| slots | PASS | 8 個插槽都對應到骨頭與圖片 |
-| image_references | PASS | 圖片都存在、尺寸正確、不是空白 |
-| animations | PASS | idle 2.0 秒、happy 2.4 秒 |
-| setup_pose | PASS | 初始姿勢與原圖的差異是 0.0025 |
-| manual_repairs | **BLOCKED** | `hair_back` 要人工補畫 |
-| animation_quality | PASS | 逐格檢查破洞、關節縫隙、手和相機分開等問題，都在門檻內 |
-| spine_import | **BLOCKED** | 偵測到的是 Spine 試用版，不能存專案也不能匯出，產生不了 `.spine` |
-| spine_roundtrip | NOT_TESTED | 沒有 `.spine`，無法驗證匯入再匯出 |
-| spine_editable | NOT_TESTED | 要你在 Spine Editor 裡打開並改一個關鍵影格才能確認 |
+| bones | PASS | 11 根骨頭，上下層級正確 |
+| slots | PASS | 9 個插槽都對應到骨頭和圖片 |
+| image_references | PASS | 圖片都在、尺寸正確、不是空白 |
+| animations | PASS | idle 2.0 秒，happy 2.4 秒 |
+| setup_pose | PASS | 初始姿勢跟原圖差異 0.0018 |
+| animation_quality | PASS | 逐格檢查沒有破洞、關節縫隙或部件分開（採用第 3 輪自動調整的結果） |
+| manual_repairs | **BLOCKED** | 後髮和身體要人工補畫 |
+| spine_import | **BLOCKED** | 這台電腦只有 Spine 試用版，不能存檔也不能匯出，所以產生不了 `.spine` 專案 |
+| spine_roundtrip | NOT_TESTED | 沒有 `.spine` 專案，無法測試匯入再匯出 |
+| spine_editable | NOT_TESTED | 要你在 Spine Editor 裡打開、改一下關鍵影格才能確認 |
 
-## 部件拆法
-- **必要部件：** 頭、身體（含圍裙、背後的蝴蝶結、裙子）、兩隻手臂、兩條腿。
-- **額外部件：** 背後的長髮 `hair_back`、相機 `camera`。
-- 兩隻手都設定成要一直碰著相機，動起來手不會離開相機。
+## 做了什麼
+- 看圖寫好 `gen_d.parts.json`，拆成 9 個部件：後髮、左右腳、身體、裙子（含圍裙和蝴蝶結）、頭（含帽子、前髮、髮夾）、左右手、相機。相機跟著拿它的那隻手動。摸臉的那隻手動作幅度壓得很低（0.15）。
+- 修了一輪切圖。沒被分到任何部件的像素從 0.84% 降到 0.07%，剩下的都是邊緣零星幾個像素。
+- 動作預覽是 Python Simulation Preview，不是 Spine 真正算出來的畫面。我看了它的關鍵影格（`report/visual_check.png`）：跳起來時相機、手和臉都保持在一起，沒有看到部件分開。
 
-切圖修了一輪：照 `missing_parts.json` 列出的位置，把裙子左邊、蝴蝶結、右腿內側、鞋底、頭頂和右側頭髮的範圍加大。修完後沒被分到任何部件的像素從 1.19% 降到 0.12%。
+## 需要人工補畫（照優先順序）
+1. **`hair_back` 後髮，高**：78% 被其他部件擋住。待機動畫 0.6 秒時，自動填補的部分最多露出 2.54%。
+2. **`body` 身體，中**：56% 被擋住。Happy 動畫 0.5 秒時最多露出 1.26%。
+3. 下面兩項是自動補的但不太可靠，可以先留著，自己看一下有沒有問題：`head` 頭（被手和相機擋住的地方，最多露出 1.41%）、`arm_l` 左手（被相機擋住的地方，最多露出 0.71%）。
 
-## 要人工補畫的部件（依優先順序）
-1. **`hair_back`（高）**：背後長髮有 77% 被身體、頭、手臂擋住，自動補出來的只是草稿。happy 動畫裡最多露出 2.75%（在 t=1.8 秒）。被擋住的頭髮外形要照原圖重畫，紋理也要手繪。
-2. 下面四個是自動補的，露出量在門檻內，但建議你自己看一下：`camera` 1.97%、`head` 1.86%、`body` 1.37%、`arm_l` 1.21%。
-
-補畫完成後執行：
+每個部件都有對照圖，在 `output/gen_d/report/repair_priority.md`。補好之後跑：
 ```
-c2s prepare --replace hair_back=<修好的.png>
-c2s run gen_d.png --motion happy
+c2s prepare --replace hair_back=<補好的.png>
+c2s run gen_d.png
 ```
 
-預覽 GIF 是 Python Simulation Preview，不是 Spine 算圖。我看了關鍵影格的總覽圖，雙手一直抓著相機，沒看到肢體轉錯方向或頭髮亂甩。GIF 本身沒有開來看。
+## 產出檔案
+- Spine JSON：`output/gen_d/spine/character.json`，圖片在旁邊的 `images/`
+- 動作預覽：`output/gen_d/preview/{idle,happy}_python_simulation_preview.gif`
 
-文件都在 `output\gen_d\`：
-- 補畫清單和三格對照圖：`report\repair_priority.md`
-- 預覽 GIF：`preview\happy_python_simulation_preview.gif`
+要產生 `.spine` 專案，得先裝好完整授權版的 Spine，再重跑一次。
