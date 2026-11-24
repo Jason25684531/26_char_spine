@@ -9,7 +9,8 @@
 - exposure：不可靠的補圖在動畫中被看見的面積 ÷ 部件面積
 
 refine：有異常 → 在最差的影格逐一凍結各骨頭（hip 除外）找出改善最多的那根 → 該骨頭幅度 ×0.5 → 重做動畫。
-最多 MAX_ROUNDS 輪；沒有改善就還原到最佳那輪並停止。各輪的量測、調整與異常影格都留在 quality/。
+最多 MAX_ROUNDS 輪；沒有改善就還原到最佳那輪並停止。之後把被縮小的骨頭逐一放大 √2 倍，總異常量沒有增加就保留（回升）。
+各輪的量測、調整與異常影格都留在 quality/。
 """
 import copy
 import math
@@ -24,6 +25,7 @@ from . import load_json, save_json
 from .animation_builder import build_animations, duration
 from .image_processor import write_reports
 from .preview import framing, render, warp_slots, world_matrices
+from .rig_builder import PRESETS
 from .spine_exporter import DEFAULT_SPINE_VERSION, build_skeleton, export
 
 FPS = 10
@@ -102,23 +104,27 @@ def _holes(alpha, k=3):
 
 
 def _real_holes(ctx, f):
-    """真正的破洞：被包住的透明區塊中，圍住它的部件在初始姿勢就互相接觸（原本貼合的部件分開了）。
-    若邊界上有一對部件是「動畫中才新接觸」（例如揮動的道具碰到頭），圍住的是正常背景，不算破洞。"""
+    """真正的破洞（K-24）：被包住的透明像素中，初始姿勢被某個部件蓋住、而那個部件現在已經不在這塊透明區旁邊的部分。
+    初始姿勢就是背景的區域（長杖與帽簷、叉腰的手臂圍出的空間）不算：微小的動作就能讓它「圍起來或打開」，
+    以前因此整塊被誤判。部件自己移開、旁邊露出它背後的背景也不算；關節處的分離由 gap 量。
+    初始姿勢的位置先依 body 骨頭的變化換算到這一格（扣掉整體跳躍、蹲下與身體擺動）。
+    ponytail: 移開的部件仍貼著洞口時（只移開一部分）不算；本流程的被遮區域都有補圖，這種洞只在 polygon 漏畫時出現"""
     holes = _holes(f["alpha"])
     n, lab = cv2.connectedComponents(holes.astype(np.uint8))
     if n <= 1:
         return holes
+    s, (ox, oy) = ctx["scale"], ctx["origin"]
+    to_canvas = np.array([[s, 0, ox], [0, -s, oy], [0, 0, 1]])
+    m = (to_canvas @ f["world"]["body"] @ np.linalg.inv(ctx["setup_body"]) @ np.linalg.inv(to_canvas))[:2]
+    covered = {p: cv2.warpAffine(a, m, ctx["canvas"]) > 0.5 for p, a in ctx["setup_alphas"].items()}
     kernel = np.ones((5, 5), np.uint8)
-    solid = {s: cv2.dilate((a > 0.5).astype(np.uint8), kernel).astype(bool) for s, a in f["alphas"].items()}
     keep = np.zeros_like(holes)
     for i in range(1, n):
         comp = lab == i
         ring = cv2.dilate(comp.astype(np.uint8), kernel).astype(bool) & ~comp
-        border = sorted(s for s, m in solid.items() if (m & ring).any())
-        new_contact = any((a, b) not in ctx["setup_contacts"] and (solid[a] & solid[b]).any()
-                          for i_, a in enumerate(border) for b in border[i_ + 1:])
-        if not new_contact:
-            keep |= comp
+        for p, was in covered.items():
+            if p not in f["alphas"] or not (_dilated(f, p) & ring).any():
+                keep |= comp & was
     return keep
 
 
@@ -163,16 +169,26 @@ def _prepare_context(ctx, skel):
     ctx["char_area"] = max(1.0, float((f["alpha"] > 0.5).sum()))
     ctx["part_area"] = {n: float((a > 0.5).sum()) for n, a in f["all_alphas"].items()}
     names = sorted(f["alphas"])
-    ctx["setup_contacts"] = {(a, b) for i, a in enumerate(names) for b in names[i + 1:] if (_dilated(f, a) & _dilated(f, b)).any()}
+    ctx["setup_alphas"] = {n: a.astype(np.float32) for n, a in f["alphas"].items()}
+    ctx["setup_body"] = f["world"]["body"]
+    setup_contacts = {(a, b) for i, a in enumerate(names) for b in names[i + 1:] if (_dilated(f, a) & _dilated(f, b)).any()}
     # 頭髮是最後面的背景層，手或道具畫在它前面是正常的，不算穿插
     backdrop = {n for n, r in ctx["rig"].get("roles", {}).items() if r == "hair"}
     ctx["intrude_pairs"] = sorted({tuple(sorted((a, o))) for a in ctx["constrained"] for o in names
-                                   if o != a and o not in backdrop and tuple(sorted((a, o))) not in ctx["setup_contacts"]})
-    # 每個部件配上「初始姿勢接觸區最大」的鄰接部件，記錄接觸區面積作為縫隙的正規化基準
+                                   if o != a and o not in backdrop and tuple(sorted((a, o))) not in setup_contacts})
+    # 縫隙量身體結構上的關節：必要部件依 preset（抱樂器的手仍接在肩膀上），其他部件依骨架的父骨頭；hip 視為 body。
+    # 碰巧接觸更多的部件（手指碰到角）不是關節（K-24）。父部件在初始姿勢沒有接觸時（腿被裙子隔開），
+    # 才退回接觸區最大的鄰接部件。接觸區面積是縫隙的正規化基準
+    parent = {**{b["name"]: b.get("parent") for b in ctx["rig"]["bones"]}, **PRESETS[ctx["rig"]["preset"]]["bones"]}
+    parent = {n: "body" if p == "hip" else p for n, p in parent.items()}
+    contact = lambda a, b: int((_near(f, a) & _near(f, b)).sum())
     ctx["joints"] = []
-    for child in sorted(n for n in ctx["parts"] if n not in ctx["ground"]):
-        best = max(((int((_near(f, child) & _near(f, o)).sum()), o) for o in names if o != child), default=(0, None))
-        if best[0] and child != "body":
+    for child in sorted(n for n in ctx["parts"] if n not in ctx["ground"] and n != "body"):
+        adj = parent.get(child)
+        best = (contact(child, adj), adj) if adj in f["alphas"] else (0, None)
+        if not best[0]:
+            best = max(((contact(child, o), o) for o in names if o != child), default=(0, None))
+        if best[0]:
             ctx["joints"].append((child, best[1], float(best[0])))
     ctx["base"] = _raw(ctx, f)
 
@@ -237,6 +253,15 @@ def _save_frame(ctx, skel, a, out_dir):
     return str(path)
 
 
+def _score(anomalies):
+    """總異常量：各類違規先除以自己的門檻再加總，單位才一致（hole 門檻 0.003 與 attach 0.6 差兩個數量級）。"""
+    return round(sum(a["violation"] / a["threshold"] for a in anomalies), 4)
+
+
+def _worst(worst):
+    return {f"{k}:{s}": w for (k, s), w in sorted(worst.items())}
+
+
 def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
     """自我修正迴圈。結束時 export 一次（含 Spine CLI 匯入）並寫出 quality/quality_report.json。"""
     wd = Path(workdir)
@@ -253,9 +278,8 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
         worst, anomalies = assess(ctx, skel)
         for a in anomalies:
             a["frame"] = _save_frame(ctx, skel, a, qdir / f"round_{r}")
-        # 各類違規先除以自己的門檻再加總，單位才一致（hole 門檻 0.003 與 attach 0.6 差兩個數量級）
-        rec = {"round": r, "tuning": copy.deepcopy(tuning), "score": round(sum(a["violation"] / a["threshold"] for a in anomalies), 4),
-               "anomalies": anomalies, "worst": {f"{k}:{s}": w for (k, s), w in sorted(worst.items())}}
+        rec = {"round": r, "tuning": copy.deepcopy(tuning), "score": _score(anomalies),
+               "anomalies": anomalies, "worst": _worst(worst)}
         rounds.append(rec)
         if best is not None and rec["score"] >= best["score"]:
             rec["note"] = "這一輪的調整沒有降低總異常量，還原到第 %d 輪並停止" % best["round"]
@@ -277,9 +301,33 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
         save_json(wd / "tuning.json", tuning)
         build_animations(wd, motion)
 
-    save_json(wd / "tuning.json", best["tuning"])  # 採用最佳那一輪
+    # 回升（「過度縮小動作」）：減半是粗步，常常縮過頭。被縮小的骨頭逐一放大 √2 倍（不超過 1），
+    # 總異常量沒有增加就保留，直到再放大會變差為止
+    regrow = []
+    for an, bone in sorted((an, b) for an, bs in best["tuning"].items() for b in bs):
+        while bone in best["tuning"].get(an, {}):
+            trial = copy.deepcopy(best["tuning"])
+            factor = round(min(1.0, trial[an][bone] * math.sqrt(2)), 4)
+            trial[an][bone] = factor
+            if factor == 1.0:  # 回到原幅度就不再記錄
+                del trial[an][bone]
+                trial = {k: v for k, v in trial.items() if v}
+            save_json(wd / "tuning.json", trial)
+            build_animations(wd, motion)
+            worst, anomalies = assess(ctx, build_skeleton(wd))
+            score = _score(anomalies)
+            regrow.append({"animation": an, "bone": bone, "factor": factor, "score": score, "kept": score <= best["score"]})
+            if score > best["score"]:
+                break
+            best = {**best, "tuning": trial, "score": score, "anomalies": anomalies, "worst": _worst(worst)}
+
+    save_json(wd / "tuning.json", best["tuning"])  # 採用最佳那一輪（含回升）
     build_animations(wd, motion)
     final = best["anomalies"]
+    if any(g["kept"] for g in regrow):  # 回升後的異常影格另存，供 Agent 檢視
+        skel = build_skeleton(wd)
+        for a in final:
+            a["frame"] = _save_frame(ctx, skel, a, qdir / "final")
 
     # 不可靠、且修正後仍露出的補圖 → 不能宣稱自動修補成功
     meta = load_json(wd / "metadata.json")
@@ -302,7 +350,7 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
     watch = {e["name"]: e["exposure"] for e in meta["parts"]
              if e.get("exposure") and e["status"] == "auto_repaired"}  # 不可靠、門檻內但有露出：建議目視
     report = {"fps": FPS, "thresholds": THRESHOLDS, "max_rounds": MAX_ROUNDS, "chosen_round": best["round"],
-              "tuning": best["tuning"], "rounds": rounds, "unresolved": unresolved,
+              "tuning": best["tuning"], "worst": best["worst"], "rounds": rounds, "regrow": regrow, "unresolved": unresolved,
               "downgraded_to_needs_manual": sorted(exposed), "unreliable_exposed_within_threshold": watch}
     save_json(qdir / "quality_report.json", report)
     return {"status": "BLOCKED" if unresolved else "PASS", "rounds": len(rounds), "chosen_round": best["round"],

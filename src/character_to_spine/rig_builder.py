@@ -96,12 +96,22 @@ def build_rig(workdir, preset=None):
     for name, e in parts.items():
         if name not in parents:
             parents[name] = e.get("parent") or ("root" if roles[name] == "ground" else "body")
-    # 抱著道具的手掛在道具骨頭下：道具擺動時帶著手一起動，接觸處沒有相對移動，
-    # 手後方道具的草稿補圖也就不會露出（手與道具相對移動會露出它，見 quality 的 exposure）
+    # 手 attach 道具時，由幾隻手握著決定誰帶誰：
+    # - 兩隻以上（雙手抱樂器）：手掛在道具下，道具擺動帶著手，接觸處沒有相對移動，手後方的草稿也不會露出
+    # - 只有一隻（拿著夾板、書、長杖）：道具掛在手下跟著手動；反過來掛會讓手臂繞著道具轉，骨架上下顛倒（K-28）
+    holders = {}
     for name, e in parts.items():
-        props = [t for t in e.get("attach") or [] if roles.get(t) == "prop" and t in parts]
-        if roles[name] == "arm" and props and parents.get(props[0]) != name:
-            parents[name] = props[0]
+        for t in e.get("attach") or []:
+            if roles[name] == "arm" and roles.get(t) == "prop" and t in parts:
+                holders.setdefault(t, []).append(name)
+    for prop, arms in holders.items():
+        if len(arms) == 1:
+            parents[prop] = arms[0]
+            continue
+        if parents[prop] in arms:
+            parents[prop] = "body"
+        for arm in arms:
+            parents[arm] = prop
     all_parts = {e["name"] for e in meta["parts"]}
     for name, parent in parents.items():
         if parent == "root" or parent in parents:

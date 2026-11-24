@@ -206,6 +206,27 @@ def test_refine_fixes_and_records_rounds(workcopy):
     assert len(q["rounds"]) <= quality.MAX_ROUNDS + 1
 
 
+def test_refine_does_not_over_reduce(workcopy):
+    """「過度縮小動作」：refine 結束後，任何被縮小的骨頭再放大 √2 倍，總異常量都會變多（否則就是縮過頭了）。"""
+    wd = workcopy("synth_b")
+    rig = load_json(wd / "rig.json")
+    rig["motion"]["body"] = 3.0
+    save_json(wd / "rig.json", rig)
+    quality.refine(wd)
+    q = load_json(wd / "quality" / "quality_report.json")
+    final = load_json(wd / "tuning.json")
+    assert final == q["tuning"] and final["happy"]["body"] < 1
+    ctx = quality._context(wd)
+    quality._prepare_context(ctx, build_skeleton(wd))
+    score = lambda: sum(a["violation"] / a["threshold"] for a in quality.assess(ctx, build_skeleton(wd))[1])
+    base = score()
+    for anim, bones in final.items():
+        for bone, factor in bones.items():
+            save_json(wd / "tuning.json", {**final, anim: {**bones, bone: min(1.0, factor * math.sqrt(2))}})
+            build_animations(wd, "happy")
+            assert score() > base, f"{anim}/{bone} ×{factor} 還能放大而不增加異常"
+
+
 def test_unfixable_is_blocked_with_evidence(workcopy, monkeypatch):
     wd = workcopy("synth_b")
     monkeypatch.setitem(quality.THRESHOLDS, "gap", -0.01)  # 讓每個關節都永遠「有縫」：修不掉
@@ -240,17 +261,68 @@ def test_stale_report_after_prepare_and_animate(workcopy):
         shutil.rmtree(wd)
 
 
-def test_real_holes_ignore_background_enclosed_by_new_contact():
-    """被包住的透明區：圍住它的部件原本就接觸 → 破洞；邊界上有「動畫中才接觸」的組合 → 背景，不算。"""
+def test_real_holes_only_count_what_a_departed_part_used_to_cover():
+    """K-24：破洞 = 初始姿勢被某部件蓋住、現在透明、且那個部件已經不在旁邊的被包圍像素。
+    初始姿勢就是背景的區域（長杖與帽簷、叉腰手臂圍出的空間）不論圍不圍得起來都不算；整體跳起不影響判定。"""
     import numpy as np
-    ring = np.zeros((40, 40)); ring[5:35, 5:35] = 1; ring[12:28, 12:28] = 0  # 中空方框
-    left = np.zeros((40, 40)); left[5:35, 5:20] = 1
-    right = np.zeros((40, 40)); right[5:35, 20:35] = 1
-    a_ring, a_frame = {"ring": ring}, {"left": left * ring, "right": right * ring}
-    f = {"alpha": ring, "alphas": a_frame, "dil": {}}
-    assert quality._real_holes({"setup_contacts": {("left", "right")}}, f).sum() == 16 * 16  # 原本就接觸：是破洞
-    assert quality._real_holes({"setup_contacts": set()}, f).sum() == 0  # 新接觸圍出來的：背景
-    assert quality._real_holes({"setup_contacts": set()}, {"alpha": ring, "alphas": a_ring, "dil": {}}).sum() == 16 * 16
+    eye = np.eye(3)
+    ring = np.zeros((40, 40), np.float32); ring[5:35, 5:35] = 1; ring[12:28, 12:28] = 0
+    patch = np.zeros((40, 40), np.float32); patch[12:28, 12:28] = 1
+    ctx = {"scale": 1.0, "origin": (0.0, 0.0), "canvas": (40, 40), "setup_body": eye,
+           "setup_alphas": {"body": ring, "patch": patch}}
+    gone = {"alpha": ring, "alphas": {"body": ring, "patch": np.zeros_like(ring)}, "world": {"body": eye}, "dil": {}}
+    assert quality._real_holes(ctx, gone).sum() == 16 * 16  # 蓋在中間的部件離開，露出身體上的洞
+
+    up = eye.copy(); up[1, 2] = 3  # body 骨頭往上 3（Spine y 向上 = 畫面往上 3 列）
+    lifted = np.roll(ring, -3, axis=0)
+    jump = {"alpha": lifted, "alphas": {"body": lifted, "patch": np.zeros_like(ring)}, "world": {"body": up}, "dil": {}}
+    assert quality._real_holes(ctx, jump).sum() == 16 * 16
+
+    left = ring.copy(); left[:, 20:] = 0
+    right = ring.copy(); right[:, :20] = 0
+    ctx_bg = {**ctx, "setup_alphas": {"left": left, "right": right}}
+    moved = np.roll(right, 1, axis=1)  # 右半邊微動：圍住的背景變大、也蓋過右半邊原本的位置
+    swing = {"alpha": np.maximum(left, moved), "alphas": {"left": left, "right": moved}, "world": {"body": eye}, "dil": {}}
+    assert quality._real_holes(ctx_bg, swing).sum() == 0
+
+
+def _stick_rig(tmp_path, holders):
+    """synth_a 加一根橫過雙手的棍子，holders 的手 attach 它。回傳綁好骨架的工作目錄。"""
+    img, _ = make("synth_a", tmp_path / "src")
+    doc = json.loads(img.with_suffix(".parts.json").read_text(encoding="utf-8"))
+    for p in doc["parts"]:
+        p["mask"] = str(img.parent / p["mask"])
+        if p["name"] in holders:
+            p["attach"] = "stick"
+    doc["parts"].append({"name": "stick", "polygon": [[60, 250], [240, 250], [240, 262], [60, 262]], "z": 7, "role": "prop"})
+    path = tmp_path / "p.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    wd = tmp_path / "w"
+    analyze(img, wd, parts_path=path)
+    prepare(wd)
+    build_rig(wd)
+    return wd
+
+
+def test_single_hand_holds_prop_as_child(tmp_path):
+    """K-28：只有一隻手 attach 道具（拿著夾板、書、長杖）→ 道具掛在手下跟著手動，手仍掛在身體上。
+    接觸由骨架階層保證，所以只限制道具自己的旋轉，不為了接觸縮小手臂動作。"""
+    wd = _stick_rig(tmp_path, ["arm_l"])
+    rig = load_json(wd / "rig.json")
+    parent = {b["name"]: b.get("parent") for b in rig["bones"]}
+    assert parent["stick"] == "arm_l" and parent["arm_l"] == "body"
+    limits = contact_limits(rig, "happy")
+    assert "arm_l" not in limits and "stick" in limits
+
+
+def test_gap_joint_follows_skeleton_not_largest_contact(workcopy):
+    """K-24：縫隙要量骨架上的關節（手臂接身體），不是碰巧接觸面積最大的部件（手指碰到角、手靠著尾巴）。"""
+    wd = workcopy("synth_b")
+    ctx = quality._context(wd)
+    quality._prepare_context(ctx, build_skeleton(wd))
+    joints = {c: a for c, a, _ in ctx["joints"]}
+    assert joints["arm_r"] == "body"  # 旗子（prop）與手的接觸比肩膀大，但手臂的關節在身體
+    assert joints["hair_back"] == "head"
 
 
 def test_refine_is_deterministic_with_fixes(workcopy):
@@ -309,25 +381,14 @@ def test_override_backup(tmp_path):
     assert Image.open(odir / "head.png.bak").getpixel((0, 0)) == (1, 2, 3, 255)
     assert Image.open(odir / "head.png").getpixel((0, 0)) == (9, 9, 9, 255)
 
-def test_prop_carries_attached_arm(tmp_path):
-    """抱著道具的手掛在道具骨頭下：道具擺動帶著手、接觸處沒有相對移動，所以道具不受接觸約束限制，手仍受限制。"""
-    img, _ = make("synth_a", tmp_path / "src")
-    doc = json.loads(img.with_suffix(".parts.json").read_text(encoding="utf-8"))
-    for p in doc["parts"]:
-        p["mask"] = str(img.parent / p["mask"])
-        if p["name"] == "arm_l":
-            p["attach"] = "stick"
-    doc["parts"].append({"name": "stick", "polygon": [[60, 250], [120, 250], [120, 262], [60, 262]], "z": 7, "role": "prop"})
-    path = tmp_path / "p.json"
-    path.write_text(json.dumps(doc), encoding="utf-8")
-    wd = tmp_path / "w"
-    analyze(img, wd, parts_path=path)
-    prepare(wd)
-    build_rig(wd)
+def test_prop_carries_hugging_arms(tmp_path):
+    """雙手抱著道具（樂器）：兩隻手都掛在道具骨頭下，道具擺動帶著手、接觸處沒有相對移動，所以道具不受接觸約束限制，手仍受限制。"""
+    wd = _stick_rig(tmp_path, ["arm_l", "arm_r"])
     rig = load_json(wd / "rig.json")
-    assert {b["name"]: b.get("parent") for b in rig["bones"]}["arm_l"] == "stick"
+    parent = {b["name"]: b.get("parent") for b in rig["bones"]}
+    assert parent["arm_l"] == parent["arm_r"] == "stick" and parent["stick"] == "body"
     limits = contact_limits(rig, "happy")
-    assert "arm_l" in limits and "stick" not in limits
+    assert "arm_l" in limits and "arm_r" in limits and "stick" not in limits
 
 
 def test_needs_manual_drafts_are_kept_out_of_view(workcopy):
@@ -342,23 +403,13 @@ def test_needs_manual_drafts_are_kept_out_of_view(workcopy):
 
 
 def test_carried_arm_strums(tmp_path):
-    """被道具帶著的手（雙手抱樂器）改用撥弦節奏：Happy 的轉角來回變號多次，而不是一次揮手。"""
-    img, _ = make("synth_a", tmp_path / "src")
-    doc = json.loads(img.with_suffix(".parts.json").read_text(encoding="utf-8"))
-    for p in doc["parts"]:
-        p["mask"] = str(img.parent / p["mask"])
-        if p["name"] == "arm_l":
-            p["attach"] = "stick"
-    doc["parts"].append({"name": "stick", "polygon": [[60, 250], [120, 250], [120, 262], [60, 262]], "z": 7, "role": "prop"})
-    path = tmp_path / "p.json"
-    path.write_text(json.dumps(doc), encoding="utf-8")
-    wd = tmp_path / "w"
-    analyze(img, wd, parts_path=path)
-    prepare(wd)
-    build_rig(wd)
-    build_animations(wd, "happy")
-    values = [k.get("value", 0) for k in load_json(wd / "animations.json")["happy"]["bones"]["arm_l"]["rotate"]]
+    """被道具帶著的手（雙手抱樂器）改用撥弦節奏：Happy 的轉角來回變號多次；單手拿著道具的手仍是一般揮手。"""
+    def arm_l_values(holders, sub):
+        wd = _stick_rig(tmp_path / sub, holders)
+        build_animations(wd, "happy")
+        return [k.get("value", 0) for k in load_json(wd / "animations.json")["happy"]["bones"]["arm_l"]["rotate"]]
+    values = arm_l_values(["arm_l", "arm_r"], "hug")
     signs = [v > 0 for v in values if v]
     assert sum(a != b for a, b in zip(signs, signs[1:])) >= 8
-    other = [k.get("value", 0) for k in load_json(wd / "animations.json")["happy"]["bones"]["arm_r"]["rotate"]]
-    assert len([v for v in other if v]) < len([v for v in values if v])  # 沒抱道具的手仍是一般揮手
+    held = arm_l_values(["arm_l"], "hold")
+    assert len([v for v in held if v]) < len([v for v in values if v])

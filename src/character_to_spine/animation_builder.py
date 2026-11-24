@@ -94,12 +94,10 @@ def contact_limits(rig, motion):
             yield n
     limits = {}
     for c in rig.get("contacts", []):
-        # 道具帶著手時（手是道具的子骨頭），道具的旋轉連同手一起帶動、不影響接觸，只限制手自己的旋轉。
-        # 手拿著道具（道具是手的子骨頭）時維持原本做法：兩者都限制。
-        # ponytail: 後者的限制對接觸是多餘的，但目前碰巧壓住了身體草稿的露出；身體補畫後可一併拿掉
+        # 一方是另一方的祖先時（道具帶著抱它的手、手拿著道具），祖先的旋轉連同子骨頭一起帶動、不影響接觸，
+        # 只限制子骨頭自己的旋轉。不再為了接觸縮小祖先的動作（「過度縮小動作」）
         pair = (c["a"], c["b"])
-        carried = lambda b: rig["roles"].get(b) == "prop" and any(b in ancestors(o) for o in pair if o != b)
-        for bone in [b for b in pair if not carried(b)]:
+        for bone in [b for b in pair if not any(b in ancestors(o) for o in pair if o != b)]:
             make = template.get(_template_role(rig, bone, template), {}).get("rotate")
             if not make:
                 continue
