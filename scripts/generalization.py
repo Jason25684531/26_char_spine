@@ -40,8 +40,8 @@ FONT = "C:/Windows/Fonts/msjh.ttc"
 REQUIRED_FIELDS = ("id", "type", "file", "sha256", "origin", "source_url", "license", "author", "features", "expected_scope")
 # Spine 正式輸出需要完整版授權（K-01），與泛化能力無關，判定時不計
 SPINE_CHECKS = {"spine_import", "spine_roundtrip", "spine_editable"}
-FORBIDDEN = ("examples/real", "examples\\real", "examples/synthetic", "examples\\synthetic", "人.parts", "转场2.parts",
-             "synth_a", "synth_b", "tests/", "tests\\", "output/ren", "output\\ren", "output/zc2", "output\\zc2",
+FORBIDDEN = ("examples/real", "examples/synthetic", "人.parts", "转场2.parts",  # 反斜線路徑由 _escapes 先正規化
+             "synth_a", "synth_b", "tests/", "output/ren", "output/zc2",
              "Character-to-Spine-Deliverables", "visual_review.json", "manifest.json")
 
 
@@ -134,7 +134,7 @@ def _escapes(text, box):
 def skill_evidence(raw, box=None):
     """從 stream-json 判定：Skill 是否被觸發、是否執行 c2s、是否讀了不該讀的路徑。只讀 SKILL.md 不算觸發。
     headless 模式不記錄被展開的 slash 提示，slash 只能取得間接證據：指令可用，且第一個動作就是 Skill 第 1 步的 c2s。"""
-    calls, final, triggered_by_slash, available = [], "", False, False
+    calls, final, available = [], "", False
     for line in Path(raw).read_text(encoding="utf-8", errors="replace").splitlines():
         try:
             ev = json.loads(line)
@@ -144,9 +144,6 @@ def skill_evidence(raw, box=None):
         content = msg.get("content") if isinstance(msg.get("content"), list) else []
         if ev.get("type") == "system" and ev.get("subtype") == "init":
             available = "character-to-spine" in ev.get("slash_commands", [])
-        if ev.get("type") == "user":
-            text = json.dumps(msg.get("content"), ensure_ascii=False)
-            triggered_by_slash |= "<command-name>/character-to-spine</command-name>" in text
         for c in content:
             if c.get("type") == "tool_use":
                 calls.append({"tool": c["name"], "input": c.get("input", {})})
@@ -163,9 +160,9 @@ def skill_evidence(raw, box=None):
     # slash 展開的提示不會出現在 stream-json；沒有 Skill 呼叫、沒讀 SKILL.md，卻一開始就照 Skill 用 c2s，內容只能來自 slash 注入
     slash_indirect = available and not skill_calls and not read_skill_md and any("c2s" in c for c in first_cmds)
     first_skill = next((i for i, c in enumerate(calls) if c in skill_calls), None)
-    return {"skill_tool_called": bool(skill_calls), "slash_command_expanded": triggered_by_slash,
+    return {"skill_tool_called": bool(skill_calls),
             "slash_available": available, "slash_indirect": slash_indirect,
-            "c2s_after_skill": bool(c2s_calls) and (triggered_by_slash or slash_indirect or first_skill is not None),
+            "c2s_after_skill": bool(c2s_calls) and (slash_indirect or first_skill is not None),
             "c2s_commands": c2s_calls, "forbidden_reads": forbidden,
             "tool_escapes": [e for e in escapes if e["kind"] == "工具"], "read_skill_md": read_skill_md,
             "tool_counts": {t: sum(c["tool"] == t for c in calls) for t in sorted({c["tool"] for c in calls})},
@@ -179,7 +176,6 @@ def _write_session_md(case_id, tag, ev):
              "同模型、全新的 Claude Code headless session（`claude -p`），不是跨模型驗證。", "",
              f"- 提示：`{ev['prompt']}`", f"- 結束碼：{ev['exit_code']}",
              f"- Skill 工具呼叫 `character-to-spine`：{ok(ev['skill_tool_called'])}",
-             f"- slash command 展開（直接證據）：{ok(ev['slash_command_expanded'])}",
              f"- slash 間接證據（沒呼叫 Skill、沒讀 SKILL.md，前兩個指令就照 Skill 用 c2s）：{ok(ev.get('slash_indirect'))}",
              f"- 讀過 SKILL.md 檔案：{ok(ev.get('read_skill_md'))}",
              f"- 觸發後執行 c2s：{ok(ev['c2s_after_skill'])}（{len(ev['c2s_commands'])} 次）",
@@ -300,21 +296,17 @@ def measure(wd):
     loop = all(np.allclose(world_matrices(skel, n, 0)[b], world_matrices(skel, n, duration(a))[b], atol=1e-3)
                for n, a in skel["animations"].items() for b in world_matrices(skel))
     return {"validator": {c["check"]: c["status"] for c in v["checks"]},
-            "validator_detail": {c["check"]: c["detail"] for c in v["checks"] if c["status"] != "PASS"},
-            "recompose": {"setup_mae": meta.get("recompose_mae"), "unassigned_all": meta.get("unassigned_ratio"),
-                          "unassigned_ratio": body_unassigned(wd),
+            "recompose": {"setup_mae": meta.get("recompose_mae"), "unassigned_ratio": body_unassigned(wd),
                           "setup_pose": next(c["detail"] for c in v["checks"] if c["check"] == "setup_pose")},
-            "quality": {"unresolved": [f"{a['kind']}:{a['subject']}" for a in q["unresolved"]], "tuning": q["tuning"],
-                        "downgraded": q["downgraded_to_needs_manual"]},
+            "quality": {"unresolved": [f"{a['kind']}:{a['subject']}" for a in q["unresolved"]], "tuning": q["tuning"]},
             "motion": travel, "free_arms": {n: t.get("happy", 0) for n, t in travel.items() if roles.get(n) == "arm" and n not in attached},
             "attached_arms": {n: t.get("happy", 0) for n, t in travel.items() if roles.get(n) == "arm" and n in attached},
             # 頭髮、裙擺的次要擺動不算：只看手臂與腿
             "bounce_only": all(t.get("happy", 0) < criteria()["bounce_only_max"] for n, t in travel.items()
                                if roles.get(n) in ("arm", "leg")),
-            "over_reduced": over, "loop_ok": bool(loop), "tuning_causes": {b: sorted(k) for b, k in cause.items()},
+            "over_reduced": over, "loop_ok": bool(loop),
             "exposure": fill_exposure(wd, skel),
-            "manual": [e["name"] for e in meta["parts"] if e["status"] == "needs_manual"],
-            "parts": [e["name"] for e in meta["parts"]]}
+            "manual": [e["name"] for e in meta["parts"] if e["status"] == "needs_manual"]}
 
 
 def body_unassigned(wd):
@@ -504,6 +496,11 @@ def _rate_cell(count, n):
     return f"{count['PASS']}/{n}｜{count['PASS'] + count['PARTIAL']}/{n}｜" + "、".join(f"{g} {count[g]}" for g in COUNTED if count[g]) if n else "—"
 
 
+def _prereg(r):
+    p = r.get("prereg_attach")
+    return f"（預登記持物手 {p['expected_arms']}、宣告 {p['declared_arms']}）" if p else ""
+
+
 def report(compare=None):
     unregistered = frozen_diff()
     if unregistered:
@@ -536,7 +533,7 @@ def report(compare=None):
                      f"{r.get('provenance', {}).get('status', '—')} | {rc.get('setup_mae', '—')} | {un} | {pct(r.get('free_arms', {}))} | "
                      f"{pct(r.get('attached_arms', {}))} | {'是' if r.get('bounce_only') else '否' if 'bounce_only' in r else '—'} | "
                      f"{'是' if r.get('loop_ok') else '否' if 'loop_ok' in r else '—'} | {', '.join(r.get('manual', [])) or '—'} | "
-                     f"{', '.join(r.get('absent') or []) or '—'} | {'；'.join(r['reasons'])[:240]} |")
+                     f"{', '.join(r.get('absent') or []) or '—'}{_prereg(r)} | {'；'.join(r['reasons'])[:240]} |")
     lines += ["", "## 驗證器原始狀態（PASS／FAIL／BLOCKED／NOT_TESTED）", ""]
     for r in res.values():
         if r.get("validator"):
