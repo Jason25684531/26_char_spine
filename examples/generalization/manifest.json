@@ -322,6 +322,110 @@
       "expected_absent": [],
       "expected_attached_arms": 0,
       "skill_prompt": "幫我把這張角色圖做成 Spine 動畫：{file}"
+    },
+    {
+      "id": "N1",
+      "set": "holdout2",
+      "type": "prop-effect-chibi",
+      "description": "Q 版老法師：單手持杖，杖頭有發光特效（半透明光芒）、長袍蓋住腿",
+      "file": "N1/gen_n1.png",
+      "sha256": "3266c98245f34974bb37c1d8de3406d75ba1e3cc6b2e4f93b66725caf27c6440",
+      "origin": "public",
+      "source_url": "https://openclipart.org/detail/19811/delfador-chibi",
+      "derived_from": "Openclipart 800px PNG",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "Peileppe",
+      "features": {
+        "view": "three-quarter",
+        "body": "chibi",
+        "props": [
+          "staff"
+        ],
+        "effects": [
+          "glow"
+        ],
+        "occlusion": "medium"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 1,
+      "skill_prompt": "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}"
+    },
+    {
+      "id": "N2",
+      "set": "holdout2",
+      "type": "prop-armor",
+      "description": "女騎士：全身盔甲、單手扶著立在地上的長劍",
+      "file": "N2/gen_n2.png",
+      "sha256": "f8020309f5e3d43e09363d7ca16f23b94db128de02d5eba49d4d0ecdaa89ae73",
+      "origin": "public",
+      "source_url": "https://openclipart.org/detail/293914/woman-knight-warrior-in-armor-holding-a-sword",
+      "derived_from": "Openclipart 800px PNG",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "Juhele",
+      "features": {
+        "view": "front",
+        "body": "adult",
+        "props": [
+          "sword"
+        ],
+        "occlusion": "medium"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 1,
+      "skill_prompt": "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}"
+    },
+    {
+      "id": "N3",
+      "set": "holdout2",
+      "type": "dynamic-foreshortened",
+      "description": "男孩：一手握拳伸向鏡頭（透視縮短）、另一手握拳在胸前，大動作",
+      "file": "N3/gen_n3.png",
+      "sha256": "dfd9158afed110e1b2002698f4d824a723933e3322ef08b708fba5a4807a09fd",
+      "origin": "public",
+      "source_url": "https://openclipart.org/detail/286610/full-standing-kid",
+      "derived_from": "Openclipart 800px PNG",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "j4p4n",
+      "features": {
+        "view": "front",
+        "body": "kid",
+        "props": [],
+        "occlusion": "low"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 0,
+      "skill_prompt": "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}"
+    },
+    {
+      "id": "N4",
+      "set": "holdout2",
+      "type": "flat-mascot-akimbo",
+      "description": "單色扁平吉祥物：一手指向側面、一手叉腰，部件同色相連",
+      "file": "N4/gen_n4.png",
+      "sha256": "9f821db5b1aa82ef1fab8f8ce9022716ae9b6ea7bd3993b529b2aae826a73f89",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Togo-kun.png",
+      "derived_from": "Wikimedia Commons 原圖",
+      "license": "CC BY 2.1 JP",
+      "license_url": "https://creativecommons.org/licenses/by/2.1/jp/",
+      "author": "DBCLS (Database Center for Life Science)",
+      "features": {
+        "view": "front",
+        "body": "mascot",
+        "props": [],
+        "occlusion": "low"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 0,
+      "skill_prompt": "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}"
     }
-  ]
+  ],
+  "note_v1": "N1–N4（holdout2）於 2026-11-24 v1.0 程式修改完成後預登記，之後才第一次執行；H1–H4 已在前一階段用過。"
 }
