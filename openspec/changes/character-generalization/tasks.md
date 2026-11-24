@@ -82,8 +82,8 @@
 
 ## 10. 獨立驗證
 
-- [ ] 10.1 完整 pytest、`openspec validate --strict`
-- [ ] 10.2 獨立 QA 子代理重算 `report` 與 `provenance`、比對報告數字並抽查證據（不重跑 `run`：重跑會重產驗收圖、讓綁定 sha256 的目視紀錄失效）
+- [x] 10.1 完整 pytest、`openspec validate --strict`
+- [x] 10.2 獨立 QA 子代理重算 `report` 與 `provenance`、比對報告數字並抽查證據（不重跑 `run`：重跑會重產驗收圖、讓綁定 sha256 的目視紀錄失效）
 - [x] 10.3 確認既有兩組角色的各項指標不低於任務 1.3 的基準
 
 ## 11. 交付
@@ -93,4 +93,4 @@
 - [x] 11.3 `docs/generalization/<id>/`：分層預覽、Idle／Happy 預覽、異常影格、修補清單、分析紀錄
 - [x] 11.4 更新 `docs/KNOWN_ISSUES.md`、`docs/TEST_RESULTS.md`、`docs/AGENT_STATE.md`、`docs/DECISIONS.md`
 - [x] 11.5 Git 變更摘要與 Skill v1.0 標準化建議（寫在報告第 10 節）
-- [ ] 11.6 確認分支仍是 `feat/character-to-spine-mvp`，沒有合併或推送
+- [x] 11.6 確認分支仍是 `feat/character-to-spine-mvp`，沒有合併或推送
