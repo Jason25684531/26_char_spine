@@ -10,6 +10,7 @@ python scripts/generalization.py report [--compare a b] 由 results.json 產生 
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -75,27 +76,61 @@ def check_case(case):
 # ---------- Skill 實測 ----------
 
 def skill(case_id, slash=False):
+    """在只有 Skill 與圖片的乾淨沙盒裡開一個全新的 Claude Code session（c2s 經由 PATH 可用）。
+    真實使用者的專案裡沒有本專案的範例角色、測試與案例描述，沙盒重現這個條件。"""
     img, case = cases()[case_id]
-    rel = img.relative_to(ROOT).as_posix()
-    prompt = f"/character-to-spine {rel}" if slash else f"幫我把這張角色圖做成 Spine 動畫：{rel}"
     tag = "slash" if slash else "nl"
+    box = OUT / case_id / f"sandbox_{tag}"
+    shutil.rmtree(box, ignore_errors=True)
+    shutil.copytree(ROOT / "skills" / "character-to-spine", box / ".claude" / "skills" / "character-to-spine")
+    shutil.copy(img, box / img.name)
+    prompt = f"/character-to-spine {img.name}" if slash else f"幫我把這張角色圖做成 Spine 動畫：{img.name}"
     raw = OUT / case_id / f"skill_{tag}.jsonl"
-    raw.parent.mkdir(parents=True, exist_ok=True)
+    n = 1 + len(list(raw.parent.glob(f"skill_{tag}.run*.jsonl")))
+    for old in (raw, raw.with_suffix(".json"), DOCS / case_id / f"skill_session_{tag}.md"):
+        if old.exists():  # 重跑不覆寫先前的紀錄
+            shutil.move(old, old.with_name(f"{old.stem}.run{n}{old.suffix}"))
     cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose", "--no-session-persistence",
            "--permission-mode", "acceptEdits",
            "--allowedTools", "Read", "Write", "Edit", "Glob", "Grep", "Skill", "Bash", "PowerShell"]
+    env = {**os.environ, "PATH": str(ROOT / ".venv" / "Scripts") + os.pathsep + os.environ["PATH"]}
     with raw.open("w", encoding="utf-8") as f:
-        proc = subprocess.run(cmd, cwd=ROOT, stdout=f, stderr=subprocess.STDOUT, timeout=3600, shell=sys.platform == "win32")
-    evidence = skill_evidence(raw)
-    evidence.update(prompt=prompt, exit_code=proc.returncode)
+        proc = subprocess.run(cmd, cwd=box, env=env, stdout=f, stderr=subprocess.STDOUT, timeout=3600,
+                              shell=sys.platform == "win32")
+    result = box / f"{img.stem}.parts.json"
+    if result.exists():
+        dest = OUT / case_id / f"{img.stem}.slash.parts.json" if slash else img.with_suffix(".parts.json")
+        if dest.exists():
+            shutil.move(dest, dest.with_name(f"{img.stem}.before_run{n}.parts.json"))
+        shutil.copy(result, dest)
+    evidence = skill_evidence(raw, box)
+    evidence.update(prompt=prompt, exit_code=proc.returncode, sandbox=box.relative_to(ROOT).as_posix(),
+                    parts_written=result.exists())
     save_json(OUT / case_id / f"skill_{tag}.json", evidence)
     _write_session_md(case_id, tag, evidence)
     return evidence
 
 
-def skill_evidence(raw):
-    """從 stream-json 判定：Skill 是否被觸發、是否執行 c2s、是否讀了不該讀的路徑。只讀 SKILL.md 不算觸發。"""
-    calls, final, triggered_by_slash = [], "", False
+def _escapes(text, box):
+    """工具參數裡跑出沙盒的路徑。反斜線先正規化：JSON 裡的 Windows 路徑是雙反斜線，直接比對字串會漏抓。"""
+    t = text.replace("\\\\", "/").replace("\\", "/").lower()
+    if box is not None:
+        t = t.replace(Path(box).resolve().as_posix().lower(), "<sandbox>")
+    hits = [("答案", f) for f in FORBIDDEN if f.replace("\\", "/").lower() in t]
+    own = Path(box).parent.name if box is not None else None
+    hits += [("答案", f"其他案例 {o}") for o in "ABCDE"
+             if o != own and (f"generalization/{o.lower()}/" in t or f"gen_{o.lower()}." in t)]
+    if "26_char_spine" in t:  # 多半是呼叫專案的 c2s.exe／python.exe，屬於使用工具；讀到答案時會同時命中上面的規則
+        hits.append(("工具", "沙盒外的專案路徑"))
+    if "../" in t:
+        hits.append(("工具", "上層目錄 ../"))
+    return hits
+
+
+def skill_evidence(raw, box=None):
+    """從 stream-json 判定：Skill 是否被觸發、是否執行 c2s、是否讀了不該讀的路徑。只讀 SKILL.md 不算觸發。
+    headless 模式不記錄被展開的 slash 提示，slash 只能取得間接證據：指令可用，且第一個動作就是 Skill 第 1 步的 c2s。"""
+    calls, final, triggered_by_slash, available = [], "", False, False
     for line in Path(raw).read_text(encoding="utf-8", errors="replace").splitlines():
         try:
             ev = json.loads(line)
@@ -103,6 +138,8 @@ def skill_evidence(raw):
             continue
         msg = ev.get("message") or {}
         content = msg.get("content") if isinstance(msg.get("content"), list) else []
+        if ev.get("type") == "system" and ev.get("subtype") == "init":
+            available = "character-to-spine" in ev.get("slash_commands", [])
         if ev.get("type") == "user":
             text = json.dumps(msg.get("content"), ensure_ascii=False)
             triggered_by_slash |= "<command-name>/character-to-spine</command-name>" in text
@@ -114,12 +151,19 @@ def skill_evidence(raw):
     skill_calls = [c for c in calls if c["tool"] == "Skill" and "character-to-spine" in json.dumps(c["input"])]
     shell = [c for c in calls if c["tool"] in ("Bash", "PowerShell")]
     c2s_calls = [c["input"].get("command", "") for c in shell if "c2s" in c["input"].get("command", "")]
-    forbidden = [{"tool": c["tool"], "hit": f, "input": json.dumps(c["input"], ensure_ascii=False)[:200]}
-                 for c in calls if c["tool"] != "Glob" for f in FORBIDDEN if f in json.dumps(c["input"], ensure_ascii=False)]
+    escapes = [{"tool": c["tool"], "kind": k, "hit": h, "input": json.dumps(c["input"], ensure_ascii=False)[:200]}
+               for c in calls for k, h in _escapes(json.dumps(c["input"], ensure_ascii=False), box)]
+    forbidden = [e for e in escapes if e["kind"] == "答案"]
+    read_skill_md = any("SKILL.md" in json.dumps(c["input"]) for c in calls)
+    first_cmds = [c["input"].get("command", "") for c in calls if c["tool"] in ("Bash", "PowerShell")][:2]
+    # slash 展開的提示不會出現在 stream-json；沒有 Skill 呼叫、沒讀 SKILL.md，卻一開始就照 Skill 用 c2s，內容只能來自 slash 注入
+    slash_indirect = available and not skill_calls and not read_skill_md and any("c2s" in c for c in first_cmds)
     first_skill = next((i for i, c in enumerate(calls) if c in skill_calls), None)
     return {"skill_tool_called": bool(skill_calls), "slash_command_expanded": triggered_by_slash,
-            "c2s_after_skill": bool(c2s_calls) and (triggered_by_slash or first_skill is not None),
+            "slash_available": available, "slash_indirect": slash_indirect,
+            "c2s_after_skill": bool(c2s_calls) and (triggered_by_slash or slash_indirect or first_skill is not None),
             "c2s_commands": c2s_calls, "forbidden_reads": forbidden,
+            "tool_escapes": [e for e in escapes if e["kind"] == "工具"], "read_skill_md": read_skill_md,
             "tool_counts": {t: sum(c["tool"] == t for c in calls) for t in sorted({c["tool"] for c in calls})},
             "calls": [{"tool": c["tool"], "input": json.dumps(c["input"], ensure_ascii=False)[:300]} for c in calls],
             "final_reply": final}
@@ -131,11 +175,16 @@ def _write_session_md(case_id, tag, ev):
              "同模型、全新的 Claude Code headless session（`claude -p`），不是跨模型驗證。", "",
              f"- 提示：`{ev['prompt']}`", f"- 結束碼：{ev['exit_code']}",
              f"- Skill 工具呼叫 `character-to-spine`：{ok(ev['skill_tool_called'])}",
-             f"- slash command 展開：{ok(ev['slash_command_expanded'])}",
+             f"- slash command 展開（直接證據）：{ok(ev['slash_command_expanded'])}",
+             f"- slash 間接證據（沒呼叫 Skill、沒讀 SKILL.md，前兩個指令就照 Skill 用 c2s）：{ok(ev.get('slash_indirect'))}",
+             f"- 讀過 SKILL.md 檔案：{ok(ev.get('read_skill_md'))}",
              f"- 觸發後執行 c2s：{ok(ev['c2s_after_skill'])}（{len(ev['c2s_commands'])} 次）",
-             f"- 讀取禁止路徑：{len(ev['forbidden_reads'])} 次", f"- 工具呼叫次數：{ev['tool_counts']}", "",
+             f"- 讀到答案（既有角色、其他案例、案例描述）：{len(ev['forbidden_reads'])} 次",
+             f"- 使用沙盒外的工具（呼叫專案的 c2s／python、讀原始碼）：{len(ev.get('tool_escapes', []))} 次",
+             f"- 工具呼叫次數：{ev['tool_counts']}", "",
              "## c2s 指令", ""] + [f"- `{c}`" for c in ev["c2s_commands"]] + [
-             "", "## 禁止路徑", ""] + ([f"- {f['tool']}：`{f['hit']}`：{f['input']}" for f in ev["forbidden_reads"]] or ["- 無"]) + [
+             "", "## 讀到答案", ""] + ([f"- {f['tool']}：`{f['hit']}`：{f['input']}" for f in ev["forbidden_reads"]] or ["- 無"]) + [
+             "", "## 使用沙盒外的工具", ""] + ([f"- {f['tool']}：{f['input']}" for f in ev.get("tool_escapes", [])] or ["- 無"]) + [
              "", "## 全部工具呼叫", ""] + [f"{i + 1}. {c['tool']}：`{c['input']}`" for i, c in enumerate(ev["calls"])] + [
              "", "## 最後回覆（原文）", "", ev["final_reply"]]
     (DOCS / case_id).mkdir(parents=True, exist_ok=True)

@@ -93,3 +93,18 @@ def test_limb_travel_sees_free_arms(built):
     travel = limb_travel(wd, load_json(wd / "spine" / "character.json"))
     assert travel["arm_l"]["happy"] > 0.02 and travel["arm_r"]["happy"] > 0.02
     assert all(np.isfinite(v["idle"]) for v in travel.values())
+
+
+def test_escape_detection_handles_windows_paths(tmp_path):
+    box = tmp_path / "A" / "sandbox_nl"
+    box.mkdir(parents=True)
+    raw = tmp_path / "s.jsonl"
+    raw.write_text(_events(
+        {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read", "input": {"file_path": str(box / "gen_a.png")}}]}},
+        {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read", "input": {"file_path": "D:\\01_Project\\26_char_spine\\examples\\real\\转场2.parts.json"}}]}},
+        {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash", "input": {"command": "cat ../../other.parts.json"}}]}}),
+        encoding="utf-8")
+    ev = g.skill_evidence(raw, box)
+    assert {h["hit"] for h in ev["forbidden_reads"]} >= {"examples/real", "转场2.parts"}
+    assert {h["hit"] for h in ev["tool_escapes"]} == {"沙盒外的專案路徑", "上層目錄 ../"}
+    assert not any("gen_a.png" in h["input"] for h in ev["forbidden_reads"] + ev["tool_escapes"])
