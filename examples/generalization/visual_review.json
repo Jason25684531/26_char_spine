@@ -1,38 +1,171 @@
 {
-  "_說明": "目視判斷，與自動量測分開記錄。reviewer=agent 表示由 Claude（Agent）看 visual_sheet.png 與露出放大圖判斷，不是使用者目視。等級：OK／MINOR（有問題但不阻擋，需人工處理或可接受）／BAD（不可接受）／UNKNOWN。使用者目視尚未進行。",
-  "A": {"reviewer": "agent", "sheet": "baseline",
-        "layers": ["OK", "重組與原圖看不出差異；帽子、辮子、裙子邊界乾淨"],
-        "joints": ["OK", "頭在脖子、手臂在肩膀、腿在髖部"],
-        "motion": ["MINOR", "happy 以整體跳躍與辮子擺動為主；手臂被縮到 ×0.125（草稿露出），只剩小幅擺動（4.4%～5.0%）"],
-        "occlusion": ["MINOR", "舉手時裙子兩側露出條狀草稿，一眼可辨（repair_skirt.png）；已列人工修補"]},
-  "B": {"reviewer": "agent", "sheet": "baseline",
-        "layers": ["OK", "重組一致"],
-        "joints": ["MINOR", "腿完全被長裙蓋住，裙子左右兩半被當成 leg_l／leg_r，等於捏造了看不見的腿"],
-        "motion": ["OK", "舉拳的手明顯揮動（12.6%），雙馬尾擺動；提裙的手有接觸約束，幅度小合理"],
-        "occlusion": ["OK", "所有補圖露出 < 2%，驗收圖尺寸看不出痕跡（未逐格放大）"]},
-  "C": {"reviewer": "agent", "sheet": "baseline",
-        "layers": ["OK", "重組一致；長杖、帽子、斗篷分開"],
-        "joints": ["BAD", "body 的 pivot（hip）在裙襬最底下，身體旋轉繞著腳底轉，整件裙子跟著傾斜"],
-        "motion": ["BAD", "幾乎只剩整體上下跳：長杖 0%、腿 0%、兩手 1%～2%；地面影子跟著跳到空中"],
-        "occlusion": ["MINOR", "頭髮、影子草稿露出約 2%～2.7%，已列人工修補"]},
-  "D": {"reviewer": "agent", "sheet": "baseline",
-        "layers": ["OK", "重組一致"],
-        "joints": ["OK", "腿的 pivot 在裙襬下緣（可見的腿從這裡開始），上半截被裙子蓋住，看起來可接受"],
-        "motion": ["MINOR", "雙腿明顯踢動（約 11.7%）；拿相機的雙手幾乎不動（1.2%～1.9%）"],
-        "occlusion": ["MINOR", "腿的可靠補圖露出 17% 但放大後看不出接縫（exposure_legs.png）；hair_back、body 草稿已列人工修補"]},
-  "E": {"reviewer": "agent", "sheet": "baseline",
-        "layers": ["OK", "重組一致；角、圍巾、披風、尾巴分開"],
-        "joints": ["OK", "以人形骨架套在雙足龍上，肩、頸、胯的位置合理"],
-        "motion": ["MINOR", "尾巴與披風隨跳躍擺動、舉起的手小幅揮動；地面影子跟著角色飛到空中"],
-        "occlusion": ["MINOR", "披風、影子草稿露出約 7%～8%，已列人工修補"]},
-  "ren": {"reviewer": "agent", "sheet": "baseline",
-          "layers": ["OK", "重組一致"],
-          "joints": ["OK", "與既有交付相同"],
-          "motion": ["MINOR", "抱吉他的手動作很小（已知 K-17、K-18），以整體跳躍加頭髮、裙擺為主"],
-          "occlusion": ["MINOR", "被遮的身體、腿、頭髮草稿已列人工修補（已知 K-07）"]},
-  "zc2": {"reviewer": "agent", "sheet": "baseline",
-          "layers": ["OK", "重組一致；散落花瓣依規定不屬於任何部件"],
-          "joints": ["OK", "與既有交付相同"],
-          "motion": ["OK", "舉起的手揮動明顯（12.9%）"],
-          "occlusion": ["MINOR", "被遮的身體、腿、頭髮草稿已列人工修補（已知 K-07）"]}
+  "_說明": "目視判斷，與自動量測分開記錄。reviewer=agent 表示由 Claude（Agent）看 visual_sheet.png 與露出放大圖判斷，不是使用者目視。等級：OK／MINOR（有問題但不阻擋，需人工處理或可接受）／BAD（不可接受）／UNKNOWN。使用者目視尚未進行。 每筆綁定它看過的驗收圖 sha256；圖變了就視為沒有目視。",
+  "A": [
+    {
+      "reviewer": "agent",
+      "sheet": "baseline",
+      "layers": [
+        "OK",
+        "重組與原圖看不出差異；帽子、辮子、裙子邊界乾淨"
+      ],
+      "joints": [
+        "OK",
+        "頭在脖子、手臂在肩膀、腿在髖部"
+      ],
+      "motion": [
+        "MINOR",
+        "happy 以整體跳躍與辮子擺動為主；手臂被縮到 ×0.125（草稿露出），只剩小幅擺動（4.4%～5.0%）"
+      ],
+      "occlusion": [
+        "MINOR",
+        "舉手時裙子兩側露出條狀草稿，一眼可辨（repair_skirt.png）；已列人工修補"
+      ],
+      "sheet_sha256": "5d8c92fab9aafdd4967a134dd2b51cd204c4f828d4dd4f8278b3631fb133e28b",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "B": [
+    {
+      "reviewer": "agent",
+      "sheet": "baseline",
+      "layers": [
+        "OK",
+        "重組一致"
+      ],
+      "joints": [
+        "BAD",
+        "腿完全被長裙蓋住，裙子左右兩半被當成 leg_l／leg_r，捏造了看不見的腿（判準：捏造結構）"
+      ],
+      "motion": [
+        "OK",
+        "舉拳的手明顯揮動（12.6%），雙馬尾擺動；提裙的手有接觸約束，幅度小合理"
+      ],
+      "occlusion": [
+        "OK",
+        "所有補圖露出 < 2%，驗收圖尺寸看不出痕跡（未逐格放大）"
+      ],
+      "sheet_sha256": "bebead0ddbfb6d9b5b25d97c5491ee243459962b82e3b4a07b723202fe2470fb",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "C": [
+    {
+      "reviewer": "agent",
+      "sheet": "baseline",
+      "layers": [
+        "OK",
+        "重組一致；長杖、帽子、斗篷分開"
+      ],
+      "joints": [
+        "BAD",
+        "body 的 pivot（hip）在裙襬最底下，身體旋轉繞著腳底轉，整件裙子跟著傾斜"
+      ],
+      "motion": [
+        "BAD",
+        "四肢在關鍵影格中看不出動作，只剩整體上下跳：長杖 0%、腿 0%、兩手 1%～2%（判準：只剩跳動）"
+      ],
+      "occlusion": [
+        "MINOR",
+        "頭髮、影子草稿露出約 2%～2.7%，已列人工修補"
+      ],
+      "sheet_sha256": "45372c6db8643995506e84d4263b998c93a23266a8fcf035e162ef892de176a5",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "D": [
+    {
+      "reviewer": "agent",
+      "sheet": "baseline",
+      "layers": [
+        "OK",
+        "重組一致"
+      ],
+      "joints": [
+        "MINOR",
+        "腿的 pivot 在裙襬下緣（約膝蓋高度），happy 時雙腿從膝部張開；上半截被裙子遮住（判準：MINOR）"
+      ],
+      "motion": [
+        "MINOR",
+        "雙腿明顯踢動（約 11.7%）；拿相機的雙手幾乎不動（1.2%～1.9%）"
+      ],
+      "occlusion": [
+        "MINOR",
+        "腿的可靠補圖露出 17% 但放大後看不出接縫（exposure_legs.png）；hair_back、body 草稿已列人工修補"
+      ],
+      "sheet_sha256": "6eebbbd89ef008d56f38464cfd8dadd9320690d34755ea29c23e7db1f4f795ef",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "E": [
+    {
+      "reviewer": "agent",
+      "sheet": "baseline",
+      "layers": [
+        "OK",
+        "重組一致；角、圍巾、披風、尾巴分開"
+      ],
+      "joints": [
+        "OK",
+        "以人形骨架套在雙足龍上，肩、頸、胯的位置合理"
+      ],
+      "motion": [
+        "MINOR",
+        "尾巴與披風隨跳躍擺動、舉起的手小幅揮動；地面影子跟著角色離地（判準：MINOR）"
+      ],
+      "occlusion": [
+        "MINOR",
+        "披風、影子草稿露出約 7%～8%，已列人工修補"
+      ],
+      "sheet_sha256": "19f4a2f0e69a831ce9cda645a7ca19ad92a9f12dce96167a64aad48b8b5b7236",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "ren": [
+    {
+      "reviewer": "agent",
+      "sheet": "baseline",
+      "layers": [
+        "OK",
+        "重組一致"
+      ],
+      "joints": [
+        "OK",
+        "與既有交付相同"
+      ],
+      "motion": [
+        "MINOR",
+        "抱吉他的手動作很小（已知 K-17、K-18），以整體跳躍加頭髮、裙擺為主"
+      ],
+      "occlusion": [
+        "MINOR",
+        "被遮的身體、腿、頭髮草稿已列人工修補（已知 K-07）"
+      ],
+      "sheet_sha256": "06a5c5d96dda6c5fb2c8026f1f1ca52c07b6d98e888cf8f75bc6213bd181f5d3",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ],
+  "zc2": [
+    {
+      "reviewer": "agent",
+      "sheet": "baseline",
+      "layers": [
+        "OK",
+        "重組一致；散落花瓣依規定不屬於任何部件"
+      ],
+      "joints": [
+        "OK",
+        "與既有交付相同"
+      ],
+      "motion": [
+        "OK",
+        "舉起的手揮動明顯（12.9%）"
+      ],
+      "occlusion": [
+        "MINOR",
+        "被遮的身體、腿、頭髮草稿已列人工修補（已知 K-07）"
+      ],
+      "sheet_sha256": "c0f6144acf0325fe8b443ce5ebc3777104ec2a4cf299bc81a3a819fc9c1b43c3",
+      "rubric": "criteria.visual_rubric（2026-11-24 凍結）"
+    }
+  ]
 }

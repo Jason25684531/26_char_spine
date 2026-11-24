@@ -22,6 +22,8 @@ metadata:
 - `BLOCKED` 與 `NOT_TESTED` 不是完成。尤其 `.spine` 專案需要完整版 Spine，沒有就照實回報 BLOCKED。
 - 預覽 GIF 是 Python Simulation Preview，不是 Spine 算圖，回報時要這樣稱呼它。
 - 自動填補的區域只是草稿；`needs_manual` 的部件要列給使用者，不能說已修好。
+- 只看這張圖本身判斷部件，不要參考專案裡其他角色的 `parts.json`：別的角色的拆法、座標與 pivot 不適用。格式以本文件為準。
+- 用使用者提問的語言回報。
 
 ## 流程
 
@@ -51,7 +53,14 @@ metadata:
 
 分步指令（同一個工作目錄，後面的指令不必再帶圖片）：`c2s analyze <圖片>` → `c2s prepare` → `c2s rig --preset humanoid-chibi` → `c2s animate --motion happy` → `c2s refine` → `c2s validate` → `c2s preview`。`c2s refine` 結束時會 export；單獨重跑 `c2s export` 會讓舊的品質報告失效（驗證報告的 `animation_quality` 變成 NOT_TESTED）。任何指令都可加 `--workdir <目錄>`。
 
-結束碼：0 完成（但仍要看驗證報告的各項狀態）、1 失敗（看 `c2s_error.log`）、2 需要補資料。
+結束碼：0 完成（但仍要看驗證報告的各項狀態）、1 失敗（看 `c2s_error.log`）、2 需要補資料、3 parts.json 宣告超出支援範圍（回報 `reason`，不要宣稱成功）。
+
+## 超出範圍與看不到的部件
+
+目前只支援 `humanoid-chibi`：有頭、身體、兩手、兩腳的角色（雙足的擬人動物也可以）。分析時遇到下列情況，在 parts.json 頂層宣告，不要畫一個猜測的多邊形湊數：
+
+- **必要部件在畫面上完全看不到**（例如長裙蓋住雙腳、側身時遠側的手）：`"absent": ["leg_l", "leg_r"]`。該部件不建骨頭、不出動畫，報告列為可選擇補畫。`head`、`body` 不可列入。腳被長裙蓋住時，裙子用 `role: "skirt"` 的部件表示，`body` 的 pivot 放在腰，不要放在裙襬或地面。
+- **角色結構對應不到這個骨架**（四足或無肢體的生物、多個角色、只有半身）：`"unsupported": "<原因>"`，`parts` 可以是空陣列。`c2s run` 會以結束碼 3 停止，把原因告訴使用者。
 
 ## parts.json 格式
 

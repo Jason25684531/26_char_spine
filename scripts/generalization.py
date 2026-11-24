@@ -14,6 +14,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import cv2
@@ -80,11 +81,12 @@ def skill(case_id, slash=False):
     真實使用者的專案裡沒有本專案的範例角色、測試與案例描述，沙盒重現這個條件。"""
     img, case = cases()[case_id]
     tag = "slash" if slash else "nl"
-    box = OUT / case_id / f"sandbox_{tag}"
+    box = Path(tempfile.gettempdir()) / "c2s_sandbox" / case_id / f"sandbox_{tag}"  # repo 外：看不到本專案的 git 與檔案
     shutil.rmtree(box, ignore_errors=True)
     shutil.copytree(ROOT / "skills" / "character-to-spine", box / ".claude" / "skills" / "character-to-spine")
     shutil.copy(img, box / img.name)
-    prompt = f"/character-to-spine {img.name}" if slash else f"幫我把這張角色圖做成 Spine 動畫：{img.name}"
+    phrase = (case or {}).get("skill_prompt", "幫我把這張角色圖做成 Spine 動畫：{file}")
+    prompt = f"/character-to-spine {img.name}" if slash else phrase.format(file=img.name)
     raw = OUT / case_id / f"skill_{tag}.jsonl"
     n = 1 + len(list(raw.parent.glob(f"skill_{tag}.run*.jsonl")))
     for old in (raw, raw.with_suffix(".json"), DOCS / case_id / f"skill_session_{tag}.md"):
@@ -101,10 +103,11 @@ def skill(case_id, slash=False):
     if result.exists():
         dest = OUT / case_id / f"{img.stem}.slash.parts.json" if slash else img.with_suffix(".parts.json")
         if dest.exists():
-            shutil.move(dest, dest.with_name(f"{img.stem}.before_run{n}.parts.json"))
+            (OUT / case_id / "prior").mkdir(parents=True, exist_ok=True)
+            shutil.move(dest, OUT / case_id / "prior" / f"{img.stem}.before_run{n}.parts.json")
         shutil.copy(result, dest)
     evidence = skill_evidence(raw, box)
-    evidence.update(prompt=prompt, exit_code=proc.returncode, sandbox=box.relative_to(ROOT).as_posix(),
+    evidence.update(prompt=prompt, exit_code=proc.returncode, sandbox=box.as_posix(),
                     parts_written=result.exists())
     save_json(OUT / case_id / f"skill_{tag}.json", evidence)
     _write_session_md(case_id, tag, evidence)
@@ -118,7 +121,7 @@ def _escapes(text, box):
         t = t.replace(Path(box).resolve().as_posix().lower(), "<sandbox>")
     hits = [("答案", f) for f in FORBIDDEN if f.replace("\\", "/").lower() in t]
     own = Path(box).parent.name if box is not None else None
-    hits += [("答案", f"其他案例 {o}") for o in "ABCDE"
+    hits += [("答案", f"其他案例 {o}") for o in (c["id"] for c in manifest()["cases"])
              if o != own and (f"generalization/{o.lower()}/" in t or f"gen_{o.lower()}." in t)]
     if "26_char_spine" in t:  # 多半是呼叫專案的 c2s.exe／python.exe，屬於使用工具；讀到答案時會同時命中上面的規則
         hits.append(("工具", "沙盒外的專案路徑"))
@@ -206,7 +209,7 @@ def provenance(img, parts_path):
     olds = [p for f in list((ROOT / "examples").glob("real/*.parts.json")) + list((ROOT / "examples").glob("synthetic/*.parts.json"))
             for p in load_json(f)["parts"] if p.get("polygon")]
     for f in SET.glob("*/*.parts.json"):
-        if f.resolve() != Path(parts_path).resolve():
+        if f.parent.name != Path(img).parent.name:  # 同一張圖的其他版本不算「既有答案」
             olds += [p for p in load_json(f).get("parts", []) if p.get("polygon")]
     rgba, _ = load_rgba(img)
     ys, xs = np.nonzero(rgba[..., 3] > ALPHA_MIN)
@@ -249,6 +252,11 @@ def run_case(case_id):
         r["has_parts"] = parts.exists()
         doc = load_json(parts) if parts.exists() else {}
         r["unsupported"], r["absent"] = doc.get("unsupported"), doc.get("absent", [])
+        r["set"] = case.get("set", "dev")
+        if "expected_absent" in case:  # 保留集：分析前預登記的 absent／attach，與 Agent 的宣告比對
+            r["expected_absent"] = case["expected_absent"]
+            arms = sum(1 for p in doc.get("parts", []) if p.get("attach") and p["name"].startswith("arm"))
+            r["prereg_attach"] = {"expected_arms": case.get("expected_attached_arms", 0), "declared_arms": arms}
         r["provenance"] = provenance(img, parts) if parts.exists() else {"status": "NOT_TESTED", "detail": ["沒有 parts.json"]}
         skills = {t: load_json(OUT / case_id / f"skill_{t}.json") for t in ("nl", "slash") if (OUT / case_id / f"skill_{t}.json").exists()}
         r["skill"] = {t: {k: v for k, v in e.items() if k not in ("calls", "final_reply")} for t, e in skills.items()}
@@ -279,13 +287,15 @@ def measure(wd):
     # 自我修正把哪根骨頭降了多少、是被哪一類異常拖累（素材限制 = 補圖露出；其他 = 演算法限制）
     cause = {}
     for rnd in q["rounds"]:
+        if rnd["round"] >= q["chosen_round"]:  # 只算最後採用的那幾輪修正；被還原的輪次不算
+            continue
         for a in rnd["anomalies"]:
             if a.get("attributed_to"):
                 cause.setdefault(a["attributed_to"], set()).add(a["kind"])
     tuning = q["tuning"].get("happy", {})
-    over = {b: {"factor": f, "limit": "素材限制" if cause.get(b, set()) <= {"exposure"} else "演算法限制",
-                "caused_by": sorted(cause.get(b, set()))}
-            for b, f in tuning.items() if roles.get(b) == "arm" and f < 0.25}
+    limit = lambda k: "未歸因" if not k else "素材限制" if k <= {"exposure"} else "演算法限制"
+    over = {b: {"factor": f, "limit": limit(cause.get(b, set())), "caused_by": sorted(cause.get(b, set()))}
+            for b, f in tuning.items() if roles.get(b) == "arm" and f < criteria()["over_reduced_factor"]}
     loop = all(np.allclose(world_matrices(skel, n, 0)[b], world_matrices(skel, n, duration(a))[b], atol=1e-3)
                for n, a in skel["animations"].items() for b in world_matrices(skel))
     return {"validator": {c["check"]: c["status"] for c in v["checks"]},
@@ -296,7 +306,10 @@ def measure(wd):
             "quality": {"unresolved": [f"{a['kind']}:{a['subject']}" for a in q["unresolved"]], "tuning": q["tuning"],
                         "downgraded": q["downgraded_to_needs_manual"]},
             "motion": travel, "free_arms": {n: t.get("happy", 0) for n, t in travel.items() if roles.get(n) == "arm" and n not in attached},
-            "bounce_only": all(t.get("happy", 0) < criteria()["bounce_only_max"] for t in travel.values()),
+            "attached_arms": {n: t.get("happy", 0) for n, t in travel.items() if roles.get(n) == "arm" and n in attached},
+            # 頭髮、裙擺的次要擺動不算：只看手臂與腿
+            "bounce_only": all(t.get("happy", 0) < criteria()["bounce_only_max"] for n, t in travel.items()
+                               if roles.get(n) in ("arm", "leg")),
             "over_reduced": over, "loop_ok": bool(loop), "tuning_causes": {b: sorted(k) for b, k in cause.items()},
             "exposure": fill_exposure(wd, skel),
             "manual": [e["name"] for e in meta["parts"] if e["status"] == "needs_manual"],
@@ -320,9 +333,13 @@ def criteria():
 
 # ---------- 判定 ----------
 
-def _visual(case_id):
+def _visual(case_id, sheet_png, reviewer="agent"):
+    """目視紀錄綁定它看過的那張驗收圖（sha256）：圖變了（重跑）就視為沒有目視。"""
     path = SET / "visual_review.json"
-    return load_json(path).get(case_id) if path.exists() else None
+    if not path.exists() or not Path(sheet_png).exists():
+        return None
+    digest = sha256(sheet_png)
+    return next((v for v in load_json(path).get(case_id, []) if v.get("sheet_sha256") == digest and v["reviewer"] == reviewer), None)
 
 
 def _algo_failures(r, c):
@@ -334,21 +351,10 @@ def _algo_failures(r, c):
     if r["bounce_only"]:
         out.append("所有肢體相對身體幾乎不動，只剩整體跳動")
     out += [f"未持物手臂 {n} 動作量 {t:.1%} < {c['free_arm_min']:.0%}" for n, t in r["free_arms"].items()
-            if t < c["free_arm_min"] and not _material_only(r, n)]
+            if t < c["free_arm_min"]]
     out += [f"品質未解：{u}" for u in r["quality"]["unresolved"]]
-    out += [f"{b} 被自我修正縮到 ×{o['factor']}（{o['limit']}：{o['caused_by']}）" for b, o in r["over_reduced"].items() if o["limit"] == "演算法限制"]
+    out += [f"{b} 被自我修正縮到 ×{o['factor']}（{o['limit']}：{o['caused_by']}）" for b, o in r["over_reduced"].items() if o["limit"] != "素材限制"]
     return out
-
-
-def _material_only(r, bone):
-    """這根骨頭被自我修正縮小，且原因全是補圖露出（素材限制，見規格「區分素材限制與演算法限制」）。"""
-    causes = r.get("tuning_causes", {}).get(bone)
-    return bool(causes) and set(causes) <= {"exposure"}
-
-
-def _low_arms_material(r, c):
-    return [f"未持物手臂 {n} 動作量 {t:.1%} < {c['free_arm_min']:.0%}（素材限制：被草稿露出拖累）"
-            for n, t in r.get("free_arms", {}).items() if t < c["free_arm_min"] and _material_only(r, n)]
 
 
 def _bad_validator(r):
@@ -368,12 +374,14 @@ GRADE_RULES = [
     ("FAIL", lambda r, c: ["沒有產生 parts.json（分析失敗）"] if r.get("has_parts") is False else []),
     ("FAIL", lambda r, c: [f"來源查核：{d}" for d in r["provenance"]["detail"]] if r.get("provenance", {}).get("status") == "FAIL" else []),
     ("FAIL", lambda r, c: [f"流程停止（結束碼 {r['exit_code']}）：{r.get('message', '')[-300:]}"] if r.get("status") == "stopped" else []),
+    ("FAIL", lambda r, c: ["c2s 結束碼 1"] if r.get("exit_code") == 1 else []),
+    ("FAIL", lambda r, c: [f"宣告為 absent 的 {', '.join(sorted(set(r.get('absent') or []) - set(r['expected_absent'])))} 預登記為看得到"]
+     if r.get("expected_absent") is not None and set(r.get("absent") or []) - set(r["expected_absent"]) else []),
     ("FAIL", lambda r, c: _bad_validator(r) + _algo_failures(r, c) + _vis(r, "BAD")),
     ("NOT_TESTED", lambda r, c: ["沒有目視紀錄"] if not r.get("visual") else []),
     ("PARTIAL", lambda r, c: [f"需人工修補：{', '.join(r['manual'])}"] * bool(r["manual"])
      + [f"宣告看不到：{', '.join(r.get('absent') or [])}"] * bool(r.get("absent"))
      + [f"{b} 被自我修正縮到 ×{o['factor']}（素材限制：{o['caused_by']}）" for b, o in r["over_reduced"].items()]
-     + _low_arms_material(r, c)
      + _vis(r, "MINOR") + _vis(r, "UNKNOWN")),
     ("PASS", lambda r, c: ["所有登記門檻與目視項目通過"]),
 ]
@@ -457,48 +465,91 @@ def results_path(label=None):
     return OUT / "_snapshots" / label / "results.json" if label else OUT / "results.json"
 
 
-def report(compare=None):
-    res = load_json(results_path())
+FROZEN = "9788457"  # 凍結測試集與門檻的提交
+
+
+def frozen_diff():
+    """manifest 與凍結版不同、卻沒有登記在 criteria_changes 的欄位。"""
+    old = json.loads(subprocess.run(["git", "show", f"{FROZEN}:examples/generalization/manifest.json"], cwd=ROOT,
+                                    capture_output=True, text=True, encoding="utf-8").stdout)
+    cur = manifest()
+    registered = {c["field"] for c in cur.get("criteria_changes", [])}
+    diffs = [f"criteria.{k}" for k in old["criteria"] if old["criteria"][k] != cur["criteria"].get(k)]
+    frozen_cases = {c["id"]: c for c in old["cases"]}
+    for c in cur["cases"]:
+        if c["id"] in frozen_cases:
+            diffs += [f"cases.{c['id']}.{k}" for k in ("file", "sha256", "expected_scope", "features")
+                      if frozen_cases[c["id"]].get(k) != c.get(k)]
+    return [d for d in diffs if d not in registered]
+
+
+def graded(label=None):
+    res = load_json(results_path(label))
     for r in res.values():
-        r["visual"] = _visual(r["id"])
+        sheet_png = OUT / "_snapshots" / label / f"{r['id']}_visual_sheet.png" if label else OUT / r["id"] / "visual_sheet.png"
+        r["visual"] = _visual(r["id"], sheet_png)
+        r["user_visual"] = _visual(r["id"], sheet_png, "user")
         r["grade"], r["reasons"] = grade(r, criteria())
-    save_json(results_path(), res)
-    real = [r for r in res.values() if r["origin"] in ("user", "public")]
-    n = len(real)
+    return res
+
+
+def rates(res, which):
+    real = [r for r in res.values() if r["origin"] in ("user", "public") and r.get("set", "dev") == which]
     count = {g: sum(r["grade"] == g for r in real) for g in COUNTED}
-    lines = ["# 泛化測試矩陣", "", "由 `python scripts/generalization.py report` 依 `output/generalization/results.json` 產生，請勿手改。", "",
-             "## 成功率（只計真實陌生角色）", "",
-             f"- 成功率（PASS）：{count['PASS']}/{n}", f"- 可處理率（PASS＋PARTIAL）：{count['PASS'] + count['PARTIAL']}/{n}",
-             "- " + "、".join(f"{COUNTED[g]} {count[g]}" for g in COUNTED), "- UNSUPPORTED 不計入成功；合成角色不計入任何比率。", "",
-             "## 案例", "",
-             "| 案例 | 類型 | 來源 | 預期 | 等級 | Skill 觸發 | 來源查核 | 重組 MAE | 未分配 | 未持物手臂動作量 | 只剩跳動 | 循環 | 需人工 | 主要理由 |",
-             "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    return count, len(real)
+
+
+def _rate_cell(count, n):
+    return f"{count['PASS']}/{n}｜{count['PASS'] + count['PARTIAL']}/{n}｜" + "、".join(f"{g} {count[g]}" for g in COUNTED if count[g]) if n else "—"
+
+
+def report(compare=None):
+    unregistered = frozen_diff()
+    if unregistered:
+        raise SystemExit("manifest 與凍結版（" + FROZEN + "）不同且未登記於 criteria_changes：" + ", ".join(unregistered))
+    res = graded()
+    save_json(results_path(), res)
+    count, n = rates(res, "dev")
+    labels = sorted((d.name for d in (OUT / "_snapshots").glob("*") if (d / "results.json").exists()),
+                    key=lambda x: (OUT / "_snapshots" / x / "results.json").stat().st_mtime)
+    lines = ["# 泛化測試矩陣", "", "由 `python scripts/generalization.py report` 依 `output/generalization/results.json` 產生，請勿手改。",
+             "所有等級都用目前登記的同一套規則重算；變更見 `examples/generalization/manifest.json` 的 criteria_changes。", "",
+             "## 成功率（只計真實陌生角色；格式：成功 PASS｜可處理 PASS＋PARTIAL｜各等級）", "",
+             "- 開發集（dev）：A–E。第一次盲測後依它們的失敗修改過 Skill 與程式，之後的結果**不是泛化證據**。",
+             "- 保留集（holdout）：所有修改完成前登記、未曾執行，泛化結論以它與開發集的第一次盲測（baseline）為準。",
+             "- UNSUPPORTED 不計入成功；合成角色不計入任何比率。", "",
+             "| 快照 | 開發集 | 保留集 |", "|---|---|---|"]
+    for label in labels + [None]:
+        snap = res if label is None else graded(label)
+        lines.append(f"| {label or '目前'} | {_rate_cell(*rates(snap, 'dev'))} | {_rate_cell(*rates(snap, 'holdout'))} |")
+    lines += ["", "## 案例（目前）", "",
+              "| 案例 | 集 | 類型 | 預期 | 等級 | Skill 觸發 | 來源查核 | 重組 MAE | 未分配 | 未持物手臂 | 持物手臂 | 只剩跳動 | 循環 | 需人工 | absent | 主要理由 |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in res.values():
         sk = r.get("skill", {}).get("nl", {})
-        trig = "—" if r["origin"] == "legacy" else ("是" if sk.get("skill_tool_called") and sk.get("c2s_after_skill") else "否" if sk else "未測")
+        trig = "—" if r["origin"] == "legacy" else ("是（c2s 由專案的 .venv 提供）" if sk.get("skill_tool_called") and sk.get("c2s_after_skill") else "否" if sk else "未測")
         rc = r.get("recompose", {})
-        arms = "、".join(f"{k} {v:.1%}" for k, v in r.get("free_arms", {}).items()) or "—"
+        pct = lambda d: "、".join(f"{k} {v:.1%}" for k, v in d.items()) or "—"
         un = "—" if rc.get("unassigned_ratio") is None else f"{rc['unassigned_ratio']:.2%}"
-        lines.append(f"| {r['id']} | {r['type']} | {r['origin']} | {r['expected_scope']} | **{r['grade']}** | {trig} | "
-                     f"{r.get('provenance', {}).get('status', '—')} | {rc.get('setup_mae', '—')} | "
-                     f"{un} | {arms} | "
-                     f"{'是' if r.get('bounce_only') else '否' if 'bounce_only' in r else '—'} | "
+        lines.append(f"| {r['id']} | {r.get('set', 'legacy' if r['origin'] == 'legacy' else 'dev')} | {r['type']} | {r['expected_scope']} | **{r['grade']}** | {trig} | "
+                     f"{r.get('provenance', {}).get('status', '—')} | {rc.get('setup_mae', '—')} | {un} | {pct(r.get('free_arms', {}))} | "
+                     f"{pct(r.get('attached_arms', {}))} | {'是' if r.get('bounce_only') else '否' if 'bounce_only' in r else '—'} | "
                      f"{'是' if r.get('loop_ok') else '否' if 'loop_ok' in r else '—'} | {', '.join(r.get('manual', [])) or '—'} | "
-                     f"{'；'.join(r['reasons'])[:220]} |")
-    lines += ["", "## 驗證器原始狀態（PASS／FAIL／BLOCKED／NOT_TESTED）", "",
-              "| 案例 | " + " | ".join(next((list(r["validator"]) for r in res.values() if r.get("validator")), [])) + " |",
-              "|---|" + "---|" * len(next((r["validator"] for r in res.values() if r.get("validator")), {}))]
+                     f"{', '.join(r.get('absent') or []) or '—'} | {'；'.join(r['reasons'])[:240]} |")
+    lines += ["", "## 驗證器原始狀態（PASS／FAIL／BLOCKED／NOT_TESTED）", ""]
     for r in res.values():
         if r.get("validator"):
-            lines.append(f"| {r['id']} | " + " | ".join(r["validator"].values()) + " |")
+            lines.append(f"- {r['id']}：" + "、".join(f"{k} {s}" for k, s in r["validator"].items()))
     lines += ["", "## 自動量測與目視判斷（分開記錄）", "",
-              "| 案例 | 目視者 | 分層 | 關節 | 動作 | 遮擋補圖 | 補圖最大露出 | 各肢體 happy 動作量 |", "|---|---|---|---|---|---|---|---|"]
+              "| 案例 | Agent 目視：分層 | 關節 | 動作 | 遮擋補圖 | 使用者目視 | 補圖最大露出（自動） | 各肢體 happy 動作量（自動） |",
+              "|---|---|---|---|---|---|---|---|"]
     for r in res.values():
         v = r.get("visual") or {}
         cell = lambda k: f"{v[k][0]}：{v[k][1]}" if k in v else "NOT_TESTED"
         exp = "、".join(f"{k} {x:.1%}" for k, x in r.get("exposure", {}).items()) or "—"
         mot = "、".join(f"{k} {x.get('happy', 0):.1%}" for k, x in r.get("motion", {}).items()) or "—"
-        lines.append(f"| {r['id']} | {v.get('reviewer', '—')} | {cell('layers')} | {cell('joints')} | {cell('motion')} | {cell('occlusion')} | {exp} | {mot} |")
+        lines.append(f"| {r['id']} | {cell('layers')} | {cell('joints')} | {cell('motion')} | {cell('occlusion')} | "
+                     f"{'已確認' if r.get('user_visual') else 'NOT_TESTED'} | {exp} | {mot} |")
     if compare:
         lines += ["", *compare_lines(*compare)]
     (ROOT / "docs" / "GENERALIZATION_TEST_MATRIX.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -506,7 +557,7 @@ def report(compare=None):
 
 
 def compare_lines(a, b):
-    ra, rb = load_json(results_path(a)), load_json(results_path(b))
+    ra, rb = graded(a), graded(b)
     out = [f"## 前後比較：{a} → {b}", "", "| 案例 | 等級 | 重組 MAE | 未分配 | 未持物手臂動作量 | 需人工 | 品質未解 |", "|---|---|---|---|---|---|---|"]
     for k in rb:
         x, y = ra.get(k, {}), rb[k]
@@ -538,7 +589,8 @@ def main():
     elif a.cmd == "run":
         path = results_path()
         res = load_json(path) if path.exists() else {}
-        for cid in a.ids or list(cases()):
+        holdout = {c["id"] for c in manifest()["cases"] if c.get("set") == "holdout"}
+        for cid in a.ids or [c for c in cases() if c not in holdout]:  # 保留集只在明確指定時執行
             print(f"== {cid}", flush=True)
             res[cid] = run_case(cid)
             save_json(path, res)

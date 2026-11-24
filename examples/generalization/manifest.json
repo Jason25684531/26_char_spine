@@ -16,7 +16,22 @@
     "over_reduced_factor": 0.25,
     "quality_thresholds": "沿用 quality.THRESHOLDS（hole 0.003、gap 0.1、attach 0.6、intrude 0.02、exposure 0.02）",
     "attached_arm": "有 attach 的手臂只報告數值、不設下限（既有角色 K-18 實測 5.1px）",
-    "unassigned_note": "量「與角色本體相連、卻不屬於任何部件」的前景比例；散落特效依 Skill 規定刻意不歸屬，不算"
+    "unassigned_note": "量「與角色本體相連、卻不屬於任何部件」的前景比例；散落特效依 Skill 規定刻意不歸屬，不算",
+    "visual_rubric": {
+      "levels": "OK／MINOR（有問題，但屬可接受或已列人工修補）／BAD（不可接受）／UNKNOWN",
+      "BAD": [
+        "pivot 不在對應的關節（例如 hip 在地面、手臂繞手肘轉、腿繞膝蓋轉且上半截露出）",
+        "捏造畫面上看不到的身體結構（例如把裙子切成兩條腿）",
+        "動作只剩整體跳動，四肢在關鍵影格中看不出動作",
+        "部件之間出現明顯破洞或分離，且沒有列入人工修補"
+      ],
+      "MINOR": [
+        "列入人工修補的草稿在動畫中露出",
+        "地面影子跟著角色離地",
+        "持物或被縮小的手臂只有小幅動作",
+        "腿的 pivot 在可見部分起點（裙襬下緣），上半截被遮住"
+      ]
+    }
   },
   "criteria_basis": {
     "measured_on": "2026-11-24，凍結前，只用既有角色與合成角色（output/ren、zc2、synth_a、synth_b），尚未對任何新圖執行 c2s",
@@ -25,7 +40,58 @@
     "over_reduced_factor": "synth_b 兩手被縮到 ×0.125（gap 造成，K-12），ren、zc2 沒有手臂低於 ×0.25",
     "unassigned_max": "全部前景量法會讓 zc2 因散落花瓣得到 12.4%；改量與本體相連者後 ren 0.01%、zc2 0.72%、synth 0%"
   },
-  "criteria_changes": [],
+  "criteria_changes": [
+    {
+      "field": "provenance_rule",
+      "date": "2026-11-24",
+      "commit": "38e3c72",
+      "old": "逐點相同，或平移縮放後殘差 < 3px（所有多邊形）",
+      "new": "逐點相同或只平移後殘差 < 3px；允許縮放的比對只用於 6 點以上的多邊形",
+      "reason": "基準執行時 C 的 4 點 leg_r 被判與 D 的 body、camera 雷同：同長寬比的四邊形縮放後本來就相同。看到結果後才改，故登記；報告並列兩版判定"
+    },
+    {
+      "field": "free_arm_min_exemption",
+      "date": "2026-11-24",
+      "old": "38e3c72 曾加入：手臂因草稿露出被縮小時豁免 2% 門檻",
+      "new": "撤回，回到凍結版：未持物手臂低於 2% 一律 FAIL，原因只記在備註",
+      "reason": "獨立審查指出豁免是看到結果後放寬，且會讓『為了遮草稿把手臂壓到不動』被判 PARTIAL"
+    },
+    {
+      "field": "bounce_only",
+      "date": "2026-11-24",
+      "old": "所有肢體（含頭髮、裙擺、道具）都 < 0.5%",
+      "new": "只看手臂與腿都 < 0.5%",
+      "reason": "審查指出頭髮的次要擺動就能讓舊定義永遠不成立（C 目視只剩跳動，舊定義判否）。這是收緊"
+    },
+    {
+      "field": "over_reduced_cause",
+      "date": "2026-11-24",
+      "old": "原因取所有輪次聯集；沒有歸因時視為素材限制",
+      "new": "只取最後採用的輪次；沒有歸因時記為『未歸因』，與演算法限制同樣判 FAIL",
+      "reason": "審查指出空集合 bug 與已還原輪次的原因會被誤算。這是收緊"
+    },
+    {
+      "field": "exit_code_1",
+      "date": "2026-11-24",
+      "old": "只要產出 character.json 就視為執行完成",
+      "new": "c2s 結束碼 1 一律 FAIL",
+      "reason": "依規格『結束碼為 1 → FAIL』。這是收緊"
+    },
+    {
+      "field": "visual_rubric",
+      "date": "2026-11-24",
+      "old": "設計寫 OK／ISSUE／UNKNOWN，等級由目視者裁量",
+      "new": "凍結 criteria.visual_rubric 的 BAD／MINOR 清單；目視紀錄綁定驗收圖 sha256；矩陣加使用者目視欄（未確認 = NOT_TESTED）",
+      "reason": "審查指出 Agent 目視偏寬且標準未凍結。基準依此清單重判：B 關節 MINOR→BAD、D 關節 OK→MINOR"
+    },
+    {
+      "field": "holdout",
+      "date": "2026-11-24",
+      "old": "只有 A–E 五張",
+      "new": "加入保留集 H1–H4，預登記 expected_scope、expected_absent、expected_attached_arms 與觸發語句",
+      "reason": "A–E 的失敗已用於修改 Skill 與程式，成為開發集；泛化結論需要修改前登記、修改後才第一次執行的圖"
+    }
+  ],
   "cases": [
     {
       "id": "A",
@@ -154,6 +220,108 @@
         ]
       },
       "expected_scope": "partial"
+    },
+    {
+      "id": "H1",
+      "set": "holdout",
+      "type": "front-chibi",
+      "description": "正面人形：戴眼鏡、女僕圍裙、雙手自然下垂、短褲與靴子",
+      "file": "H1/gen_h1.png",
+      "sha256": "367ceb8fe211b8d2c4910a2684519196f2ba2e2508fee0525570cb4edfde6d67",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Wikidata-tan.png",
+      "derived_from": "Wikimedia Commons 縮圖（寬 500）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "MinieSakuo",
+      "features": {
+        "view": "front",
+        "body": "humanoid-chibi",
+        "props": [],
+        "occlusion": "low"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 0,
+      "skill_prompt": "這是我們的新角色，可以幫我拆圖並做 idle 跟 happy 動畫嗎？{file}"
+    },
+    {
+      "id": "H2",
+      "set": "holdout",
+      "type": "prop-adult",
+      "description": "成人比例：單手拿夾板、另一手叉腰、雙腿交叉站立",
+      "file": "H2/gen_h2.png",
+      "sha256": "f90b23a7a504a06400f695a40533dd9acb3a345b3326d999b96cb5cf2679fa28",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Adult_Wikinews-tan.png",
+      "derived_from": "Wikimedia Commons 縮圖（寬 500）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "FibberPony",
+      "features": {
+        "view": "three-quarter",
+        "body": "humanoid-adult",
+        "props": [
+          "clipboard"
+        ],
+        "occlusion": "medium"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 1,
+      "skill_prompt": "Please turn this character into a Spine rig with idle and happy animations: {file}"
+    },
+    {
+      "id": "H3",
+      "set": "holdout",
+      "type": "prop-occlusion",
+      "description": "一手抱書、一手扶眼鏡、長雙馬尾垂在身前遮住手臂、短裙與長襪",
+      "file": "H3/gen_h3.png",
+      "sha256": "3fd4992ebe77f3eecd7f9a883e3ca115f76514a99234f6e3de379441505eb6c0",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Wiktionary-chan.png",
+      "derived_from": "Wikimedia Commons 縮圖（寬 500）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Alief D",
+      "features": {
+        "view": "front",
+        "body": "humanoid",
+        "props": [
+          "book"
+        ],
+        "occlusion": "high"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 1,
+      "skill_prompt": "我想讓這張圖裡的角色在遊戲裡動起來：{file}"
+    },
+    {
+      "id": "H4",
+      "set": "holdout",
+      "type": "sitting-anthro",
+      "description": "坐姿獸人：盤腿坐在地上、手放在膝上、尾巴、拿筆",
+      "file": "H4/gen_h4.png",
+      "sha256": "caf8bc171b2a7db69f295fa53bd665d85a3abbec9b92b545fc1ca53a06f631ad",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Ares_Chibi.png",
+      "derived_from": "Wikimedia Commons 縮圖（寬 500）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Caniidaze",
+      "features": {
+        "view": "three-quarter",
+        "body": "anthro-sitting",
+        "props": [
+          "pen"
+        ],
+        "occlusion": "high"
+      },
+      "expected_scope": "partial",
+      "expected_absent": [],
+      "expected_attached_arms": 0,
+      "skill_prompt": "幫我把這張角色圖做成 Spine 動畫：{file}"
     }
   ]
 }

@@ -10,16 +10,22 @@
 - 讀過 SKILL.md 檔案：否
 - 觸發後執行 c2s：是（5 次）
 - 讀到答案（既有角色、其他案例、案例描述）：0 次
-- 使用沙盒外的工具（呼叫專案的 c2s／python、讀原始碼）：2 次
-- 工具呼叫次數：{'Edit': 2, 'Glob': 1, 'PowerShell': 6, 'Read': 9, 'Skill': 1, 'Write': 2}
+- 使用沙盒外的工具（呼叫專案的 c2s／python、讀原始碼）：6 次
+- 工具呼叫次數：{'Glob': 1, 'PowerShell': 7, 'Read': 6, 'Skill': 1, 'Write': 1}
 
 ## c2s 指令
 
-- `Get-Command c2s -ErrorAction SilentlyContinue | Select-Object Source; Test-Path D:\01_Project\26_char_spine\.venv\Scripts\c2s.exe; Test-Path .\.venv`
-- `c2s analyze gen_a.png; "exit=$LASTEXITCODE"; Get-ChildItem -Recurse output | Select-Object FullName`
-- `c2s run gen_a.png --motion happy; "exit=$LASTEXITCODE"`
-- `c2s run gen_a.png --motion happy | Out-Null; "exit=$LASTEXITCODE"; $m = Get-Content output\gen_a\missing_parts.json -Raw | ConvertFrom-Json; "unassigned=$($m.unassigned_ratio)"; $m.unassigned_regions | Select-Object -First 6 | ForEach-Object { "$($_.bbox -join ',') area=$($_.area) near=$($_.nearest_part)" }; $m.needs_manual | ForEach-Object { "$($_.name): $($_.reason)" }; (Get-Content output\gen_a\validation_report.json -Raw | ConvertFrom-Json).checks | ForEach-Object { "$($_.check) $($_.status) | $($_.detail)" }`
-- `c2s run gen_a.png --motion happy | Out-Null; "exit=$LASTEXITCODE"; $r = [IO.File]::ReadAllText("$PWD\output\gen_a\validation_report.json", [Text.Encoding]::UTF8) | ConvertFrom-Json; $r.checks | ForEach-Object { "$($_.check) $($_.status) | $($_.detail)" }; $m = [IO.File]::ReadAllText("$PWD\output\gen_a\missing_parts.json", [Text.Encoding]::UTF8) | ConvertFrom-Json; "unassigned=$($m.unassigned_ratio)"; $m.needs_manual | ForEach-Object { "$($_.name): $($_.reason)" }`
+- `ls; ls .venv\Scripts\c2s.exe; .venv\Scripts\c2s.exe analyze gen_a.png; "exit=$LASTEXITCODE"`
+- `(Get-Command c2s -ErrorAction SilentlyContinue).Source; Test-Path D:\01_Project\26_char_spine\.venv\Scripts\c2s.exe`
+- `$c="D:\01_Project\26_char_spine\.venv\Scripts\c2s.exe"; & $c analyze gen_a.png; "exit=$LASTEXITCODE"; ls output\gen_a.png -ErrorAction SilentlyContinue; ls output`
+- `$c="D:\01_Project\26_char_spine\.venv\Scripts\c2s.exe"; & $c run gen_a.png --motion happy | Select-Object -Last 40; "exit=$LASTEXITCODE"`
+- `$f="gen_a.parts.json"; $t=[IO.File]::ReadAllText($f)
+$t=$t.Replace('[[615,495],[700,505],[732,620],[738,758],[678,758],[660,640],[628,560]]','[[615,495],[700,505],[732,620],[738,758],[678,758],[662,655],[616,655],[616,560]]')
+$t=$t.Replace('[[395,778],[492,778],[487,860],[472,932],[412,932],[402,860]]','[[388,778],[492,778],[488,860],[486,940],[412,940],[392,860]]')
+$t=$t.Replace('[388,802],[343,762]]','[388,802],[348,795],[340,762]]')
+$t=$t.Replace('[[165,58],[802,58]','[[165,50],[802,50]').Replace('[300,560],[240,500],[200,400],[165,300]]','[300,560],[226,522],[222,470],[166,385],[162,300]]')
+[IO.File]::WriteAllText($f,$t)
+$c="D:\01_Project\26_char_spine\.venv\Scripts\c2s.exe"; & $c run gen_a.png --motion happy | Out-Null; "exit=$LASTEXITCODE"`
 
 ## 讀到答案
 
@@ -27,69 +33,63 @@
 
 ## 使用沙盒外的工具
 
-- PowerShell：{"command": "Get-Command c2s -ErrorAction SilentlyContinue | Select-Object Source; Test-Path D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe; Test-Path .\\.venv", "description": "Locate c2s exe
-- PowerShell：{"command": "$py = \"D:\\01_Project\\26_char_spine\\.venv\\Scripts\\python.exe\"; $s = if (Test-Path scripts\\visual_report.py) { \"scripts\\visual_report.py\" } else { \"D:\\01_Project\\26_char_spine
+- PowerShell：{"command": "(Get-Command c2s -ErrorAction SilentlyContinue).Source; Test-Path D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe", "description": "Locate c2s executable"}
+- PowerShell：{"command": "$c=\"D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe\"; & $c analyze gen_a.png; \"exit=$LASTEXITCODE\"; ls output\\gen_a.png -ErrorAction SilentlyContinue; ls output", "description
+- PowerShell：{"command": "$c=\"D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe\"; & $c run gen_a.png --motion happy | Select-Object -Last 40; \"exit=$LASTEXITCODE\"", "description": "Run full c2s pipeline",
+- PowerShell：{"command": "$f=\"gen_a.parts.json\"; $t=[IO.File]::ReadAllText($f)\n$t=$t.Replace('[[615,495],[700,505],[732,620],[738,758],[678,758],[660,640],[628,560]]','[[615,495],[700,505],[732,620],[738,758],[
+- Glob：{"pattern": "**/visual_report.py", "path": "D:\\01_Project\\26_char_spine"}
+- PowerShell：{"command": "& D:\\01_Project\\26_char_spine\\.venv\\Scripts\\python.exe D:\\01_Project\\26_char_spine\\scripts\\visual_report.py . | Out-Null; \"exit=$LASTEXITCODE\"; Get-Content report\\repair_prior
 
 ## 全部工具呼叫
 
 1. Skill：`{"skill": "character-to-spine", "args": "gen_a.png"}`
-2. Glob：`{"pattern": "**/*"}`
-3. PowerShell：`{"command": "Get-Command c2s -ErrorAction SilentlyContinue | Select-Object Source; Test-Path D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe; Test-Path .\\.venv", "description": "Locate c2s executable"}`
-4. PowerShell：`{"command": "c2s analyze gen_a.png; \"exit=$LASTEXITCODE\"; Get-ChildItem -Recurse output | Select-Object FullName", "description": "Run c2s analyze on the image"}`
+2. PowerShell：`{"command": "ls; ls .venv\\Scripts\\c2s.exe; .venv\\Scripts\\c2s.exe analyze gen_a.png; \"exit=$LASTEXITCODE\"", "description": "List files and run c2s analyze"}`
+3. PowerShell：`{"command": "(Get-Command c2s -ErrorAction SilentlyContinue).Source; Test-Path D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe", "description": "Locate c2s executable"}`
+4. PowerShell：`{"command": "$c=\"D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe\"; & $c analyze gen_a.png; \"exit=$LASTEXITCODE\"; ls output\\gen_a.png -ErrorAction SilentlyContinue; ls output", "description": "Run c2s analyze on gen_a.png"}`
 5. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\grid_overlay.png"}`
 6. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\parts.template.json"}`
-7. Write：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\gen_a.parts.json", "content": "{\n  \"version\": 1,\n  \"image\": \"gen_a.png\",\n  \"preset\": \"humanoid-chibi\",\n  \"parts\": [\n    {\"name\": \"braid_l\", \"polygon\": [[270,515],[352,520],[348,600],[322,660],`
-8. PowerShell：`{"command": "c2s run gen_a.png --motion happy; \"exit=$LASTEXITCODE\"", "description": "Run full c2s pipeline", "timeout": 600000}`
+7. Write：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\gen_a.parts.json", "content": "{\n  \"version\": 1,\n  \"preset\": \"humanoid-chibi\",\n  \"parts\": [\n    {\"name\": \"braid_l\", \"polygon\": [[240,515],[350,515],[345,620],[305,700],[298,758],[248,758],[258,640]`
+8. PowerShell：`{"command": "$c=\"D:\\01_Project\\26_char_spine\\.venv\\Scripts\\c2s.exe\"; & $c run gen_a.png --motion happy | Select-Object -Last 40; \"exit=$LASTEXITCODE\"", "description": "Run full c2s pipeline", "timeout": 600000}`
 9. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\layer_preview.png"}`
-10. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\missing_parts.json"}`
-11. Write：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\gen_a.parts.json", "content": "{\n  \"version\": 1,\n  \"image\": \"gen_a.png\",\n  \"preset\": \"humanoid-chibi\",\n  \"parts\": [\n    {\"name\": \"braid_l\", \"polygon\": [[262,515],[352,520],[348,600],[322,660],`
-12. PowerShell：`{"command": "c2s run gen_a.png --motion happy | Out-Null; \"exit=$LASTEXITCODE\"; $m = Get-Content output\\gen_a\\missing_parts.json -Raw | ConvertFrom-Json; \"unassigned=$($m.unassigned_ratio)\"; $m.unassigned_regions | Select-Object -First 6 | ForEach-Object { \"$($_.bbox -join ',') area=$($_.area`
-13. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\quality\\round_3\\happy_t0.8_hole_character.png"}`
-14. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\quality\\quality_report.json", "limit": 80}`
-15. Edit：`{"replace_all": false, "file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\gen_a.parts.json", "old_string": "[565,645],[555,700],[562,735]", "new_string": "[588,645],[588,700],[588,735]"}`
-16. Edit：`{"replace_all": false, "file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\gen_a.parts.json", "old_string": "[552,675],[582,738]", "new_string": "[588,675],[598,738]"}`
-17. PowerShell：`{"command": "c2s run gen_a.png --motion happy | Out-Null; \"exit=$LASTEXITCODE\"; $r = [IO.File]::ReadAllText(\"$PWD\\output\\gen_a\\validation_report.json\", [Text.Encoding]::UTF8) | ConvertFrom-Json; $r.checks | ForEach-Object { \"$($_.check) $($_.status) | $($_.detail)\" }; $m = [IO.File]::ReadAl`
-18. PowerShell：`{"command": "$py = \"D:\\01_Project\\26_char_spine\\.venv\\Scripts\\python.exe\"; $s = if (Test-Path scripts\\visual_report.py) { \"scripts\\visual_report.py\" } else { \"D:\\01_Project\\26_char_spine\\scripts\\visual_report.py\" }; & $py $s output\\gen_a; \"exit=$LASTEXITCODE\"; Get-ChildItem outpu`
-19. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\layer_preview.png"}`
-20. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\report\\repair_priority.md"}`
-21. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\report\\visual_check.png"}`
+10. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\validation_report.json"}`
+11. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\missing_parts.json"}`
+12. PowerShell：`{"command": "$f=\"gen_a.parts.json\"; $t=[IO.File]::ReadAllText($f)\n$t=$t.Replace('[[615,495],[700,505],[732,620],[738,758],[678,758],[660,640],[628,560]]','[[615,495],[700,505],[732,620],[738,758],[678,758],[662,655],[616,655],[616,560]]')\n$t=$t.Replace('[[395,778],[492,778],[487,860],[472,932],[`
+13. PowerShell：`{"command": "cd output\\gen_a; (Get-Content validation_report.json -Raw -Encoding utf8 | ConvertFrom-Json).checks | ft check,status,detail -Wrap; $m=Get-Content missing_parts.json -Raw -Encoding utf8 | ConvertFrom-Json; \"unassigned=$($m.unassigned_ratio)\"; $m.unassigned_regions | % { \"$($_.neares`
+14. Glob：`{"pattern": "**/visual_report.py", "path": "D:\\01_Project\\26_char_spine"}`
+15. Read：`{"file_path": "D:\\01_Project\\26_char_spine\\output\\generalization\\A\\sandbox_nl\\output\\gen_a\\preview\\happy_python_simulation_preview.gif"}`
+16. PowerShell：`{"command": "& D:\\01_Project\\26_char_spine\\.venv\\Scripts\\python.exe D:\\01_Project\\26_char_spine\\scripts\\visual_report.py . | Out-Null; \"exit=$LASTEXITCODE\"; Get-Content report\\repair_priority.md -Encoding utf8 -TotalCount 40", "description": "Generate visual repair report"}`
 
 ## 最後回覆（原文）
 
-`gen_a.png` 已經做成 Spine JSON 骨架加兩段動畫（idle、happy），可以拿去看了。但還不算完成：有 4 個部件的遮擋處要人工補畫，`.spine` 專案檔也做不出來。
+`gen_a.png` 已經做成 Spine JSON，有 Idle 和 Happy 兩段動畫，但還沒完成：驗證總狀態是 **BLOCKED**。有 4 個部件要人工補畫，而且這台電腦只有 Spine 試用版，做不出 `.spine` 專案檔。
 
-我把部件拆分寫在圖片旁的 `gen_a.parts.json`，共 9 個部件：頭（含帽子）、身體、左右手、左右腿、裙擺、左右辮子。`c2s run` 跑了 3 次：
-- **第 1 次**：有 1.18% 的像素沒分到任何部件（帽子上的黃色棒子、臉側頭髮、右手、裙擺下緣等），我把這些部件的範圍擴大。
-- **第 2 次**：沒分到的降到 0.1%，但右手擺動時身體側面露出破洞，動畫品質檢查判為 BLOCKED。我把身體和裙擺的右側加寬。
-- **第 3 次**：沒分到的只剩 0.02%，切圖重組後和原圖幾乎一樣，動畫品質檢查 PASS。
+**切圖**：我依圖寫了 `gen_a.parts.json`（放在圖片旁），拆成 9 個部件：頭（含帽子）、身體、裙子、左右手、左右腳、左右辮子。修過一輪邊界後，沒分配到部件的像素從 0.49% 降到 0.01%。
 
-## 驗證結果（`validation_report.json`）
+**驗證結果（`validation_report.json`）**
 
 | 項目 | 狀態 | 說明 |
 |---|---|---|
 | bones | PASS | 11 根骨頭，階層順序正確 |
 | slots | PASS | 9 個插槽 |
-| image_references | PASS | 所有部件圖片都在，尺寸正確 |
+| image_references | PASS | 圖片都在，尺寸也對 |
 | animations | PASS | idle 2.0 秒、happy 2.4 秒 |
-| setup_pose | PASS | 初始姿勢和原圖差異 0.0022 |
-| animation_quality | PASS | 逐格檢查沒有破洞、縫隙、分離；兩條辮子有少量補圖露出（1.4%／1.7%），在門檻內，建議目視確認 |
-| manual_repairs | **BLOCKED** | 等待人工補畫，見下表 |
-| spine_import | **BLOCKED** | 這台電腦只有 Spine 試用版，不能存專案也不能匯出，所以做不出 `.spine` |
-| spine_roundtrip | NOT_TESTED | 沒有 `.spine`，無法往返驗證 |
-| spine_editable | NOT_TESTED | 要在 Spine Editor 裡人工開啟確認 |
+| setup_pose | PASS | 初始姿勢和原圖的差異 0.0020 |
+| animation_quality | PASS | 逐格檢查破洞、縫隙、接觸分離都在門檻內；兩條辮子有少量補圖露出（約 0.9%），還在門檻內，建議目視 |
+| manual_repairs | **BLOCKED** | body、leg_l、leg_r、skirt 要人工補畫 |
+| spine_import | **BLOCKED** | 偵測到的是 Spine 試用版，不能存檔或匯出，所以做不出 `.spine` |
+| spine_roundtrip | NOT_TESTED | 沒有 `.spine`，無法驗證 |
+| spine_editable | NOT_TESTED | 要在 Spine Editor 裡手動開啟確認 |
 
-## 要人工補畫的部件（依動畫中露出多寡排序）
+**要人工補畫的部件（依動畫中露出量排序）**
 
-這幾個部件被遮住的地方目前只是自動填的草稿，還沒修好：
+1. `skirt`：被兩隻手擋住的地方，動畫中最多露出 10.0%
+2. `leg_l`：被右腳和裙子擋住，最多露出 7.4%
+3. `body`：55% 被擋住，最多露出 5.9%
+4. `leg_r`：被裙子擋住，最多露出 2.3%
 
-1. **skirt（裙擺）**：被雙手遮住的部分。動畫中最多露出 14.9%，輪廓和皺褶要看原圖重畫。
-2. **leg_l（左腿）**：被右腿和裙子遮住約 45%。最多露出 10.8%。
-3. **body（身體）**：被裙子、雙手、頭遮住約 60%。最多露出 5.2%，自動填的效果最差。
-4. **leg_r（右腿）**：被裙子遮住的大腿上段。最多露出 3.4%。
+這些地方目前是自動填補的草稿，在動畫裡會看到模糊的補色。每個部件的三格對照圖在 `output/gen_a/report/repair_priority.md`。補好後執行：
+`c2s prepare --replace skirt=<修好的.png>`，再執行 `c2s run gen_a.png`。
 
-每個部件的對照圖在 `output/gen_a/report/repair_priority.md`。補好一張後執行 `c2s prepare --replace skirt=<修好的.png>`，再跑一次 `c2s run gen_a.png`。如果暫時不補，也可以在 parts.json 降低遮擋它的部件的 `motion`，動作會變小，但露出也會減少。
+如果暫時不補，可以把雙手、裙子的 `motion` 調低，讓擋住的地方少露出一點，代價是動作會變小。
 
-## 檔案位置
-- Spine JSON 與各部件圖：`output/gen_a/`
-- 預覽動畫：`output/gen_a/preview/happy_python_simulation_preview.gif`（這是 Python Simulation Preview，不是 Spine 實際算出來的畫面）
-- 關鍵影格總覽：`output/gen_a/report/visual_check.png`
+預覽動畫 `preview/happy_python_simulation_preview.gif` 是 Python Simulation Preview，不是 Spine 算圖。我只看了它的第一格，整段動作還沒目視過，請你播放確認一下。
