@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 from . import C2SError, NeedsInput, load_json, save_json
 from .analyzer import ALPHA_MIN
 from .providers import REPAIR_PROVIDERS
-from .rig_builder import PRESETS, required_parts
+from .rig_builder import PRESETS, default_role, required_parts
 
 # 被遮住的面積超過部件的這個比例，就不把自動填補當成完成，改列人工修補任務
 MAX_AUTO_HIDDEN_RATIO = 0.35
@@ -24,6 +24,38 @@ def part_mask(part, shape):
     m = np.zeros(shape, np.uint8)
     cv2.fillPoly(m, [np.array(part["polygon"], np.int32)], 1)
     return m.astype(bool)
+
+
+SHADOW_COLOR_TOL = 48  # 與影子典型顏色的 RGB 距離超過此值，就不是影子
+
+
+def _ground_keeps_shadow(parts, masks, rgba):
+    """地面影子留在地上不跟著跳，所以它的範圍只能有影子：顏色不像影子、且連到身體部件附近（角色高度 3% 內）的像素區塊
+    （多邊形多畫到的腳尖、裙襬）改歸最近的身體部件。影子的典型顏色取遠離身體那一段的中位數。原地修改 masks。"""
+    fg = rgba[..., 3] > ALPHA_MIN
+    ground = [p["name"] for p in parts if (p.get("role") or default_role(p["name"])) == "ground"]
+    others = [p["name"] for p in parts if p["name"] not in ground]
+    if not ground or not others:
+        return
+    body = np.any([masks[n] for n in others], axis=0)
+    ys = np.nonzero(body)[0]
+    k = max(3, round(0.03 * (ys.max() - ys.min() + 1)))
+    near = cv2.dilate(body.astype(np.uint8), np.ones((2 * k + 1, 2 * k + 1), np.uint8)).astype(bool)
+    rgb = rgba[..., :3].astype(int)
+    dist = np.stack([cv2.distanceTransform((~masks[n]).astype(np.uint8), cv2.DIST_L2, 3) for n in others])
+    for g in ground:
+        far = masks[g] & fg & ~near
+        if far.sum() < 20:  # 影子幾乎都在腳下，量不到典型顏色：不動
+            continue
+        ref = np.median(rgb[far], axis=0)
+        unlike = masks[g] & fg & ~body & (np.linalg.norm(rgb - ref, axis=2) > SHADOW_COLOR_TOL)
+        n, lab = cv2.connectedComponents(unlike.astype(np.uint8))
+        touching = np.unique(lab[unlike & near])  # 不像影子的區塊只要有一部分貼著身體，整塊都歸身體
+        moved = np.isin(lab, touching[touching > 0])
+        masks[g] &= ~moved
+        owner = dist.argmin(axis=0)
+        for i, n in enumerate(others):
+            masks[n] |= moved & (owner == i)
 
 
 def _bbox(mask):
@@ -171,6 +203,7 @@ def prepare(workdir, only=None, replace=None):
             raise C2SError(f"找不到替換用的圖片：{src}")
 
     masks = {p["name"]: part_mask(p, (h, w)) for p in parts}
+    _ground_keeps_shadow(parts, masks, rgba)
     (wd / "quality" / "quality_report.json").unlink(missing_ok=True)  # 圖層變了，舊的品質報告不再有效
     repair = REPAIR_PROVIDERS["opencv"]
     odir = overrides_dir(wd, doc)

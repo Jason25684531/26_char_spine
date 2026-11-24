@@ -170,3 +170,27 @@ def test_replace_with_non_image(workcopy, tmp_path):
     with pytest.raises(C2SError, match="不是可讀取的圖片"):
         prepare(wd, replace={"head": bad})
     assert not (wd / "overrides" / "head.png").exists()
+
+
+def test_ground_shadow_keeps_only_shadow_pixels(tmp_path):
+    """影子多邊形多畫到腳尖（腿的多邊形沒畫到）：那些不像影子的像素要歸給腿，否則跳起時腳尖會留在地上。"""
+    from synthetic import make_custom, rect
+    leg = (60, 80, 160)
+    img = make_custom(tmp_path, "g", (300, 420), [
+        ("shadow", [[80, 378], [220, 378], [220, 402], [80, 402]], (110, 110, 110), 0, {"role": "ground"}),
+        ("leg_l", rect(115, 280, 143, 390), leg, 1, {}), ("leg_r", rect(157, 280, 185, 390), leg, 2, {}),
+        ("body", rect(105, 175, 195, 300), (220, 80, 80), 3, {}), ("head", rect(100, 60, 200, 180), (250, 220, 190), 4, {}),
+        ("arm_l", rect(72, 180, 110, 280), (235, 185, 145), 5, {}), ("arm_r", rect(190, 180, 228, 280), (240, 195, 155), 6, {})])
+    doc = json.loads(img.with_suffix(".parts.json").read_text(encoding="utf-8"))
+    for p in doc["parts"]:
+        if p["name"].startswith("leg_"):
+            p["polygon"] = [[x, min(y, 375)] for x, y in p["polygon"]]  # 腳尖 376–390 只落在影子的多邊形裡
+    img.with_suffix(".parts.json").write_text(json.dumps(doc), encoding="utf-8")
+    wd = tmp_path / "w"
+    analyze(img, wd)
+    prepare(wd)
+    meta = {e["name"]: e for e in load_json(wd / "metadata.json")["parts"]}
+    shadow = np.array(Image.open(wd / "layers" / "shadow.png").convert("RGBA")).astype(int)
+    leg_like = (shadow[..., 3] > 0) & (np.abs(shadow[..., :3] - leg).sum(axis=2) < 30)
+    assert leg_like.sum() == 0
+    assert meta["leg_l"]["y"] + meta["leg_l"]["h"] >= 390  # 腳尖回到腿的圖層
