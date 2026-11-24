@@ -22,6 +22,12 @@ PRESETS = {
 # 動畫依 role 決定套用哪一組動作；必要部件的 role 由名稱推得，其餘部件預設 accessory
 ROLES = ("head", "body", "arm", "leg", "hair", "skirt", "prop", "accessory")
 RESERVED_BONES = ("root", "hip")
+NEVER_ABSENT = ("head", "body")  # 骨架的根，畫面上一定看得到；看不到就不是本 preset 能處理的角色
+
+
+def required_parts(preset, absent=()):
+    """必要部件，扣掉 parts.json 宣告「畫面上完全看不到」的部件（absent 的部件不建骨頭、不出動畫）。"""
+    return [n for n in PRESETS[preset]["required"] if n not in absent]
 
 
 def default_role(name):
@@ -75,7 +81,7 @@ def build_rig(workdir, preset=None):
         raise C2SError(f"未知的 preset：{preset_name}")
     cfg = PRESETS[preset_name]
     parts = {e["name"]: e for e in meta["parts"] if "file" in e}
-    missing = [n for n in cfg["required"] if n not in parts]
+    missing = [n for n in required_parts(preset_name, meta.get("absent", [])) if n not in parts]
     if missing:
         raise NeedsInput("無法綁定骨架，缺少必要部件的圖層：" + ", ".join(missing) + f"。請依 {wd / 'repair_tasks.md'} 補齊後重新執行 c2s prepare")
 

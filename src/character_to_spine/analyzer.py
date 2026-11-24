@@ -1,14 +1,14 @@
 """圖片讀取、去背與 parts.json 檢查。語意辨識（哪裡是頭、手）不在這裡：由 Skill 層的 Agent 寫出 parts.json。"""
-from pathlib import Path
-
 import math
+import shutil
+from pathlib import Path
 
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 
 from . import C2SError, load_json, save_json
-from .rig_builder import PRESETS, RESERVED_BONES, ROLES
+from .rig_builder import NEVER_ABSENT, PRESETS, RESERVED_BONES, ROLES, required_parts
 
 ALPHA_MIN = 8  # alpha 低於此值視為背景
 
@@ -125,6 +125,33 @@ def check_parts(parts_doc, size, base_dir):
     return out, errors
 
 
+def check_scope(doc, names):
+    """parts.json 頂層的範圍宣告：unsupported（超出支援範圍的原因）、absent（畫面上完全看不到的必要部件）。"""
+    errors = []
+    reason = doc.get("unsupported")
+    if reason is not None and (not isinstance(reason, str) or not reason.strip()):
+        errors.append("unsupported 必須是說明原因的文字，例如 \"四足動物，沒有可對應的手臂與腿\"")
+    absent = doc.get("absent", [])
+    if not isinstance(absent, list) or not all(isinstance(a, str) for a in absent):
+        return errors + ["absent 必須是部件名稱清單，例如 [\"arm_r\"]"]
+    for a in absent:
+        if a in NEVER_ABSENT:
+            errors.append(f"absent 不可包含 {a}：{'、'.join(NEVER_ABSENT)} 是骨架的根，看不到時請改用 unsupported 說明原因")
+        elif a in names:
+            errors.append(f"{a} 同時出現在 absent 與 parts，請擇一（看得到就畫範圍，完全看不到才列 absent）")
+    return errors
+
+
+def _invalidate(wd, reason):
+    """宣告超出範圍時，移除先前成功的輸出，並寫一份不會被誤認為通過的驗證報告。"""
+    for name in ("parts.json", "metadata.json", "rig.json", "animations.json", "tuning.json"):
+        (wd / name).unlink(missing_ok=True)
+    for d in ("layers", "spine", "quality", "preview", "repair_masks", "report"):
+        shutil.rmtree(wd / d, ignore_errors=True)
+    save_json(wd / "validation_report.json", {"status": "UNSUPPORTED", "reason": reason, "checks": [
+        {"check": "scope", "status": "UNSUPPORTED", "detail": f"parts.json 宣告超出目前支援範圍：{reason}"}]})
+
+
 def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
     image, wd = Path(image), Path(workdir)
     if not image.exists():
@@ -157,7 +184,7 @@ def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
     if parts_path and not Path(parts_path).exists():
         raise C2SError(f"找不到 parts 檔：{parts_path}")
     found = next((c for c in candidates if c.exists()), None)
-    names, errors = [], []
+    names, errors, absent, unsupported = [], [], [], None
     if found:
         try:
             doc = load_json(found)
@@ -165,12 +192,22 @@ def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
             doc, errors = None, [f"{found.name} 不是合法的 JSON：{e}"]
         parts, errors = check_parts(doc, (w, h), found.parent) if doc is not None else ([], errors)
         names = [p["name"] for p in parts]
+        if isinstance(doc, dict):
+            errors += check_scope(doc, names)
         if errors:
             if found.resolve() != (wd / "parts.json").resolve():
                 (wd / "parts.json").unlink(missing_ok=True)  # 不讓 prepare 讀到上一次的正規化複本
+        elif doc.get("unsupported"):
+            unsupported = doc["unsupported"].strip()
         else:
-            save_json(wd / "parts.json", {"version": 1, "image": image.name, "preset": preset,
+            absent = doc.get("absent", [])
+            save_json(wd / "parts.json", {"version": 1, "image": image.name, "preset": preset, "absent": absent,
                                           "source": str(found.resolve()), "parts": parts})
+    if unsupported:
+        _invalidate(wd, unsupported)
+        result.update(parts_file=str(found), parts=names, parts_errors=[], status="unsupported", reason=unsupported)
+        save_json(wd / "analysis.json", result)
+        return result
     else:
         save_json(wd / "parts.template.json", {
             "version": 1, "image": image.name, "preset": preset,
@@ -178,7 +215,7 @@ def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
                     "_l/_r 指畫面左／右；pivot、parent、role、motion、attach 可省略。完成後存成圖片旁的 <圖名>.parts.json 再執行 c2s run。",
             "parts": [{"name": n, "polygon": [], "z": i, "pivot": None} for i, n in enumerate(required)],
         })
-    missing = [n for n in required if n not in names]
+    missing = [n for n in required_parts(preset, absent) if n not in names]
     result.update(parts_file=str(found) if found else None, parts=names, parts_errors=errors, missing_required=missing)
     result["status"] = "ok" if found and not errors and not missing else "needs_parts"
     if result["status"] != "ok":

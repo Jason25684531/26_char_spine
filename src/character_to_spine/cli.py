@@ -1,4 +1,4 @@
-"""c2s 命令列入口。結束碼：0 完成、1 失敗、2 需要補資料後接續。"""
+"""c2s 命令列入口。結束碼：0 完成、1 失敗、2 需要補資料後接續、3 parts.json 宣告超出支援範圍。"""
 import argparse
 import json
 import sys
@@ -113,6 +113,8 @@ def main(argv=None):
         _write_log(wd, argv, "驗證失敗：\n" + json.dumps(failed, ensure_ascii=False, indent=2))
         return 1
     (Path(wd) / "c2s_error.log").unlink(missing_ok=True)  # 成功後不留上一次失敗的紀錄
+    if status == "unsupported":
+        return 3
     return 2 if status in ("needs_input", "needs_parts") else 0
 
 

@@ -36,6 +36,8 @@ def run(image, motion="happy", workdir=None, parts=None, preset="humanoid-chibi"
     steps = {}
     try:
         steps["analyze"] = analyze(image, wd, parts, preset)
+        if steps["analyze"]["status"] == "unsupported":
+            return {"status": "unsupported", "workdir": str(wd), "reason": steps["analyze"]["reason"], "steps": steps}
         if steps["analyze"]["status"] != "ok":
             a = steps["analyze"]
             reasons = a["parts_errors"] or [f"缺少必要部件：{', '.join(a['missing_required'])}"]

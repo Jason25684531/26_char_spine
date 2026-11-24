@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 from . import C2SError, NeedsInput, load_json, save_json
 from .analyzer import ALPHA_MIN
 from .providers import REPAIR_PROVIDERS
-from .rig_builder import PRESETS
+from .rig_builder import PRESETS, required_parts
 
 # 被遮住的面積超過部件的這個比例，就不把自動填補當成完成，改列人工修補任務
 MAX_AUTO_HIDDEN_RATIO = 0.35
@@ -228,7 +228,7 @@ def prepare(workdir, only=None, replace=None):
     source_rgba[..., 3] = np.where(assigned, source_rgba[..., 3], 0)
     source = composite([(source_rgba, 0, 0)], (w, h))
     meta = {
-        "image": doc.get("image"), "canvas": [w, h], "preset": doc.get("preset", "humanoid-chibi"),
+        "image": doc.get("image"), "canvas": [w, h], "preset": doc.get("preset", "humanoid-chibi"), "absent": doc.get("absent", []),
         "bbox": [int(xs.min()), int(ys.min()), int(xs.max() - xs.min() + 1), int(ys.max() - ys.min() + 1)],
         # 骨架原點：角色腳底中央（原圖像素座標）
         "origin": [round(float(xs.min() + xs.max()) / 2, 1), int(ys.max()) + 1],
@@ -278,7 +278,7 @@ def write_reports(wd):
     meta = load_json(Path(wd) / "metadata.json")
     entries = meta["parts"]
     names = {e["name"] for e in entries}
-    missing_required = [n for n in PRESETS[meta.get("preset", "humanoid-chibi")]["required"] if n not in names]
+    missing_required = [n for n in required_parts(meta.get("preset", "humanoid-chibi"), meta.get("absent", [])) if n not in names]
     manual = [{"name": e["name"], "reason": e["reason"], "hidden_ratio": e.get("hidden_ratio"), "layer": e.get("file")}
               for e in entries if e["status"] == "needs_manual"]
     save_json(Path(wd) / "missing_parts.json", {"missing_required": missing_required, "needs_manual": manual,
@@ -292,6 +292,10 @@ def _write_repair_tasks(wd, missing_required, manual, entries, meta):
     lines = ["# 修補任務", "", "由 `c2s prepare` 產生。修完後不需要重新分析，照下方指令接續即可。", ""]
     if missing_required:
         lines += ["## 缺少的必要部件", ""] + [f"- [ ] `{n}`：在 parts.json 補上 polygon 或 mask 後重新執行 `c2s prepare`" for n in missing_required] + [""]
+    if meta.get("absent"):
+        lines += ["## 畫面上看不到的必要部件（可選擇補畫）", "",
+                  "parts.json 宣告這些部件在原圖完全看不到，目前沒有骨頭也沒有動畫。要讓它動，畫好後在 parts.json 加上該部件、"
+                  "從 absent 移除，再執行 `c2s run`。", ""] + [f"- [ ] `{n}`" for n in meta["absent"]] + [""]
     if manual:
         lines += ["## 需要人工修補的圖層", ""]
         for m in manual:

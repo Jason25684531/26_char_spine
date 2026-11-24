@@ -103,6 +103,10 @@ def validate(workdir):
     checks.append({"check": "manual_repairs", "status": "BLOCKED" if manual else "PASS",
                    "detail": ("等待人工修補：" + ", ".join(manual) + "（見 repair_tasks.md）") if manual else "沒有待人工修補的圖層"})
 
+    if meta.get("absent"):
+        checks.append({"check": "absent_parts", "status": "BLOCKED",
+                       "detail": "畫面上看不到、沒有骨頭也沒有動畫的必要部件：" + ", ".join(meta["absent"]) + "（可選擇補畫，見 repair_tasks.md）"})
+
     qpath = wd / "quality" / "quality_report.json"
     if not qpath.exists():
         checks.append({"check": "animation_quality", "status": "NOT_TESTED", "detail": "沒有品質報告，請執行 c2s refine"})
