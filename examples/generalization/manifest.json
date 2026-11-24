@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "note": "泛化測試集。criteria 與每個案例的 features、expected_scope 在第一次對新圖執行 c2s 之前提交（凍結）。之後修改門檻必須在 criteria_changes 記錄原值、新值與理由。",
+  "excluded_sha256": [
+    "b1ecc51b1fcb05b9ac367261525f624d60d4b50befaf6efa83ceee24c58be6ff",
+    "d5ba266c84c74dfd877e4f009717f838ce14462fabbfe4f2b9d46206d23cc803",
+    "6953419648c6f365c88b83916ddd92247be124ba2290ac8da3c5069cb9ef99ae",
+    "44f4264f174cddbc4fc8949fa0dd70e7e295618d9310f0696a90614eefec932a"
+  ],
+  "excluded_note": "人.png、转场2.png、人物 拷贝.png、预中奖.png（同一個角色，參與過開發）",
+  "criteria": {
+    "setup_mae_max": 0.02,
+    "unassigned_max": 0.01,
+    "free_arm_min": 0.02,
+    "bounce_only_max": 0.005,
+    "over_reduced_factor": 0.25,
+    "quality_thresholds": "沿用 quality.THRESHOLDS（hole 0.003、gap 0.1、attach 0.6、intrude 0.02、exposure 0.02）",
+    "attached_arm": "有 attach 的手臂只報告數值、不設下限（既有角色 K-18 實測 5.1px）",
+    "unassigned_note": "量「與角色本體相連、卻不屬於任何部件」的前景比例；散落特效依 Skill 規定刻意不歸屬，不算"
+  },
+  "criteria_basis": {
+    "measured_on": "2026-11-24，凍結前，只用既有角色與合成角色（output/ren、zc2、synth_a、synth_b），尚未對任何新圖執行 c2s",
+    "free_arm_min": "未持物手臂 happy 動作量：zc2 arm_l 12.9%、synth_a 45%、synth_b 5.3%；2% 低於全部既有值，代表『手臂明顯在動』的最低要求",
+    "bounce_only_max": "既有角色所有肢體 happy 動作量的最小值 0.36%（zc2 arm_r，持花），但沒有角色全部低於 0.5%",
+    "over_reduced_factor": "synth_b 兩手被縮到 ×0.125（gap 造成，K-12），ren、zc2 沒有手臂低於 ×0.25",
+    "unassigned_max": "全部前景量法會讓 zc2 因散落花瓣得到 12.4%；改量與本體相連者後 ren 0.01%、zc2 0.72%、synth 0%"
+  },
+  "criteria_changes": [],
+  "cases": [
+    {
+      "id": "A",
+      "type": "front-chibi",
+      "description": "正面 Q 版人形：大頭身、雙手自然下垂、短裙、雙辮子、帽子與髮飾",
+      "file": "A/gen_a.png",
+      "sha256": "a3df9c51afc1c4e3e92276c582b52ff5b07bec4ad4857bda87edc59b639a0d29",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Monfer-chibi-png.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "geme",
+      "features": {
+        "view": "front",
+        "body": "humanoid-chibi",
+        "props": [],
+        "occlusion": "low",
+        "accessories": [
+          "hat",
+          "braids",
+          "skirt"
+        ]
+      },
+      "expected_scope": "supported"
+    },
+    {
+      "id": "B",
+      "type": "three-quarter",
+      "description": "3/4 側面人形：身體轉向畫面右側、一手提裙擺、一手舉起握拳、眨眼、長裙、雙馬尾",
+      "file": "B/gen_b.png",
+      "sha256": "57ad9e4d8e6da487363754e538212f4db37fc6476f9aab68dd6b71b71bb65505",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Wikipe-tan_con_vestido_venezolano.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Seb.cestari.16",
+      "features": {
+        "view": "three-quarter",
+        "body": "humanoid",
+        "props": [],
+        "occlusion": "medium",
+        "asymmetric_arms": true,
+        "accessories": [
+          "twin-tails",
+          "long-dress"
+        ]
+      },
+      "expected_scope": "supported"
+    },
+    {
+      "id": "C",
+      "type": "prop",
+      "description": "手持道具：右手（畫面左）握長杖、另一手叉腰、魔女帽、拖地長裙",
+      "file": "C/gen_c.png",
+      "sha256": "883f3e1a3f0b39b87a76bf287fca5208b667d6d6fbfebcb5d433ae0f26b19abc",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Wikipe-tan_Minna_no_Kisekae_2_majokko.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "SPNATI contributors; in particular Spaceman",
+      "features": {
+        "view": "front",
+        "body": "humanoid",
+        "props": [
+          "staff"
+        ],
+        "occlusion": "medium",
+        "accessories": [
+          "witch-hat",
+          "long-dress"
+        ]
+      },
+      "expected_scope": "supported"
+    },
+    {
+      "id": "D",
+      "type": "occlusion",
+      "description": "複雜遮擋：雙手舉相機遮住臉的下半部與頭髮、相機遮手、成人比例、圍裙與長髮",
+      "file": "D/gen_d.png",
+      "sha256": "e17e75ac1b6245b4a5f42443109efedb843d59b0c20b0d046f57cb84b3a4280f",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Adult_Commons-tan.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "w:User:Kasuga~enwiki",
+      "features": {
+        "view": "three-quarter",
+        "body": "humanoid-adult",
+        "props": [
+          "camera"
+        ],
+        "occlusion": "high",
+        "accessories": [
+          "beret",
+          "apron",
+          "long-hair"
+        ]
+      },
+      "expected_scope": "partial"
+    },
+    {
+      "id": "E",
+      "type": "non-humanoid",
+      "description": "非人形：雙足龍、頭身相連沒有脖子、大尾巴、一手指向上方、背後有披風",
+      "file": "E/gen_e.png",
+      "sha256": "0790329c2cb3535fc521d88bbd1f43e6f5bc51a1b0526e5641bfa6c6a445eee7",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:KDE_Mascot_Konqi_by_Tyson_Tan.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Tyson Tan",
+      "features": {
+        "view": "three-quarter",
+        "body": "dragon-biped",
+        "props": [],
+        "occlusion": "medium",
+        "accessories": [
+          "tail",
+          "cape",
+          "horns"
+        ]
+      },
+      "expected_scope": "partial"
+    }
+  ]
+}
