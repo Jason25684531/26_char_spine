@@ -194,3 +194,25 @@ def test_ground_shadow_keeps_only_shadow_pixels(tmp_path):
     leg_like = (shadow[..., 3] > 0) & (np.abs(shadow[..., :3] - leg).sum(axis=2) < 30)
     assert leg_like.sum() == 0
     assert meta["leg_l"]["y"] + meta["leg_l"]["h"] >= 390  # 腳尖回到腿的圖層
+
+
+def test_ground_shadow_behind_feet_stays_shadow(tmp_path):
+    """影子被腳擋住的區域用影子本身的顏色與透明度平塗，不能補成不透明的腳形色塊（跳起時會留在地上）。"""
+    from synthetic import make_custom, rect
+    img = make_custom(tmp_path, "s", (300, 420), [
+        ("shadow", [[80, 372], [220, 372], [220, 402], [80, 402]], (40, 40, 40), 0, {"role": "ground"}),
+        ("leg_l", rect(115, 280, 143, 390), (150, 90, 40), 1, {}), ("leg_r", rect(157, 280, 185, 390), (150, 90, 40), 2, {}),
+        ("body", rect(105, 175, 195, 300), (220, 80, 80), 3, {}), ("head", rect(100, 60, 200, 180), (250, 220, 190), 4, {}),
+        ("arm_l", rect(72, 180, 110, 280), (235, 185, 145), 5, {}), ("arm_r", rect(190, 180, 228, 280), (240, 195, 155), 6, {})])
+    rgba = np.array(Image.open(img).convert("RGBA"))
+    shadow_px = (np.abs(rgba[..., :3].astype(int) - 40).sum(axis=2) < 5)
+    rgba[shadow_px, 3] = 80  # 半透明的深色影子
+    Image.fromarray(rgba).save(img)
+    wd = tmp_path / "w"
+    analyze(img, wd)
+    prepare(wd)
+    e = next(p for p in load_json(wd / "metadata.json")["parts"] if p["name"] == "shadow")
+    layer = np.array(Image.open(wd / "layers" / "shadow.png").convert("RGBA")).astype(int)
+    filled = np.array(Image.open(wd / "repair_masks" / "shadow.png")) > 127
+    assert filled.any() and e["status"] == "auto_repaired"
+    assert np.abs(layer[filled] - [40, 40, 40, 80]).max() <= 2

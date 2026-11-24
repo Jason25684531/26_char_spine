@@ -26,7 +26,7 @@ def part_mask(part, shape):
     return m.astype(bool)
 
 
-SHADOW_COLOR_TOL = 48  # 與影子典型顏色的 RGB 距離超過此值，就不是影子
+SHADOW_COLOR_TOL = 48  # 與影子典型顏色的 RGBA 距離超過此值，就不是影子
 
 
 def _ground_keeps_shadow(parts, masks, rgba):
@@ -41,14 +41,14 @@ def _ground_keeps_shadow(parts, masks, rgba):
     ys = np.nonzero(body)[0]
     k = max(3, round(0.03 * (ys.max() - ys.min() + 1)))
     near = cv2.dilate(body.astype(np.uint8), np.ones((2 * k + 1, 2 * k + 1), np.uint8)).astype(bool)
-    rgb = rgba[..., :3].astype(int)
+    px = rgba.astype(int)  # 連透明度一起比：常見的影子是半透明的深色，靴子、裙襬是不透明的
     dist = np.stack([cv2.distanceTransform((~masks[n]).astype(np.uint8), cv2.DIST_L2, 3) for n in others])
     for g in ground:
         far = masks[g] & fg & ~near
         if far.sum() < 20:  # 影子幾乎都在腳下，量不到典型顏色：不動
             continue
-        ref = np.median(rgb[far], axis=0)
-        unlike = masks[g] & fg & ~body & (np.linalg.norm(rgb - ref, axis=2) > SHADOW_COLOR_TOL)
+        ref = np.median(px[far], axis=0)
+        unlike = masks[g] & fg & ~body & (np.linalg.norm(px - ref, axis=2) > SHADOW_COLOR_TOL)
         n, lab = cv2.connectedComponents(unlike.astype(np.uint8))
         touching = np.unique(lab[unlike & near])  # 不像影子的區塊只要有一部分貼著身體，整塊都歸身體
         moved = np.isin(lab, touching[touching > 0])
@@ -87,6 +87,12 @@ def _cut(part, rgba, masks, parts, repair):
     if not hid.any():
         entry["status"] = "ok"
         return crop, entry, None
+    if (part.get("role") or default_role(part["name"])) == "ground":
+        # 影子被腳擋住的地方還是影子：用看得見的影子的典型顏色與透明度平塗。邊緣延伸會補成不透明、
+        # 腳形的色塊，角色跳起時留在地上
+        crop[hid] = np.median(crop[vis], axis=0)
+        entry.update(status="auto_repaired", repair_reliable=True)
+        return crop, entry, hid
     # 遮擋者範圍先在整張畫布內縮 4px 再裁切：部件之間為了不留縫而刻意重疊的淺接縫不算「被遮住的輪廓」，
     # 裁切邊緣的輪廓也不會被誤刪
     deep = cv2.erode(above.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool)[y:y + h, x:x + w]
