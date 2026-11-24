@@ -47,7 +47,7 @@ def measure(ctx, skel):
     """{部件: 最大露出}，只含有圖層的部件。px 是預覽畫布像素。"""
     setup = quality._frame(ctx, skel, None, 0.0)
     out = {p: {"ratio": 0.0, "px": 0.0, "anim": None, "t": 0.0, "base": fill_seen(setup, p),
-               "area": max(1.0, float((a > 0.5).sum()))} for p, a in setup["alphas"].items()}
+               "area": max(1.0, float((a > 0.5).sum()))} for p, a in setup["all_alphas"].items()}
     for anim, data in skel["animations"].items():
         for t in sample_times(data):
             f = quality._frame(ctx, skel, anim, t)
@@ -150,7 +150,7 @@ def repair_png(ctx, skel, source, part, e, m, path):
         else:
             c = c.clip(0, 255).astype(np.uint8)
             title = ("(c) 動畫中露出最多", "無露出（顯示初始姿勢）")
-        panels.append((title, Image.fromarray(crop(c, f["alphas"][name] > 0.5, 0.25))))
+        panels.append((title, Image.fromarray(crop(c, f["all_alphas"][name] > 0.5, 0.25))))
     imgs = [fit(im) for _, im in panels]
     sheet = Image.new("RGB", (sum(i.width for i in imgs) + 20 * (len(imgs) + 1), PANEL_H + 100), "white")
     d = ImageDraw.Draw(sheet)

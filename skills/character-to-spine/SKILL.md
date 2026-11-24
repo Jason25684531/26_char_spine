@@ -84,7 +84,7 @@ metadata:
 | `z` | 是 | 前後順序，越大越前面，不可重複 |
 | `pivot` | 否 | 關節位置 `[x, y]`，例如頭接脖子處、手臂接肩膀處。省略時依部件類型估計 |
 | `parent` | 否 | 跟著哪根骨頭動。必要部件由 preset 決定；其他部件預設 `body` |
-| `role` | 否 | 套用哪種動作：`head` `body` `arm` `leg` `hair` `skirt` `prop` `accessory`。必要部件由名稱推得，其他預設 `accessory` |
+| `role` | 否 | 套用哪種動作：`head` `body` `arm` `leg` `hair` `skirt` `prop` `accessory` `ground`。必要部件由名稱推得，名稱為 `shadow` 時預設 `ground`，其他預設 `accessory`。`ground` 是地面影子：留在地上不跟著跳（跳起時縮小），不要給它 `parent` |
 | `motion` | 否 | 動作幅度係數，預設 1.0，0 表示不動 |
 | `attach` | 否 | 必須保持接觸的部件名稱（或清單），例如抱著吉他的手 `"attach": "guitar"`。手 attach 一個 `role: prop` 的道具時，手會掛在道具骨頭下（道具帶著手擺動）並改用撥弦節奏；動畫會自動限制幅度，讓接觸點位移不超過角色高度的 1%；初始姿勢沒有接觸時 rig 會要求修正 |
 

@@ -51,6 +51,7 @@ def _context(wd):
             "exposure_parts": [n for n, e in parts.items() if e["status"] == "needs_manual"
                                or (e["status"] == "auto_repaired" and not e.get("repair_reliable", True))],
             "contacts": [(c["a"], c["b"]) for c in rig.get("contacts", [])],
+            "ground": {n for n, r in rig.get("roles", {}).items() if r == "ground"},
             # 穿插檢查的對象：有宣告接觸的部件與道具（使用者要求手、吉他、身體不得穿插）
             "constrained": sorted({n for c in rig.get("contacts", []) for n in (c["a"], c["b"])}
                                   | {n for n, r in rig.get("roles", {}).items() if r == "prop"})}
@@ -59,12 +60,15 @@ def _context(wd):
 def _frame(ctx, skel, anim, t):
     slots = list(warp_slots(skel, ctx["images"], ctx["canvas"], ctx["origin"], anim, t, ctx["scale"], ctx["cache"], ctx["masks"]))
     w, h = ctx["canvas"]
-    alphas = {n: wp[..., 3] / 255 for n, wp, _ in slots}
+    every = {n: wp[..., 3] / 255 for n, wp, _ in slots}
     through, vis = np.ones((h, w)), {}
     for n, _, _ in reversed(slots):  # 由前往後：每個 slot 最後真正看得見的比例
-        vis[n] = alphas[n] * through
-        through = through * (1 - alphas[n])
-    return {"alpha": 1 - through, "alphas": alphas, "vis": vis, "masks": {n: m for n, _, m in slots},
+        vis[n] = every[n] * through
+        through = through * (1 - every[n])
+    # 地面影子不是角色身體：破洞、縫隙、穿插只看身體部件；影子草稿的露出仍用 vis／masks 量
+    alphas = {n: a for n, a in every.items() if n not in ctx["ground"]}
+    body = 1 - np.prod([1 - a for a in alphas.values()], axis=0)
+    return {"alpha": body, "alphas": alphas, "all_alphas": every, "vis": vis, "masks": {n: m for n, _, m in slots},
             "world": world_matrices(skel, anim, t), "dil": {}}
 
 
@@ -157,7 +161,7 @@ def _prepare_context(ctx, skel):
     """用初始姿勢算出基準值與各部件的鄰接關係。"""
     f = _frame(ctx, skel, None, 0.0)
     ctx["char_area"] = max(1.0, float((f["alpha"] > 0.5).sum()))
-    ctx["part_area"] = {n: float((a > 0.5).sum()) for n, a in f["alphas"].items()}
+    ctx["part_area"] = {n: float((a > 0.5).sum()) for n, a in f["all_alphas"].items()}
     names = sorted(f["alphas"])
     ctx["setup_contacts"] = {(a, b) for i, a in enumerate(names) for b in names[i + 1:] if (_dilated(f, a) & _dilated(f, b)).any()}
     # 頭髮是最後面的背景層，手或道具畫在它前面是正常的，不算穿插
@@ -166,7 +170,7 @@ def _prepare_context(ctx, skel):
                                    if o != a and o not in backdrop and tuple(sorted((a, o))) not in ctx["setup_contacts"]})
     # 每個部件配上「初始姿勢接觸區最大」的鄰接部件，記錄接觸區面積作為縫隙的正規化基準
     ctx["joints"] = []
-    for child in sorted(ctx["parts"]):
+    for child in sorted(n for n in ctx["parts"] if n not in ctx["ground"]):
         best = max(((int((_near(f, child) & _near(f, o)).sum()), o) for o in names if o != child), default=(0, None))
         if best[0] and child != "body":
             ctx["joints"].append((child, best[1], float(best[0])))

@@ -20,7 +20,8 @@ PRESETS = {
     },
 }
 # 動畫依 role 決定套用哪一組動作；必要部件的 role 由名稱推得，其餘部件預設 accessory
-ROLES = ("head", "body", "arm", "leg", "hair", "skirt", "prop", "accessory")
+ROLES = ("head", "body", "arm", "leg", "hair", "skirt", "prop", "accessory", "ground")
+GROUND = "ground"  # 地面影子：掛在 root、不跟著跳，也不算角色身體（品質檢查的破洞、縫隙、穿插都排除）
 RESERVED_BONES = ("root", "hip")
 NEVER_ABSENT = ("head", "body")  # 骨架的根，畫面上一定看得到；看不到就不是本 preset 能處理的角色
 
@@ -32,6 +33,8 @@ def required_parts(preset, absent=()):
 
 def default_role(name):
     base = name.rsplit("_", 1)[0] if name.endswith(("_l", "_r")) else name
+    if base == "shadow":
+        return GROUND
     return base if base in ("head", "body", "arm", "leg") else "accessory"
 
 
@@ -89,10 +92,10 @@ def build_rig(workdir, preset=None):
     world = lambda px, py: (px - ox, oy - py)  # 原圖像素（y 向下）→ Spine 世界座標（y 向上，原點在腳底）
 
     parents = dict(cfg["bones"])
+    roles = {n: e.get("role") or default_role(n) for n, e in parts.items()}
     for name, e in parts.items():
         if name not in parents:
-            parents[name] = e.get("parent") or "body"
-    roles = {n: e.get("role") or default_role(n) for n, e in parts.items()}
+            parents[name] = e.get("parent") or ("root" if roles[name] == GROUND else "body")
     # 抱著道具的手掛在道具骨頭下：道具擺動時帶著手一起動，接觸處沒有相對移動，
     # 手後方道具的草稿補圖也就不會露出（手與道具相對移動會露出它，見 quality 的 exposure）
     for name, e in parts.items():
