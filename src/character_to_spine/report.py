@@ -1,27 +1,24 @@
 """補畫優先順序與目視驗收圖（Python Simulation Preview，不是 Spine 算圖）。
 
-python scripts/visual_report.py <工作目錄> [--out <輸出目錄>]（預設 <工作目錄>/report）
-
-輸出 repair_priority.md、每個列出部件的 repair_<部件>.png、visual_check.png。
+c2s run 的最後一步，輸出到 <工作目錄>/report/： repair_priority.md、每個列出部件的 repair_<部件>.png、visual_check.png。
 露出量：補上的像素在動畫中實際被看見的量，扣掉初始姿勢的值，除以部件在初始姿勢的面積；
 取樣與 quality.assess 相同（每 1/FPS 秒加上每個關鍵影格），idle 與 happy 都量。
 """
-import argparse
 import math
-import sys
 from pathlib import Path
 
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from character_to_spine import load_json, quality  # noqa: E402
-from character_to_spine.animation_builder import duration  # noqa: E402
-from character_to_spine.image_processor import CONTOUR_HIDDEN_MAX, HOLDOUT_MAX, part_mask  # noqa: E402
-from character_to_spine.preview import render, world_matrices  # noqa: E402
+from . import NeedsInput, load_json, quality
+from .animation_builder import duration
+from .image_processor import CONTOUR_HIDDEN_MAX, HOLDOUT_MAX, part_mask
+from .preview import render, world_matrices
 
-FONT = "C:/Windows/Fonts/msjh.ttc"
+# 中文字型：Windows、macOS、Linux 常見位置依序嘗試；都沒有時用 Pillow 內建字型（中文會變方框，數值仍可讀）
+FONTS = ("C:/Windows/Fonts/msjh.ttc", "/System/Library/Fonts/PingFang.ttc",
+         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc")
 HIGH, MID = 0.02, 0.005
 PANEL_H, PANEL_MIN_W = 360, 360
 TILE_W = 400
@@ -30,7 +27,12 @@ CONTACT_COLORS = ((230, 30, 30), (20, 110, 230), (20, 160, 60), (220, 130, 0), (
 
 
 def font(size):
-    return ImageFont.truetype(FONT, size)
+    for path in FONTS:
+        try:
+            return ImageFont.truetype(path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default(size)
 
 
 def sample_times(data):
@@ -258,7 +260,7 @@ def report(wd, out=None):
     wd = Path(wd)
     for need in ("metadata.json", "rig.json", "parts.json", "source_rgba.png", "layer_preview.png", "spine/character.json"):
         if not (wd / need).exists():
-            sys.exit(f"{wd} 缺少 {need}，請先跑完 c2s run")
+            raise NeedsInput(f"{wd} 缺少 {need}，請先跑完 c2s run")
     out = Path(out) if out else wd / "report"
     out.mkdir(parents=True, exist_ok=True)
     for old in out.glob("repair_*.png"):
@@ -282,10 +284,3 @@ def report(wd, out=None):
     visual_check(wd, ctx, skel, out / "visual_check.png")
     return out
 
-
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description="補畫優先順序與目視驗收圖")
-    ap.add_argument("workdir")
-    ap.add_argument("--out")
-    args = ap.parse_args()
-    print(report(args.workdir, args.out))

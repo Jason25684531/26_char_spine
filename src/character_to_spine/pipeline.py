@@ -7,6 +7,7 @@ from .animation_builder import build_animations
 from .image_processor import prepare
 from .preview import write_previews
 from .quality import refine
+from .report import report
 from .rig_builder import build_rig
 from .spine_exporter import DEFAULT_SPINE_VERSION
 from .validator import validate
@@ -31,7 +32,7 @@ def resolve_workdir(image=None, workdir=None):
 
 def run(image, motion="happy", workdir=None, parts=None, preset="humanoid-chibi",
         spine_version=DEFAULT_SPINE_VERSION, spine_exe=None):
-    """analyze → prepare → rig → animate → export → validate。缺資料時停在那一步並回報接續方式。"""
+    """analyze → prepare → rig → animate → refine（含 export）→ validate → preview → report。缺資料時停在那一步並回報接續方式。"""
     wd = resolve_workdir(image, workdir)
     steps = {}
     try:
@@ -48,6 +49,7 @@ def run(image, motion="happy", workdir=None, parts=None, preset="humanoid-chibi"
         steps["refine"] = refine(wd, motion, spine_version, spine_exe)  # 品質檢查與自我修正，結束時 export 一次
         steps["validate"] = validate(wd)
         steps["preview"] = write_previews(wd)
+        steps["report"] = str(report(wd))  # 修補優先順序、三格對照、視覺驗收總覽
     except NeedsInput as e:
         return {"status": "needs_input", "workdir": str(wd), "stopped_after": list(steps), "message": str(e), "steps": steps}
     return {"status": steps["validate"]["status"], "workdir": str(wd), "steps": steps}

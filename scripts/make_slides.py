@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import motion_metrics  # noqa: E402
 import numpy as np  # noqa: E402
-import visual_report as vr  # noqa: E402
+from character_to_spine import report as vr  # noqa: E402
 from character_to_spine import quality  # noqa: E402
 
 FONT = "Microsoft JhengHei"
@@ -394,7 +394,7 @@ def build(chars, originals_dir, junit, out_path):
             rows.append([str(r["round"]), str(r["score"]), "、".join(f"{k} {n}" for k, n in count.items()) or "無",
                          "、".join(x["bone"] for x in r.get("fixes", [])) or ("（採用此輪）" if r["round"] == q["chosen_round"] else "—")])
         table(s, 0.6, 1.35, 7.2, rows, [0.5, 1.1, 2.0, 3.6], size=12, row_h=0.45)
-        worst = q["rounds"][q["chosen_round"]]["worst"]
+        worst = q["worst"]
         contacts = [f"{k.split(':')[1].replace('+', ' 與 ')}：重疊維持 {v['value']:.0%}" for k, v in worst.items() if k.startswith("attach:")]
         mm = motion_metrics.measure(main["wd"])
         contacts += [f"{key.split('@')[0]} 相對身體：最大位移 {mm['travel_px'][key]} px、每秒移動 {mm['path_px_per_s'][key]} px"

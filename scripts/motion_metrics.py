@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from character_to_spine import load_json, quality  # noqa: E402
 from character_to_spine.animation_builder import duration  # noqa: E402
 from character_to_spine.preview import world_matrices  # noqa: E402
-from visual_report import measure as exposure_by_part  # noqa: E402
+from character_to_spine.report import measure as exposure_by_part  # noqa: E402
 
 FPS = 30
 
@@ -52,7 +52,7 @@ def measure(wd):
     out["limb_travel"] = limb_travel(wd, skel)
     out["fill_exposure"] = fill_exposure(wd, skel)
     if q:
-        worst = q["rounds"][q["chosen_round"]]["worst"]
+        worst = q["worst"]
         out["attach_min"] = {k[7:]: v["value"] for k, v in worst.items() if k.startswith("attach:")}
         out["unresolved"] = [f"{a['kind']}:{a['subject']}" for a in q["unresolved"]]
         out["downgraded"] = q["downgraded_to_needs_manual"]

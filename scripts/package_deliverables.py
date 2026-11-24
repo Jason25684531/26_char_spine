@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from make_slides import CHECK_LABELS, build  # noqa: E402
-from visual_report import report as visual_report  # noqa: E402
+from character_to_spine.report import report as visual_report  # noqa: E402
 
 
 def load(p):

@@ -1,21 +1,18 @@
 import re
-import subprocess
-import sys
-from pathlib import Path
 
 import pytest
 
 from character_to_spine import load_json, quality
 from character_to_spine.animation_builder import duration
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "visual_report.py"
 ROW = re.compile(r"^\| \d+ \| `([^`]+)` \| [^|]+ \| ([\d.]+)% \|")
 
 
 @pytest.fixture(scope="module")
-def report(built, tmp_path_factory):
-    wd, out = built("synth_b"), tmp_path_factory.mktemp("report")
-    subprocess.run([sys.executable, str(SCRIPT), str(wd), "--out", str(out)], check=True)
+def report(built):
+    """c2s run 的最後一步會產生 report/，Skill 不需要另外執行任何腳本（K-30）。"""
+    wd = built("synth_b")
+    out = wd / "report"
     sections = {}
     for chunk in (out / "repair_priority.md").read_text(encoding="utf-8").split("\n## ")[1:]:
         title, body = chunk.split("\n", 1)
@@ -60,9 +57,9 @@ def test_reported_exposure_matches_recomputation(report):
             worst = max(worst, (seen(anim, t)[0] - base) / area)
     assert rows[name] == pytest.approx(worst * 100, abs=0.006)
 
-    # quality.assess 也量過不可靠補圖的露出（採用那一輪的 worst）：兩邊應一致
+    # quality.assess 也量過不可靠補圖的露出（最終動畫的 worst，含回升）：兩邊應一致
     q = load_json(wd / "quality" / "quality_report.json")
-    worst = q["rounds"][q["chosen_round"]]["worst"]
+    worst = q["worst"]
     unreliable = dict(next(rows for title, rows in sections.items() if "不可靠" in title))
     checked = [n for n in unreliable if f"exposure:{n}" in worst]
     assert checked
