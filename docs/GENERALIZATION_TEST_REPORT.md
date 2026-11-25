@@ -1,5 +1,7 @@
 # 泛化測試報告：Character-to-Spine 對陌生角色的實際能力
 
+> **2026-11-25 註記**：本報告的數字是 v1.0 之前的快照 `final`。v1.0 之後的判定見 `docs/GENERALIZATION_TEST_MATRIX.md`（由 `results.json` 產生，含 `v1_before → v1_final2` 前後比較）與 `docs/SKILL_V1_REPORT.md`；等級下降未回退的理由見 DECISIONS D-50。
+
 2026-11-24，分支 `feat/character-to-spine-mvp`。數字與等級都來自 `docs/GENERALIZATION_TEST_MATRIX.md`，該矩陣由 `python scripts/generalization.py report` 依 `output/generalization/results.json` 產生。預覽都是 Python Simulation Preview，不是 Spine 算圖；Spine 正式輸出（`.spine`、往返、Editor 可編輯性）因只有試用版仍是 BLOCKED（K-01），不影響本報告的等級。
 
 ## 結論
