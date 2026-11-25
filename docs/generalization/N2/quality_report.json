@@ -1,0 +1,1202 @@
+{
+  "fps": 10,
+  "thresholds": {
+    "hole": 0.003,
+    "gap": 0.1,
+    "attach": 0.6,
+    "intrude": 0.02,
+    "exposure": 0.02
+  },
+  "max_rounds": 3,
+  "chosen_round": 3,
+  "tuning": {
+    "happy": {
+      "arm_l": 0.125,
+      "hair_back": 0.25,
+      "leg_l": 0.25,
+      "leg_r": 0.25,
+      "arm_r": 0.5,
+      "body": 0.5,
+      "head": 0.5
+    }
+  },
+  "worst": {
+    "attach:arm_r+sword": {
+      "value": 0.956,
+      "anim": "happy",
+      "t": 1.8
+    },
+    "exposure:arm_l": {
+      "value": 0.0189,
+      "anim": "happy",
+      "t": 1.8
+    },
+    "exposure:body": {
+      "value": 0.0831,
+      "anim": "happy",
+      "t": 0.6
+    },
+    "exposure:hair_back": {
+      "value": 0.0334,
+      "anim": "idle",
+      "t": 0.7
+    },
+    "exposure:head": {
+      "value": 0.0016,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "exposure:leg_l": {
+      "value": 0.0762,
+      "anim": "happy",
+      "t": 0.5
+    },
+    "exposure:leg_r": {
+      "value": 0.1498,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "exposure:sword": {
+      "value": 0.0075,
+      "anim": "happy",
+      "t": 0.6
+    },
+    "gap:arm_l": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "gap:arm_r": {
+      "value": 0.0048,
+      "anim": "happy",
+      "t": 1.4
+    },
+    "gap:hair_back": {
+      "value": 0.0055,
+      "anim": "happy",
+      "t": 0.6
+    },
+    "gap:head": {
+      "value": 0.0053,
+      "anim": "idle",
+      "t": 0.9
+    },
+    "gap:leg_l": {
+      "value": 0.0052,
+      "anim": "idle",
+      "t": 0.6
+    },
+    "gap:leg_r": {
+      "value": 0.0209,
+      "anim": "idle",
+      "t": 0.9
+    },
+    "gap:pauldron_l": {
+      "value": 0.0014,
+      "anim": "happy",
+      "t": 0.1
+    },
+    "gap:sword": {
+      "value": 0.0121,
+      "anim": "idle",
+      "t": 0.4
+    },
+    "gap:tabard": {
+      "value": 0.0024,
+      "anim": "happy",
+      "t": 2.1
+    },
+    "hole:character": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+arm_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+sword": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+head": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+leg_l": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+leg_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+pauldron_l": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+tabard": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:body+sword": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:head+sword": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:leg_l+sword": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:pauldron_l+sword": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:sword+tabard": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    }
+  },
+  "rounds": [
+    {
+      "round": 0,
+      "tuning": {},
+      "score": 49.4067,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "arm_l",
+          "value": 0.0488,
+          "anim": "happy",
+          "t": 0.7,
+          "threshold": 0.02,
+          "violation": 0.0288,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_0\\happy_t0.7_exposure_arm_l.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.1068,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0868,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_0\\happy_t0.6_exposure_body.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0823,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0623,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_0\\happy_t0.6_exposure_hair_back.png",
+          "attributed_to": "hair_back"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.1994,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.1794,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_0\\happy_t0.5_exposure_leg_l.png",
+          "attributed_to": "leg_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.2414,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.2214,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_0\\happy_t1.7_exposure_leg_r.png",
+          "attributed_to": "leg_r"
+        },
+        {
+          "kind": "hole",
+          "subject": "character",
+          "value": 0.0035,
+          "anim": "happy",
+          "t": 1.5,
+          "threshold": 0.003,
+          "violation": 0.0005,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_0\\happy_t1.5_hole_character.png",
+          "attributed_to": "hair_back"
+        },
+        {
+          "kind": "intrude",
+          "subject": "arm_r+head",
+          "value": 0.4081,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.3881,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_0\\happy_t1.7_intrude_arm_r-head.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "intrude",
+          "subject": "sword+tabard",
+          "value": 0.038,
+          "anim": "happy",
+          "t": 0.2,
+          "threshold": 0.02,
+          "violation": 0.018,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_0\\happy_t0.2_intrude_sword-tabard.png",
+          "attributed_to": "arm_r"
+        }
+      ],
+      "worst": {
+        "attach:arm_r+sword": {
+          "value": 0.956,
+          "anim": "happy",
+          "t": 1.9
+        },
+        "exposure:arm_l": {
+          "value": 0.0488,
+          "anim": "happy",
+          "t": 0.7
+        },
+        "exposure:body": {
+          "value": 0.1068,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:hair_back": {
+          "value": 0.0823,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:head": {
+          "value": 0.0031,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:leg_l": {
+          "value": 0.1994,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "exposure:leg_r": {
+          "value": 0.2414,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:sword": {
+          "value": 0.0073,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:arm_l": {
+          "value": 0.0366,
+          "anim": "happy",
+          "t": 1.3
+        },
+        "gap:arm_r": {
+          "value": 0.0048,
+          "anim": "happy",
+          "t": 1.3
+        },
+        "gap:hair_back": {
+          "value": 0.0053,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "gap:head": {
+          "value": 0.0199,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "gap:leg_l": {
+          "value": 0.0052,
+          "anim": "idle",
+          "t": 0.6
+        },
+        "gap:leg_r": {
+          "value": 0.0209,
+          "anim": "idle",
+          "t": 0.9
+        },
+        "gap:pauldron_l": {
+          "value": 0.0143,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "gap:sword": {
+          "value": 0.0121,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:tabard": {
+          "value": 0.0033,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "hole:character": {
+          "value": 0.0035,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.4081,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+pauldron_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+tabard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+sword": {
+          "value": 0.0159,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "intrude:leg_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:pauldron_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:sword+tabard": {
+          "value": 0.038,
+          "anim": "happy",
+          "t": 0.2
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "hair_back",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "tuning": {
+        "happy": {
+          "arm_l": 0.5,
+          "hair_back": 0.5,
+          "leg_l": 0.5,
+          "leg_r": 0.5,
+          "arm_r": 0.5
+        }
+      },
+      "score": 22.63,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "arm_l",
+          "value": 0.0407,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.0207,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_1\\happy_t1.7_exposure_arm_l.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.1062,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0862,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_1\\happy_t0.6_exposure_body.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0503,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.0303,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_1\\happy_t1.8_exposure_hair_back.png",
+          "attributed_to": "hair_back"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.1451,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.1251,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_1\\happy_t0.5_exposure_leg_l.png",
+          "attributed_to": "body"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.2103,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.1903,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_1\\happy_t1.7_exposure_leg_r.png",
+          "attributed_to": "body"
+        }
+      ],
+      "worst": {
+        "attach:arm_r+sword": {
+          "value": 0.96,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:arm_l": {
+          "value": 0.0407,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:body": {
+          "value": 0.1062,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:hair_back": {
+          "value": 0.0503,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:head": {
+          "value": 0.0031,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:leg_l": {
+          "value": 0.1451,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "exposure:leg_r": {
+          "value": 0.2103,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:sword": {
+          "value": 0.0073,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "gap:arm_l": {
+          "value": 0.0307,
+          "anim": "happy",
+          "t": 0.2
+        },
+        "gap:arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:hair_back": {
+          "value": 0.0066,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:head": {
+          "value": 0.0093,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "gap:leg_l": {
+          "value": 0.0052,
+          "anim": "idle",
+          "t": 0.6
+        },
+        "gap:leg_r": {
+          "value": 0.0209,
+          "anim": "idle",
+          "t": 0.9
+        },
+        "gap:pauldron_l": {
+          "value": 0.0097,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:sword": {
+          "value": 0.0121,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:tabard": {
+          "value": 0.0037,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+pauldron_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+tabard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:pauldron_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:sword+tabard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "hair_back",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "body",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "tuning": {
+        "happy": {
+          "arm_l": 0.25,
+          "hair_back": 0.25,
+          "leg_l": 0.5,
+          "leg_r": 0.5,
+          "arm_r": 0.5,
+          "body": 0.5
+        }
+      },
+      "score": 17.905,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "arm_l",
+          "value": 0.0276,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.0076,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_2\\happy_t1.8_exposure_arm_l.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.1067,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0867,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_2\\happy_t0.6_exposure_body.png",
+          "attributed_to": "arm_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0347,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.0147,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_2\\happy_t0.5_exposure_hair_back.png",
+          "attributed_to": "head"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.1097,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.0897,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_2\\happy_t0.5_exposure_leg_l.png",
+          "attributed_to": "leg_l"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.1794,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.1594,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_2\\happy_t1.7_exposure_leg_r.png",
+          "attributed_to": "leg_r"
+        }
+      ],
+      "worst": {
+        "attach:arm_r+sword": {
+          "value": 0.956,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:arm_l": {
+          "value": 0.0276,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:body": {
+          "value": 0.1067,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:hair_back": {
+          "value": 0.0347,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "exposure:head": {
+          "value": 0.0032,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:leg_l": {
+          "value": 0.1097,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "exposure:leg_r": {
+          "value": 0.1794,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:sword": {
+          "value": 0.0075,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:arm_l": {
+          "value": 0.0052,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "gap:arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:hair_back": {
+          "value": 0.0058,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:head": {
+          "value": 0.008,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "gap:leg_l": {
+          "value": 0.0052,
+          "anim": "idle",
+          "t": 0.6
+        },
+        "gap:leg_r": {
+          "value": 0.0209,
+          "anim": "idle",
+          "t": 0.9
+        },
+        "gap:pauldron_l": {
+          "value": 0.0028,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "gap:sword": {
+          "value": 0.0121,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:tabard": {
+          "value": 0.0024,
+          "anim": "happy",
+          "t": 2.1
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+pauldron_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+tabard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:pauldron_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:sword+tabard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "head",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_l",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_r",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "tuning": {
+        "happy": {
+          "arm_l": 0.125,
+          "hair_back": 0.25,
+          "leg_l": 0.25,
+          "leg_r": 0.25,
+          "arm_r": 0.5,
+          "body": 0.5,
+          "head": 0.5
+        }
+      },
+      "score": 13.125,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0831,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0631,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_3\\happy_t0.6_exposure_body.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0334,
+          "anim": "idle",
+          "t": 0.7,
+          "threshold": 0.02,
+          "violation": 0.0134,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_3\\idle_t0.7_exposure_hair_back.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.0762,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.0562,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_3\\happy_t0.5_exposure_leg_l.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.1498,
+          "anim": "happy",
+          "t": 1.7,
+          "threshold": 0.02,
+          "violation": 0.1298,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N2\\work\\quality\\round_3\\happy_t1.7_exposure_leg_r.png"
+        }
+      ],
+      "worst": {
+        "attach:arm_r+sword": {
+          "value": 0.956,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:arm_l": {
+          "value": 0.0189,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:body": {
+          "value": 0.0831,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:hair_back": {
+          "value": 0.0334,
+          "anim": "idle",
+          "t": 0.7
+        },
+        "exposure:head": {
+          "value": 0.0016,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:leg_l": {
+          "value": 0.0762,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "exposure:leg_r": {
+          "value": 0.1498,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "exposure:sword": {
+          "value": 0.0075,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:arm_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:arm_r": {
+          "value": 0.0048,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:hair_back": {
+          "value": 0.0055,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:head": {
+          "value": 0.0053,
+          "anim": "idle",
+          "t": 0.9
+        },
+        "gap:leg_l": {
+          "value": 0.0052,
+          "anim": "idle",
+          "t": 0.6
+        },
+        "gap:leg_r": {
+          "value": 0.0209,
+          "anim": "idle",
+          "t": 0.9
+        },
+        "gap:pauldron_l": {
+          "value": 0.0014,
+          "anim": "happy",
+          "t": 0.1
+        },
+        "gap:sword": {
+          "value": 0.0121,
+          "anim": "idle",
+          "t": 0.4
+        },
+        "gap:tabard": {
+          "value": 0.0024,
+          "anim": "happy",
+          "t": 2.1
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+pauldron_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+tabard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:body+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:pauldron_l+sword": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:sword+tabard": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      }
+    }
+  ],
+  "regrow": [
+    {
+      "animation": "happy",
+      "bone": "arm_l",
+      "factor": 0.1768,
+      "score": 13.985,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "arm_r",
+      "factor": 0.7071,
+      "score": 13.17,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "body",
+      "factor": 0.7071,
+      "score": 14.7,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "hair_back",
+      "factor": 0.3536,
+      "score": 13.41,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "head",
+      "factor": 0.7071,
+      "score": 13.15,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "leg_l",
+      "factor": 0.3536,
+      "score": 13.775,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "leg_r",
+      "factor": 0.3536,
+      "score": 13.94,
+      "kept": false
+    }
+  ],
+  "unresolved": [],
+  "downgraded_to_needs_manual": [],
+  "unreliable_exposed_within_threshold": {
+    "arm_l": 0.0189,
+    "head": 0.0016,
+    "sword": 0.0075
+  }
+}

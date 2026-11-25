@@ -1,0 +1,76 @@
+{
+ "top": [
+  "animations",
+  "bones",
+  "constraints",
+  "events",
+  "skeleton",
+  "skins",
+  "slots"
+ ],
+ "skeleton": [
+  "audio",
+  "hash",
+  "height",
+  "images",
+  "spine",
+  "width",
+  "x",
+  "y"
+ ],
+ "bone": [
+  "color",
+  "icon",
+  "inherit",
+  "length",
+  "name",
+  "parent",
+  "rotation",
+  "scaleX",
+  "scaleY",
+  "x",
+  "y"
+ ],
+ "slot": [
+  "attachment",
+  "blend",
+  "bone",
+  "color",
+  "name"
+ ],
+ "skin": [
+  "attachments",
+  "name"
+ ],
+ "region": [
+  "height",
+  "rotation",
+  "scaleX",
+  "scaleY",
+  "width",
+  "x",
+  "y"
+ ],
+ "animation": [
+  "attachments",
+  "bones",
+  "events",
+  "ik",
+  "slots",
+  "transform"
+ ],
+ "bone_timeline": [
+  "rotate",
+  "scale",
+  "shear",
+  "translate"
+ ],
+ "bone_key": [
+  "curve",
+  "time",
+  "value",
+  "x",
+  "y"
+ ],
+ "_source": "EsotericSoftware/spine-runtimes 4.3 examples/spineboy/export/spineboy-pro.json, spine 4.3.75-beta"
+}

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "character-to-spine"
+version = "1.0.0"
+description = "2D 角色圖片 → 分層 PNG → Spine 骨架與動畫"
+requires-python = ">=3.11"
+dependencies = ["numpy", "Pillow", "opencv-python"]
+
+[project.optional-dependencies]
+dev = ["pytest", "python-pptx"]  # python-pptx：交付簡報（scripts/make_slides.py）與其測試
+
+[project.scripts]
+c2s = "character_to_spine.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

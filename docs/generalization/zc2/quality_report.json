@@ -1,0 +1,1160 @@
+{
+  "fps": 10,
+  "thresholds": {
+    "hole": 0.003,
+    "gap": 0.1,
+    "attach": 0.6,
+    "intrude": 0.02,
+    "exposure": 0.02
+  },
+  "max_rounds": 3,
+  "chosen_round": 3,
+  "tuning": {
+    "happy": {
+      "arm_r": 0.125,
+      "hair_back": 0.3536,
+      "skirt": 0.125,
+      "head": 0.5,
+      "leg_r": 0.5
+    },
+    "idle": {
+      "hair_back": 0.7071
+    }
+  },
+  "worst": {
+    "attach:arm_r+petals": {
+      "value": 0.9338,
+      "anim": "happy",
+      "t": 1.5
+    },
+    "exposure:body": {
+      "value": 0.0242,
+      "anim": "happy",
+      "t": 0.6
+    },
+    "exposure:hair_back": {
+      "value": 0.0184,
+      "anim": "idle",
+      "t": 0.7
+    },
+    "exposure:head": {
+      "value": 0.0114,
+      "anim": "happy",
+      "t": 0.6
+    },
+    "exposure:leg_l": {
+      "value": 0.1019,
+      "anim": "happy",
+      "t": 1.6
+    },
+    "exposure:leg_r": {
+      "value": 0.0203,
+      "anim": "idle",
+      "t": 1.1
+    },
+    "exposure:petals": {
+      "value": 0.0201,
+      "anim": "happy",
+      "t": 0.3
+    },
+    "exposure:skirt": {
+      "value": 0.0039,
+      "anim": "happy",
+      "t": 1.4
+    },
+    "gap:arm_extra": {
+      "value": 0.0844,
+      "anim": "happy",
+      "t": 0.4
+    },
+    "gap:arm_l": {
+      "value": 0.0263,
+      "anim": "idle",
+      "t": 1.5
+    },
+    "gap:arm_r": {
+      "value": 0.0005,
+      "anim": "idle",
+      "t": 1.1
+    },
+    "gap:flower_crown": {
+      "value": 0.0028,
+      "anim": "happy",
+      "t": 1.0
+    },
+    "gap:hair_back": {
+      "value": 0.0036,
+      "anim": "happy",
+      "t": 1.7
+    },
+    "gap:head": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "gap:leg_l": {
+      "value": 0.0028,
+      "anim": "happy",
+      "t": 1.1
+    },
+    "gap:leg_r": {
+      "value": 0.0057,
+      "anim": "happy",
+      "t": 0.5
+    },
+    "gap:petals": {
+      "value": 0.0013,
+      "anim": "happy",
+      "t": 1.9
+    },
+    "gap:skirt": {
+      "value": 0.006,
+      "anim": "happy",
+      "t": 0.7
+    },
+    "hole:character": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_extra+petals": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_l+arm_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+flower_crown": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+head": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+leg_l": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:arm_r+leg_r": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:flower_crown+petals": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:head+petals": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:leg_l+petals": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    },
+    "intrude:leg_r+petals": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    }
+  },
+  "rounds": [
+    {
+      "round": 0,
+      "tuning": {},
+      "score": 22.454,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.1233,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.1033,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_0\\happy_t0.5_exposure_body.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0531,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.0331,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_0\\happy_t1.8_exposure_hair_back.png",
+          "attributed_to": "hair_back"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.2238,
+          "anim": "happy",
+          "t": 0.3,
+          "threshold": 0.02,
+          "violation": 0.2038,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_0\\happy_t0.3_exposure_leg_l.png",
+          "attributed_to": "skirt"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.1243,
+          "anim": "happy",
+          "t": 0.3,
+          "threshold": 0.02,
+          "violation": 0.1043,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_0\\happy_t0.3_exposure_leg_r.png",
+          "attributed_to": "skirt"
+        },
+        {
+          "kind": "gap",
+          "subject": "arm_extra",
+          "value": 0.1224,
+          "anim": "happy",
+          "t": 0.4,
+          "threshold": 0.1,
+          "violation": 0.0224,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_0\\happy_t0.4_gap_arm_extra.png",
+          "attributed_to": "hair_back"
+        },
+        {
+          "kind": "gap",
+          "subject": "arm_l",
+          "value": 0.1005,
+          "anim": "happy",
+          "t": 1.6,
+          "threshold": 0.1,
+          "violation": 0.0005,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_0\\happy_t1.6_gap_arm_l.png",
+          "attributed_to": "arm_r"
+        }
+      ],
+      "worst": {
+        "attach:arm_r+petals": {
+          "value": 0.9295,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:body": {
+          "value": 0.1233,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "exposure:hair_back": {
+          "value": 0.0531,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:head": {
+          "value": 0.0116,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:leg_l": {
+          "value": 0.2238,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:leg_r": {
+          "value": 0.1243,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:petals": {
+          "value": 0.02,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:skirt": {
+          "value": 0.007,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:arm_extra": {
+          "value": 0.1224,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "gap:arm_l": {
+          "value": 0.1005,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "gap:arm_r": {
+          "value": 0.0005,
+          "anim": "idle",
+          "t": 1.1
+        },
+        "gap:flower_crown": {
+          "value": 0.0017,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "gap:hair_back": {
+          "value": 0.0036,
+          "anim": "idle",
+          "t": 0.5
+        },
+        "gap:head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_r": {
+          "value": 0.0204,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "gap:petals": {
+          "value": 0.0013,
+          "anim": "happy",
+          "t": 1.3
+        },
+        "gap:skirt": {
+          "value": 0.004,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_extra+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+flower_crown": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:flower_crown+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_l+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_r+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "hair_back",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "skirt",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.5,
+          "hair_back": 0.5,
+          "skirt": 0.5
+        }
+      },
+      "score": 11.396,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0622,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.0422,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_1\\happy_t0.5_exposure_body.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0245,
+          "anim": "idle",
+          "t": 0.7,
+          "threshold": 0.02,
+          "violation": 0.0045,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_1\\idle_t0.7_exposure_hair_back.png",
+          "attributed_to": "hair_back"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.1551,
+          "anim": "happy",
+          "t": 0.3,
+          "threshold": 0.02,
+          "violation": 0.1351,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_1\\happy_t0.3_exposure_leg_l.png",
+          "attributed_to": "skirt"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0625,
+          "anim": "happy",
+          "t": 1.5,
+          "threshold": 0.02,
+          "violation": 0.0425,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_1\\happy_t1.5_exposure_leg_r.png",
+          "attributed_to": "skirt"
+        },
+        {
+          "kind": "gap",
+          "subject": "arm_extra",
+          "value": 0.1181,
+          "anim": "happy",
+          "t": 0.4,
+          "threshold": 0.1,
+          "violation": 0.0181,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_1\\happy_t0.4_gap_arm_extra.png",
+          "attributed_to": "head"
+        }
+      ],
+      "worst": {
+        "attach:arm_r+petals": {
+          "value": 0.9209,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:body": {
+          "value": 0.0622,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "exposure:hair_back": {
+          "value": 0.0245,
+          "anim": "idle",
+          "t": 0.7
+        },
+        "exposure:head": {
+          "value": 0.0116,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:leg_l": {
+          "value": 0.1551,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:leg_r": {
+          "value": 0.0625,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:petals": {
+          "value": 0.0196,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:skirt": {
+          "value": 0.0052,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:arm_extra": {
+          "value": 0.1181,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "gap:arm_l": {
+          "value": 0.0335,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "gap:arm_r": {
+          "value": 0.0011,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:flower_crown": {
+          "value": 0.0028,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "gap:hair_back": {
+          "value": 0.0036,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "gap:head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_r": {
+          "value": 0.0148,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "gap:petals": {
+          "value": 0.0013,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:skirt": {
+          "value": 0.004,
+          "anim": "happy",
+          "t": 0.7
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_extra+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+flower_crown": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:flower_crown+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_l+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_r+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "idle",
+          "bone": "hair_back",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "skirt",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "head",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.25,
+          "hair_back": 0.5,
+          "skirt": 0.25,
+          "head": 0.5
+        },
+        "idle": {
+          "hair_back": 0.5
+        }
+      },
+      "score": 7.64,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0359,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0159,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_2\\happy_t0.6_exposure_body.png",
+          "attributed_to": "arm_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "hair_back",
+          "value": 0.0274,
+          "anim": "happy",
+          "t": 1.8,
+          "threshold": 0.02,
+          "violation": 0.0074,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_2\\happy_t1.8_exposure_hair_back.png",
+          "attributed_to": "hair_back"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.1392,
+          "anim": "happy",
+          "t": 0.4,
+          "threshold": 0.02,
+          "violation": 0.1192,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_2\\happy_t0.4_exposure_leg_l.png",
+          "attributed_to": "leg_r"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0292,
+          "anim": "happy",
+          "t": 0.3,
+          "threshold": 0.02,
+          "violation": 0.0092,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_2\\happy_t0.3_exposure_leg_r.png",
+          "attributed_to": "skirt"
+        },
+        {
+          "kind": "gap",
+          "subject": "arm_extra",
+          "value": 0.1055,
+          "anim": "happy",
+          "t": 0.3,
+          "threshold": 0.1,
+          "violation": 0.0055,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_2\\happy_t0.3_gap_arm_extra.png",
+          "attributed_to": "hair_back"
+        }
+      ],
+      "worst": {
+        "attach:arm_r+petals": {
+          "value": 0.9295,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:body": {
+          "value": 0.0359,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:hair_back": {
+          "value": 0.0274,
+          "anim": "happy",
+          "t": 1.8
+        },
+        "exposure:head": {
+          "value": 0.0114,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:leg_l": {
+          "value": 0.1392,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "exposure:leg_r": {
+          "value": 0.0292,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:petals": {
+          "value": 0.0195,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:skirt": {
+          "value": 0.0041,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:arm_extra": {
+          "value": 0.1055,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "gap:arm_l": {
+          "value": 0.0287,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "gap:arm_r": {
+          "value": 0.0005,
+          "anim": "happy",
+          "t": 0.7
+        },
+        "gap:flower_crown": {
+          "value": 0.0028,
+          "anim": "idle",
+          "t": 1.1
+        },
+        "gap:hair_back": {
+          "value": 0.0036,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "gap:head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_l": {
+          "value": 0.0028,
+          "anim": "happy",
+          "t": 0.8
+        },
+        "gap:leg_r": {
+          "value": 0.0114,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:petals": {
+          "value": 0.0013,
+          "anim": "happy",
+          "t": 0.1
+        },
+        "gap:skirt": {
+          "value": 0.006,
+          "anim": "happy",
+          "t": 0.7
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_extra+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+flower_crown": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:flower_crown+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_l+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_r+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "hair_back",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "leg_r",
+          "factor": 0.5
+        },
+        {
+          "animation": "happy",
+          "bone": "skirt",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.125,
+          "hair_back": 0.25,
+          "skirt": 0.125,
+          "head": 0.5,
+          "leg_r": 0.5
+        },
+        "idle": {
+          "hair_back": 0.5
+        }
+      },
+      "score": 4.325,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0242,
+          "anim": "happy",
+          "t": 0.6,
+          "threshold": 0.02,
+          "violation": 0.0042,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_3\\happy_t0.6_exposure_body.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_l",
+          "value": 0.1019,
+          "anim": "happy",
+          "t": 1.6,
+          "threshold": 0.02,
+          "violation": 0.0819,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_3\\happy_t1.6_exposure_leg_l.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "leg_r",
+          "value": 0.0203,
+          "anim": "idle",
+          "t": 1.1,
+          "threshold": 0.02,
+          "violation": 0.0003,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_3\\idle_t1.1_exposure_leg_r.png"
+        },
+        {
+          "kind": "exposure",
+          "subject": "petals",
+          "value": 0.0201,
+          "anim": "happy",
+          "t": 0.3,
+          "threshold": 0.02,
+          "violation": 0.0001,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\zc2\\work\\quality\\round_3\\happy_t0.3_exposure_petals.png"
+        }
+      ],
+      "worst": {
+        "attach:arm_r+petals": {
+          "value": 0.9338,
+          "anim": "happy",
+          "t": 1.5
+        },
+        "exposure:body": {
+          "value": 0.0242,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:hair_back": {
+          "value": 0.0138,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:head": {
+          "value": 0.0114,
+          "anim": "happy",
+          "t": 0.6
+        },
+        "exposure:leg_l": {
+          "value": 0.1019,
+          "anim": "happy",
+          "t": 1.6
+        },
+        "exposure:leg_r": {
+          "value": 0.0203,
+          "anim": "idle",
+          "t": 1.1
+        },
+        "exposure:petals": {
+          "value": 0.0201,
+          "anim": "happy",
+          "t": 0.3
+        },
+        "exposure:skirt": {
+          "value": 0.0039,
+          "anim": "happy",
+          "t": 1.4
+        },
+        "gap:arm_extra": {
+          "value": 0.0675,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "gap:arm_l": {
+          "value": 0.0239,
+          "anim": "idle",
+          "t": 1.6
+        },
+        "gap:arm_r": {
+          "value": 0.0005,
+          "anim": "idle",
+          "t": 1.1
+        },
+        "gap:flower_crown": {
+          "value": 0.0028,
+          "anim": "idle",
+          "t": 1.1
+        },
+        "gap:hair_back": {
+          "value": 0.0036,
+          "anim": "happy",
+          "t": 1.7
+        },
+        "gap:head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "gap:leg_l": {
+          "value": 0.0028,
+          "anim": "happy",
+          "t": 1.1
+        },
+        "gap:leg_r": {
+          "value": 0.0057,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:petals": {
+          "value": 0.0013,
+          "anim": "happy",
+          "t": 1.9
+        },
+        "gap:skirt": {
+          "value": 0.006,
+          "anim": "happy",
+          "t": 0.7
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_extra+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_l+arm_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+flower_crown": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+head": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_l": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:arm_r+leg_r": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:flower_crown+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:head+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_l+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        },
+        "intrude:leg_r+petals": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      }
+    }
+  ],
+  "regrow": [
+    {
+      "animation": "happy",
+      "bone": "arm_r",
+      "factor": 0.1768,
+      "score": 4.555,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "hair_back",
+      "factor": 0.3536,
+      "score": 4.325,
+      "kept": true
+    },
+    {
+      "animation": "happy",
+      "bone": "hair_back",
+      "factor": 0.5001,
+      "score": 4.708,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "head",
+      "factor": 0.7071,
+      "score": 4.37,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "leg_r",
+      "factor": 0.7071,
+      "score": 5.0,
+      "kept": false
+    },
+    {
+      "animation": "happy",
+      "bone": "skirt",
+      "factor": 0.1768,
+      "score": 4.58,
+      "kept": false
+    },
+    {
+      "animation": "idle",
+      "bone": "hair_back",
+      "factor": 0.7071,
+      "score": 4.325,
+      "kept": true
+    },
+    {
+      "animation": "idle",
+      "bone": "hair_back",
+      "factor": 1.0,
+      "score": 4.55,
+      "kept": false
+    }
+  ],
+  "unresolved": [],
+  "downgraded_to_needs_manual": [
+    "leg_r",
+    "petals"
+  ],
+  "unreliable_exposed_within_threshold": {
+    "skirt": 0.0039,
+    "head": 0.0114
+  }
+}

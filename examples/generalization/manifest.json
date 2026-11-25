@@ -1,0 +1,431 @@
+{
+  "version": 1,
+  "note": "泛化測試集。criteria 與每個案例的 features、expected_scope 在第一次對新圖執行 c2s 之前提交（凍結）。之後修改門檻必須在 criteria_changes 記錄原值、新值與理由。",
+  "excluded_sha256": [
+    "b1ecc51b1fcb05b9ac367261525f624d60d4b50befaf6efa83ceee24c58be6ff",
+    "d5ba266c84c74dfd877e4f009717f838ce14462fabbfe4f2b9d46206d23cc803",
+    "6953419648c6f365c88b83916ddd92247be124ba2290ac8da3c5069cb9ef99ae",
+    "44f4264f174cddbc4fc8949fa0dd70e7e295618d9310f0696a90614eefec932a"
+  ],
+  "excluded_note": "人.png、转场2.png、人物 拷贝.png、预中奖.png（同一個角色，參與過開發）",
+  "criteria": {
+    "setup_mae_max": 0.02,
+    "unassigned_max": 0.01,
+    "free_arm_min": 0.02,
+    "bounce_only_max": 0.005,
+    "over_reduced_factor": 0.25,
+    "quality_thresholds": "沿用 quality.THRESHOLDS（hole 0.003、gap 0.1、attach 0.6、intrude 0.02、exposure 0.02）",
+    "attached_arm": "有 attach 的手臂只報告數值、不設下限（既有角色 K-18 實測 5.1px）",
+    "unassigned_note": "量「與角色本體相連、卻不屬於任何部件」的前景比例；散落特效依 Skill 規定刻意不歸屬，不算",
+    "visual_rubric": {
+      "levels": "OK／MINOR（有問題，但屬可接受或已列人工修補）／BAD（不可接受）／UNKNOWN",
+      "BAD": [
+        "pivot 不在對應的關節（例如 hip 在地面、手臂繞手肘轉、腿繞膝蓋轉且上半截露出）",
+        "捏造畫面上看不到的身體結構（例如把裙子切成兩條腿）",
+        "動作只剩整體跳動，四肢在關鍵影格中看不出動作",
+        "部件之間出現明顯破洞或分離，且沒有列入人工修補"
+      ],
+      "MINOR": [
+        "列入人工修補的草稿在動畫中露出",
+        "地面影子跟著角色離地",
+        "持物或被縮小的手臂只有小幅動作",
+        "腿的 pivot 在可見部分起點（裙襬下緣），上半截被遮住"
+      ]
+    }
+  },
+  "criteria_basis": {
+    "measured_on": "2026-11-24，凍結前，只用既有角色與合成角色（output/ren、zc2、synth_a、synth_b），尚未對任何新圖執行 c2s",
+    "free_arm_min": "未持物手臂 happy 動作量：zc2 arm_l 12.9%、synth_a 45%、synth_b 5.3%；2% 低於全部既有值，代表『手臂明顯在動』的最低要求",
+    "bounce_only_max": "既有角色所有肢體 happy 動作量的最小值 0.36%（zc2 arm_r，持花），但沒有角色全部低於 0.5%",
+    "over_reduced_factor": "synth_b 兩手被縮到 ×0.125（gap 造成，K-12），ren、zc2 沒有手臂低於 ×0.25",
+    "unassigned_max": "全部前景量法會讓 zc2 因散落花瓣得到 12.4%；改量與本體相連者後 ren 0.01%、zc2 0.72%、synth 0%"
+  },
+  "criteria_changes": [
+    {
+      "field": "provenance_rule",
+      "date": "2026-11-24",
+      "commit": "38e3c72",
+      "old": "逐點相同，或平移縮放後殘差 < 3px（所有多邊形）",
+      "new": "逐點相同或只平移後殘差 < 3px；允許縮放的比對只用於 6 點以上的多邊形",
+      "reason": "基準執行時 C 的 4 點 leg_r 被判與 D 的 body、camera 雷同：同長寬比的四邊形縮放後本來就相同。看到結果後才改，故登記；報告並列兩版判定"
+    },
+    {
+      "field": "free_arm_min_exemption",
+      "date": "2026-11-24",
+      "old": "38e3c72 曾加入：手臂因草稿露出被縮小時豁免 2% 門檻",
+      "new": "撤回，回到凍結版：未持物手臂低於 2% 一律 FAIL，原因只記在備註",
+      "reason": "獨立審查指出豁免是看到結果後放寬，且會讓『為了遮草稿把手臂壓到不動』被判 PARTIAL"
+    },
+    {
+      "field": "bounce_only",
+      "date": "2026-11-24",
+      "old": "所有肢體（含頭髮、裙擺、道具）都 < 0.5%",
+      "new": "只看手臂與腿都 < 0.5%",
+      "reason": "審查指出頭髮的次要擺動就能讓舊定義永遠不成立（C 目視只剩跳動，舊定義判否）。這是收緊"
+    },
+    {
+      "field": "over_reduced_cause",
+      "date": "2026-11-24",
+      "old": "原因取所有輪次聯集；沒有歸因時視為素材限制",
+      "new": "只取最後採用的輪次；沒有歸因時記為『未歸因』，與演算法限制同樣判 FAIL",
+      "reason": "審查指出空集合 bug 與已還原輪次的原因會被誤算。這是收緊"
+    },
+    {
+      "field": "exit_code_1",
+      "date": "2026-11-24",
+      "old": "只要產出 character.json 就視為執行完成",
+      "new": "c2s 結束碼 1 一律 FAIL",
+      "reason": "依規格『結束碼為 1 → FAIL』。這是收緊"
+    },
+    {
+      "field": "visual_rubric",
+      "date": "2026-11-24",
+      "old": "設計寫 OK／ISSUE／UNKNOWN，等級由目視者裁量",
+      "new": "凍結 criteria.visual_rubric 的 BAD／MINOR 清單；目視紀錄綁定驗收圖 sha256；矩陣加使用者目視欄（未確認 = NOT_TESTED）",
+      "reason": "審查指出 Agent 目視偏寬且標準未凍結。基準依此清單重判：B 關節 MINOR→BAD、D 關節 OK→MINOR"
+    },
+    {
+      "field": "holdout",
+      "date": "2026-11-24",
+      "old": "只有 A–E 五張",
+      "new": "加入保留集 H1–H4，預登記 expected_scope、expected_absent、expected_attached_arms 與觸發語句",
+      "reason": "A–E 的失敗已用於修改 Skill 與程式，成為開發集；泛化結論需要修改前登記、修改後才第一次執行的圖"
+    }
+  ],
+  "cases": [
+    {
+      "id": "A",
+      "type": "front-chibi",
+      "description": "正面 Q 版人形：大頭身、雙手自然下垂、短裙、雙辮子、帽子與髮飾",
+      "file": "A/gen_a.png",
+      "sha256": "a3df9c51afc1c4e3e92276c582b52ff5b07bec4ad4857bda87edc59b639a0d29",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Monfer-chibi-png.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "geme",
+      "features": {
+        "view": "front",
+        "body": "humanoid-chibi",
+        "props": [],
+        "occlusion": "low",
+        "accessories": [
+          "hat",
+          "braids",
+          "skirt"
+        ]
+      },
+      "expected_scope": "supported"
+    },
+    {
+      "id": "B",
+      "type": "three-quarter",
+      "description": "3/4 側面人形：身體轉向畫面右側、一手提裙擺、一手舉起握拳、眨眼、長裙、雙馬尾",
+      "file": "B/gen_b.png",
+      "sha256": "57ad9e4d8e6da487363754e538212f4db37fc6476f9aab68dd6b71b71bb65505",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Wikipe-tan_con_vestido_venezolano.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Seb.cestari.16",
+      "features": {
+        "view": "three-quarter",
+        "body": "humanoid",
+        "props": [],
+        "occlusion": "medium",
+        "asymmetric_arms": true,
+        "accessories": [
+          "twin-tails",
+          "long-dress"
+        ]
+      },
+      "expected_scope": "supported"
+    },
+    {
+      "id": "C",
+      "type": "prop",
+      "description": "手持道具：右手（畫面左）握長杖、另一手叉腰、魔女帽、拖地長裙",
+      "file": "C/gen_c.png",
+      "sha256": "883f3e1a3f0b39b87a76bf287fca5208b667d6d6fbfebcb5d433ae0f26b19abc",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Wikipe-tan_Minna_no_Kisekae_2_majokko.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "SPNATI contributors; in particular Spaceman",
+      "features": {
+        "view": "front",
+        "body": "humanoid",
+        "props": [
+          "staff"
+        ],
+        "occlusion": "medium",
+        "accessories": [
+          "witch-hat",
+          "long-dress"
+        ]
+      },
+      "expected_scope": "supported"
+    },
+    {
+      "id": "D",
+      "type": "occlusion",
+      "description": "複雜遮擋：雙手舉相機遮住臉的下半部與頭髮、相機遮手、成人比例、圍裙與長髮",
+      "file": "D/gen_d.png",
+      "sha256": "e17e75ac1b6245b4a5f42443109efedb843d59b0c20b0d046f57cb84b3a4280f",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Adult_Commons-tan.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "author": "w:User:Kasuga~enwiki",
+      "features": {
+        "view": "three-quarter",
+        "body": "humanoid-adult",
+        "props": [
+          "camera"
+        ],
+        "occlusion": "high",
+        "accessories": [
+          "beret",
+          "apron",
+          "long-hair"
+        ]
+      },
+      "expected_scope": "partial"
+    },
+    {
+      "id": "E",
+      "type": "non-humanoid",
+      "description": "非人形：雙足龍、頭身相連沒有脖子、大尾巴、一手指向上方、背後有披風",
+      "file": "E/gen_e.png",
+      "sha256": "0790329c2cb3535fc521d88bbd1f43e6f5bc51a1b0526e5641bfa6c6a445eee7",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:KDE_Mascot_Konqi_by_Tyson_Tan.png",
+      "derived_from": "Wikimedia Commons 縮圖（Special:FilePath 的標準寬度）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Tyson Tan",
+      "features": {
+        "view": "three-quarter",
+        "body": "dragon-biped",
+        "props": [],
+        "occlusion": "medium",
+        "accessories": [
+          "tail",
+          "cape",
+          "horns"
+        ]
+      },
+      "expected_scope": "partial"
+    },
+    {
+      "id": "H1",
+      "set": "holdout",
+      "type": "front-chibi",
+      "description": "正面人形：戴眼鏡、女僕圍裙、雙手自然下垂、短褲與靴子",
+      "file": "H1/gen_h1.png",
+      "sha256": "367ceb8fe211b8d2c4910a2684519196f2ba2e2508fee0525570cb4edfde6d67",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Wikidata-tan.png",
+      "derived_from": "Wikimedia Commons 縮圖（寬 500）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "MinieSakuo",
+      "features": {
+        "view": "front",
+        "body": "humanoid-chibi",
+        "props": [],
+        "occlusion": "low"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 0,
+      "skill_prompt": "這是我們的新角色，可以幫我拆圖並做 idle 跟 happy 動畫嗎？{file}"
+    },
+    {
+      "id": "H2",
+      "set": "holdout",
+      "type": "prop-adult",
+      "description": "成人比例：單手拿夾板、另一手叉腰、雙腿交叉站立",
+      "file": "H2/gen_h2.png",
+      "sha256": "f90b23a7a504a06400f695a40533dd9acb3a345b3326d999b96cb5cf2679fa28",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Adult_Wikinews-tan.png",
+      "derived_from": "Wikimedia Commons 縮圖（寬 500）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "FibberPony",
+      "features": {
+        "view": "three-quarter",
+        "body": "humanoid-adult",
+        "props": [
+          "clipboard"
+        ],
+        "occlusion": "medium"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 1,
+      "skill_prompt": "Please turn this character into a Spine rig with idle and happy animations: {file}"
+    },
+    {
+      "id": "H3",
+      "set": "holdout",
+      "type": "prop-occlusion",
+      "description": "一手抱書、一手扶眼鏡、長雙馬尾垂在身前遮住手臂、短裙與長襪",
+      "file": "H3/gen_h3.png",
+      "sha256": "3fd4992ebe77f3eecd7f9a883e3ca115f76514a99234f6e3de379441505eb6c0",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Wiktionary-chan.png",
+      "derived_from": "Wikimedia Commons 縮圖（寬 500）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Alief D",
+      "features": {
+        "view": "front",
+        "body": "humanoid",
+        "props": [
+          "book"
+        ],
+        "occlusion": "high"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 1,
+      "skill_prompt": "我想讓這張圖裡的角色在遊戲裡動起來：{file}"
+    },
+    {
+      "id": "H4",
+      "set": "holdout",
+      "type": "sitting-anthro",
+      "description": "坐姿獸人：盤腿坐在地上、手放在膝上、尾巴、拿筆",
+      "file": "H4/gen_h4.png",
+      "sha256": "caf8bc171b2a7db69f295fa53bd665d85a3abbec9b92b545fc1ca53a06f631ad",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Ares_Chibi.png",
+      "derived_from": "Wikimedia Commons 縮圖（寬 500）",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "author": "Caniidaze",
+      "features": {
+        "view": "three-quarter",
+        "body": "anthro-sitting",
+        "props": [
+          "pen"
+        ],
+        "occlusion": "high"
+      },
+      "expected_scope": "partial",
+      "expected_absent": [],
+      "expected_attached_arms": 0,
+      "skill_prompt": "幫我把這張角色圖做成 Spine 動畫：{file}"
+    },
+    {
+      "id": "N1",
+      "set": "holdout2",
+      "type": "prop-effect-chibi",
+      "description": "Q 版老法師：單手持杖，杖頭有發光特效（半透明光芒）、長袍蓋住腿",
+      "file": "N1/gen_n1.png",
+      "sha256": "3266c98245f34974bb37c1d8de3406d75ba1e3cc6b2e4f93b66725caf27c6440",
+      "origin": "public",
+      "source_url": "https://openclipart.org/detail/19811/delfador-chibi",
+      "derived_from": "Openclipart 800px PNG",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "Peileppe",
+      "features": {
+        "view": "three-quarter",
+        "body": "chibi",
+        "props": [
+          "staff"
+        ],
+        "effects": [
+          "glow"
+        ],
+        "occlusion": "medium"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 1,
+      "skill_prompt": "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}"
+    },
+    {
+      "id": "N2",
+      "set": "holdout2",
+      "type": "prop-armor",
+      "description": "女騎士：全身盔甲、單手扶著立在地上的長劍",
+      "file": "N2/gen_n2.png",
+      "sha256": "f8020309f5e3d43e09363d7ca16f23b94db128de02d5eba49d4d0ecdaa89ae73",
+      "origin": "public",
+      "source_url": "https://openclipart.org/detail/293914/woman-knight-warrior-in-armor-holding-a-sword",
+      "derived_from": "Openclipart 800px PNG",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "Juhele",
+      "features": {
+        "view": "front",
+        "body": "adult",
+        "props": [
+          "sword"
+        ],
+        "occlusion": "medium"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 1,
+      "skill_prompt": "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}"
+    },
+    {
+      "id": "N3",
+      "set": "holdout2",
+      "type": "dynamic-foreshortened",
+      "description": "男孩：一手握拳伸向鏡頭（透視縮短）、另一手握拳在胸前，大動作",
+      "file": "N3/gen_n3.png",
+      "sha256": "dfd9158afed110e1b2002698f4d824a723933e3322ef08b708fba5a4807a09fd",
+      "origin": "public",
+      "source_url": "https://openclipart.org/detail/286610/full-standing-kid",
+      "derived_from": "Openclipart 800px PNG",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "author": "j4p4n",
+      "features": {
+        "view": "front",
+        "body": "kid",
+        "props": [],
+        "occlusion": "low"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 0,
+      "skill_prompt": "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}"
+    },
+    {
+      "id": "N4",
+      "set": "holdout2",
+      "type": "flat-mascot-akimbo",
+      "description": "單色扁平吉祥物：一手指向側面、一手叉腰，部件同色相連",
+      "file": "N4/gen_n4.png",
+      "sha256": "9f821db5b1aa82ef1fab8f8ce9022716ae9b6ea7bd3993b529b2aae826a73f89",
+      "origin": "public",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Togo-kun.png",
+      "derived_from": "Wikimedia Commons 原圖",
+      "license": "CC BY 2.1 JP",
+      "license_url": "https://creativecommons.org/licenses/by/2.1/jp/",
+      "author": "DBCLS (Database Center for Life Science)",
+      "features": {
+        "view": "front",
+        "body": "mascot",
+        "props": [],
+        "occlusion": "low"
+      },
+      "expected_scope": "supported",
+      "expected_absent": [],
+      "expected_attached_arms": 0,
+      "skill_prompt": "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}"
+    }
+  ],
+  "note_v1": "N1–N4（holdout2）於 2026-11-24 v1.0 程式修改完成後預登記，之後才第一次執行；H1–H4 已在前一階段用過。"
+}

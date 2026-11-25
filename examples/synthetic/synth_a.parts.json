@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "image": "synth_a.png",
+  "preset": "humanoid-chibi",
+  "parts": [
+    {
+      "name": "leg_l",
+      "z": 1,
+      "mask": "synth_a_masks/leg_l.png"
+    },
+    {
+      "name": "leg_r",
+      "z": 2,
+      "mask": "synth_a_masks/leg_r.png"
+    },
+    {
+      "name": "body",
+      "z": 3,
+      "mask": "synth_a_masks/body.png"
+    },
+    {
+      "name": "head",
+      "z": 4,
+      "mask": "synth_a_masks/head.png"
+    },
+    {
+      "name": "arm_l",
+      "z": 5,
+      "mask": "synth_a_masks/arm_l.png"
+    },
+    {
+      "name": "arm_r",
+      "z": 6,
+      "mask": "synth_a_masks/arm_r.png"
+    }
+  ]
+}

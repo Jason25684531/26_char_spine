@@ -1,0 +1,179 @@
+{
+  "fps": 10,
+  "thresholds": {
+    "hole": 0.003,
+    "gap": 0.1,
+    "attach": 0.6,
+    "intrude": 0.02,
+    "exposure": 0.02
+  },
+  "max_rounds": 3,
+  "chosen_round": 0,
+  "tuning": {},
+  "worst": {
+    "exposure:body": {
+      "value": 0.055,
+      "anim": "happy",
+      "t": 0.5
+    },
+    "gap:arm_l": {
+      "value": 0.0182,
+      "anim": "happy",
+      "t": 2.3
+    },
+    "gap:arm_r": {
+      "value": 0.0542,
+      "anim": "happy",
+      "t": 2.3
+    },
+    "gap:head": {
+      "value": 0.0036,
+      "anim": "happy",
+      "t": 0.4
+    },
+    "gap:leg_l": {
+      "value": 0.0013,
+      "anim": "idle",
+      "t": 1.8
+    },
+    "gap:leg_r": {
+      "value": 0.0375,
+      "anim": "happy",
+      "t": 0.9
+    },
+    "hole:character": {
+      "value": 0.0,
+      "anim": "idle",
+      "t": 0.0
+    }
+  },
+  "rounds": [
+    {
+      "round": 0,
+      "tuning": {},
+      "score": 1.75,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.055,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.035,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N4\\work\\quality\\round_0\\happy_t0.5_exposure_body.png",
+          "attributed_to": "arm_r"
+        }
+      ],
+      "worst": {
+        "exposure:body": {
+          "value": 0.055,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:arm_l": {
+          "value": 0.0182,
+          "anim": "happy",
+          "t": 2.3
+        },
+        "gap:arm_r": {
+          "value": 0.0542,
+          "anim": "happy",
+          "t": 2.3
+        },
+        "gap:head": {
+          "value": 0.0036,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "gap:leg_l": {
+          "value": 0.0013,
+          "anim": "idle",
+          "t": 1.8
+        },
+        "gap:leg_r": {
+          "value": 0.0375,
+          "anim": "happy",
+          "t": 0.9
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "fixes": [
+        {
+          "animation": "happy",
+          "bone": "arm_r",
+          "factor": 0.5
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "tuning": {
+        "happy": {
+          "arm_r": 0.5
+        }
+      },
+      "score": 1.79,
+      "anomalies": [
+        {
+          "kind": "exposure",
+          "subject": "body",
+          "value": 0.0558,
+          "anim": "happy",
+          "t": 0.5,
+          "threshold": 0.02,
+          "violation": 0.0358,
+          "frame": "D:\\01_Project\\26_char_spine\\output\\generalization\\N4\\work\\quality\\round_1\\happy_t0.5_exposure_body.png"
+        }
+      ],
+      "worst": {
+        "exposure:body": {
+          "value": 0.0558,
+          "anim": "happy",
+          "t": 0.5
+        },
+        "gap:arm_l": {
+          "value": 0.0182,
+          "anim": "happy",
+          "t": 2.3
+        },
+        "gap:arm_r": {
+          "value": 0.0452,
+          "anim": "happy",
+          "t": 2.3
+        },
+        "gap:head": {
+          "value": 0.0036,
+          "anim": "happy",
+          "t": 0.4
+        },
+        "gap:leg_l": {
+          "value": 0.0013,
+          "anim": "idle",
+          "t": 1.8
+        },
+        "gap:leg_r": {
+          "value": 0.0375,
+          "anim": "happy",
+          "t": 0.9
+        },
+        "hole:character": {
+          "value": 0.0,
+          "anim": "idle",
+          "t": 0.0
+        }
+      },
+      "note": "這一輪的調整沒有降低總異常量，還原到第 0 輪並停止"
+    }
+  ],
+  "regrow": [],
+  "unresolved": [],
+  "downgraded_to_needs_manual": [
+    "body"
+  ],
+  "unreliable_exposed_within_threshold": {}
+}
