@@ -7,7 +7,6 @@ python scripts/acceptance.py <圖片> [--slash] [--name <資料夾名>]
 """
 import argparse
 import json
-import os
 import shutil
 import subprocess
 import sys
@@ -17,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from build_skill import __version__  # noqa: E402
-from generalization import skill_evidence  # noqa: E402
+from generalization import claude_session, skill_evidence  # noqa: E402
 
 SENTENCE = "請將這張角色圖拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出結果：{file}"
 
@@ -36,14 +35,7 @@ def accept(image, slash=False, name=None):
     out = ROOT / "output" / "acceptance" / name
     out.mkdir(parents=True, exist_ok=True)
     raw = out / "session.jsonl"
-    path = os.pathsep.join(d for d in os.environ["PATH"].split(os.pathsep) if "26_char_spine" not in d.replace("\\", "/"))
-    env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"} | {"PATH": path}
-    cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose", "--no-session-persistence",
-           "--permission-mode", "acceptEdits", "--setting-sources", "project,local", "--strict-mcp-config",
-           "--allowedTools", "Read", "Write", "Edit", "Glob", "Grep", "Skill", "Bash", "PowerShell"]
-    with raw.open("w", encoding="utf-8") as f:
-        proc = subprocess.run(cmd, cwd=box, env=env, stdout=f, stderr=subprocess.STDOUT, timeout=3600,
-                              shell=sys.platform == "win32")
+    proc = claude_session(prompt, box, raw)
     ev = skill_evidence(raw, box)
     wd = box / "output" / image.stem
     files = {k: (wd / k).exists() for k in ("validation_report.json", "spine/character.json", "layer_preview.png",

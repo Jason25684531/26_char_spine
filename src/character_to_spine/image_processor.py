@@ -29,11 +29,15 @@ def part_mask(part, shape):
 SHADOW_COLOR_TOL = 48  # 與影子典型顏色的 RGBA 距離超過此值，就不是影子
 
 
+def _is_ground(part):
+    return (part.get("role") or default_role(part["name"])) == "ground"
+
+
 def _ground_keeps_shadow(parts, masks, rgba):
     """地面影子留在地上不跟著跳，所以它的範圍只能有影子：顏色不像影子、且連到身體部件附近（角色高度 3% 內）的像素區塊
     （多邊形多畫到的腳尖、裙襬）改歸最近的身體部件。影子的典型顏色取遠離身體那一段的中位數。原地修改 masks。"""
     fg = rgba[..., 3] > ALPHA_MIN
-    ground = [p["name"] for p in parts if (p.get("role") or default_role(p["name"])) == "ground"]
+    ground = [p["name"] for p in parts if _is_ground(p)]
     others = [p["name"] for p in parts if p["name"] not in ground]
     if not ground or not others:
         return
@@ -42,18 +46,19 @@ def _ground_keeps_shadow(parts, masks, rgba):
     k = max(3, round(0.03 * (ys.max() - ys.min() + 1)))
     near = cv2.dilate(body.astype(np.uint8), np.ones((2 * k + 1, 2 * k + 1), np.uint8)).astype(bool)
     px = rgba.astype(int)  # 連透明度一起比：常見的影子是半透明的深色，靴子、裙襬是不透明的
-    dist = np.stack([cv2.distanceTransform((~masks[n]).astype(np.uint8), cv2.DIST_L2, 3) for n in others])
     for g in ground:
         far = masks[g] & fg & ~near
         if far.sum() < 20:  # 影子幾乎都在腳下，量不到典型顏色：不動
             continue
         ref = np.median(px[far], axis=0)
         unlike = masks[g] & fg & ~body & (np.linalg.norm(px - ref, axis=2) > SHADOW_COLOR_TOL)
-        n, lab = cv2.connectedComponents(unlike.astype(np.uint8))
+        lab = cv2.connectedComponents(unlike.astype(np.uint8))[1]
         touching = np.unique(lab[unlike & near])  # 不像影子的區塊只要有一部分貼著身體，整塊都歸身體
         moved = np.isin(lab, touching[touching > 0])
+        if not moved.any():
+            continue
         masks[g] &= ~moved
-        owner = dist.argmin(axis=0)
+        owner = np.argmin([cv2.distanceTransform((~masks[n]).astype(np.uint8), cv2.DIST_L2, 3) for n in others], axis=0)
         for i, n in enumerate(others):
             masks[n] |= moved & (owner == i)
 
@@ -87,7 +92,7 @@ def _cut(part, rgba, masks, parts, repair):
     if not hid.any():
         entry["status"] = "ok"
         return crop, entry, None
-    if (part.get("role") or default_role(part["name"])) == "ground":
+    if _is_ground(part):
         # 影子被腳擋住的地方還是影子：用看得見的影子的典型顏色與透明度平塗。邊緣延伸會補成不透明、
         # 腳形的色塊，角色跳起時留在地上
         crop[hid] = np.median(crop[vis], axis=0)

@@ -98,14 +98,7 @@ def skill(case_id, slash=False):
     for old in (raw, raw.with_suffix(".json"), DOCS / case_id / f"skill_session_{tag}.md"):
         if old.exists():  # 重跑不覆寫先前的紀錄
             shutil.move(old, old.with_name(f"{old.stem}.run{n}{old.suffix}"))
-    cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose", "--no-session-persistence",
-           "--permission-mode", "acceptEdits", "--setting-sources", "project,local", "--strict-mcp-config",
-           "--allowedTools", "Read", "Write", "Edit", "Glob", "Grep", "Skill", "Bash", "PowerShell"]
-    path = os.pathsep.join(d for d in os.environ["PATH"].split(os.pathsep) if "26_char_spine" not in d.replace("\\", "/"))
-    env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"} | {"PATH": path}
-    with raw.open("w", encoding="utf-8") as f:
-        proc = subprocess.run(cmd, cwd=box, env=env, stdout=f, stderr=subprocess.STDOUT, timeout=3600,
-                              shell=sys.platform == "win32")
+    proc = claude_session(prompt, box, raw)
     result = box / f"{img.stem}.parts.json"
     if result.exists():
         dest = OUT / case_id / f"{img.stem}.slash.parts.json" if slash else img.with_suffix(".parts.json")
@@ -119,6 +112,18 @@ def skill(case_id, slash=False):
     save_json(OUT / case_id / f"skill_{tag}.json", evidence)
     _write_session_md(case_id, tag, evidence)
     return evidence
+
+
+def claude_session(prompt, box, raw):
+    """在沙盒 box 開一個全新的 claude -p，stream-json 寫到 raw。PATH 移除本專案、不載入使用者層設定與 MCP。"""
+    cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose", "--no-session-persistence",
+           "--permission-mode", "acceptEdits", "--setting-sources", "project,local", "--strict-mcp-config",
+           "--allowedTools", "Read", "Write", "Edit", "Glob", "Grep", "Skill", "Bash", "PowerShell"]
+    path = os.pathsep.join(d for d in os.environ["PATH"].split(os.pathsep) if "26_char_spine" not in d.replace("\\", "/"))
+    env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"} | {"PATH": path}
+    with Path(raw).open("w", encoding="utf-8") as f:
+        return subprocess.run(cmd, cwd=box, env=env, stdout=f, stderr=subprocess.STDOUT, timeout=3600,
+                              shell=sys.platform == "win32")
 
 
 def _escapes(text, box):
