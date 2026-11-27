@@ -44,8 +44,12 @@ def test_stray_pixels_do_not_move_origin(synth, built, tmp_path):
     assert dirty["origin"] == clean["origin"] and dirty["bbox"] == clean["bbox"]
     assert dirty["unassigned_ratio"] > 0
     for e in dirty["parts"]:
+        if e["name"] == "fx":  # 特效收進 fx 圖層，不屬於任何角色部件
+            continue
         layer = np.array(Image.open(tmp_path / "w" / e["file"]))
         assert e["x"] > 40 or e["y"] > 40 or layer[..., 3].max() == 0
+    fx = next(e for e in dirty["parts"] if e["name"] == "fx")
+    assert (fx["x"], fx["y"]) == (5, 5) and fx["role"] == "effect"
 
 
 def test_small_occlusion_auto_repaired(built, synth):
@@ -216,3 +220,44 @@ def test_ground_shadow_behind_feet_stays_shadow(tmp_path):
     filled = np.array(Image.open(wd / "repair_masks" / "shadow.png")) > 127
     assert filled.any() and e["status"] == "auto_repaired"
     assert np.abs(layer[filled] - [40, 40, 40, 80]).max() <= 2
+
+
+
+def test_effects_edges_and_mixed_cuts_settle_by_pixels(tmp_path):
+    """多邊形是目測的：貼著部件的細邊（髮絲）併入部件；遠離角色的特效收進 fx 圖層而不是消失；
+    與角色不相連、又被部件邊界切開的獨立區塊（多邊形順手包到的金幣）移出部件。"""
+    from synthetic import make_custom
+    r = lambda x0, y0, x1, y1: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+    img = make_custom(tmp_path, "fxc", (300, 420), [
+        ("leg_l", r(115, 280, 143, 390), (60, 80, 160), 1, {}),
+        ("leg_r", r(157, 280, 185, 390), (70, 90, 175), 2, {}),
+        ("body", r(105, 175, 195, 300), (220, 80, 80), 3, {}),
+        ("head", r(100, 60, 200, 178), (250, 220, 190), 4, {}),
+        ("arm_l", r(72, 180, 110, 280), (235, 185, 145), 5, {}),
+        ("arm_r", r(190, 180, 228, 280), (240, 195, 155), 6, {}),
+    ])
+    doc = json.loads(img.with_suffix(".parts.json").read_text(encoding="utf-8"))
+    body = next(p for p in doc["parts"] if p["name"] == "body")
+    body["polygon"] = [[105, 175], [195, 175], [195, 290], [212, 290], [212, 312], [195, 312], [195, 300], [105, 300]]
+    img.with_suffix(".parts.json").write_text(json.dumps(doc), encoding="utf-8")
+    im = Image.open(img)
+    d = ImageDraw.Draw(im)
+    d.rectangle([148, 50, 151, 59], fill=(40, 20, 10, 255))   # 髮絲：貼著頭頂、在 head 多邊形外
+    d.ellipse([5, 5, 30, 30], fill=(255, 210, 0, 255))        # 遠處的特效
+    d.ellipse([200, 300, 224, 320], fill=(255, 210, 0, 255))  # 金幣：一半在 body 多邊形內，與角色不相連
+    im.save(img)
+    analyze(img, tmp_path / "w")
+    prepare(tmp_path / "w")
+    meta = load_json(tmp_path / "w" / "metadata.json")
+    parts = {e["name"]: e for e in meta["parts"]}
+    def canvas(name):
+        m = np.zeros((420, 300), bool)
+        a = np.array(Image.open(tmp_path / "w" / parts[name]["file"]))[..., 3] > 0
+        m[parts[name]["y"]:parts[name]["y"] + a.shape[0], parts[name]["x"]:parts[name]["x"] + a.shape[1]] = a
+        return m
+    assert canvas("head")[50:60, 148:152].all(), "髮絲併入 head"
+    assert not canvas("body")[300:312, 200:212].any(), "金幣移出 body"
+    fx = canvas("fx")
+    assert fx[17, 17] and fx[310, 212], "特效與金幣都留在 fx 圖層"
+    assert not fx[55, 149], "髮絲不是特效"
+    assert meta["recompose_mae"] < 0.01, "重組後與原圖一致：沒有任何前景消失"

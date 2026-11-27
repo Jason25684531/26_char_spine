@@ -2,7 +2,7 @@
 name: character-to-spine
 description: 把一張人形／Q 版 2D 角色圖片（PNG/JPG）自動做成 Spine 骨架動畫：分析角色、拆成透明分層 PNG、補被遮住的部分、建立骨架、產生 Idle 與 Happy 動畫、逐格品質檢查，輸出 Spine JSON、動畫預覽與人工補畫清單。Use when the user wants to 拆圖、拆補圖、分層、綁骨架、做 Spine 動畫或 Idle／Happy 動畫 for a character image, or mentions Character-to-Spine, c2s, parts.json.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Character-to-Spine
@@ -41,16 +41,19 @@ python "<SKILL_DIR>/scripts/c2s.py" <子命令> [參數]
 2. **寫 parts.json**：先讀 `references/parts-format.md`，再開 `grid_overlay.png` 看圖，寫出圖片旁的 `<圖名>.parts.json`。超出支援範圍時照該文件宣告 `unsupported`。
 3. **跑完整流程**：`c2s run <圖片>`（預設產生 Idle 與 Happy）。依序執行切圖、補圖、骨架、動畫、逐格品質檢查與自動修正（最多 3 輪）、Spine JSON 匯出、驗證、預覽、報告。
    - 結束碼：0 完成（仍要看驗證報告）、1 失敗（看 `c2s_error.log`）、2 還缺資料（照 `message` 補上再跑）、3 宣告超出範圍（回報原因，不要宣稱成功）。
-4. **檢查切圖**：開 `layer_preview.png`，三欄是原圖、圖層重組（洋紅＝沒有分配到部件的像素）、部件外框與 pivot。
-   - 角色身上有洋紅：照 `missing_parts.json` 的 `unassigned_regions` 擴大最近的部件。散落的特效是洋紅是正確的。
+4. **檢查切圖**：開 `layer_preview.png`，三欄是原圖、圖層重組（洋紅＝不屬於任何角色部件、已自動收進 `fx` 圖層的像素）、部件外框與 pivot。
+   - 貼著部件的細碎邊緣（髮絲、蕾絲、描邊光暈）會自動併入最近的部件，多邊形不必畫到像素級。
+   - 散落的特效是洋紅是正確的：它們在 `fx` 圖層，跟著角色跳但不轉動，可在 Spine 內單獨編修。
+   - 角色身上有一整塊洋紅（漏畫的頭髮、尾巴、手）：照 `missing_parts.json` 的 `unassigned_regions` 擴大最近的部件或新增部件，否則它會被當成特效、不跟著肢體動。
    - 邊界切錯、pivot 不在關節、前後順序不對：改 parts.json 後重跑 `c2s run`。
 5. **檢查骨架與動畫**：開 `report/visual_check.png`（Idle、Happy 關鍵影格與接觸點），對照 `quality/quality_report.json` 的 `unresolved` 與它指出的異常影格（紅色標出問題）。逐項確認：
    - 關節位置合理：肩、脖子、髖部轉動時，肢體沒有繞著手肘、手腕或部件中央轉。
    - 手與道具：拿著的東西跟著手、抱著的樂器帶著雙手，接觸點（實心點在空心圈中央）沒有分開。
+   - 前後順序：舉起的手沒有鑽到頭髮、帽子後面消失（z 太小），抬手後原位置沒有露出透明的洞。
    - 沒有明顯破圖：`gap` 擴大兩個部件的重疊；`attach` 檢查 pivot；`exposure` 是草稿露出，已列入補畫清單。
    - 坐姿、躺姿或只剩整體跳動：Happy 模板是站姿跳躍，照實告訴使用者不適用，不要說成功。
 6. **修正**：發現問題就改 parts.json 重跑。同一個問題最多改三輪，仍不行就改用 `mask`，或列為人工修補，並在回報中說明。
-7. **回報**，固定包含：
+7. **回報**：用使用者提問的語言寫（中文提問就整份用中文，包括表格與中途的進度說明，檔名、部件名稱是英文也一樣），固定包含：
    - 整體狀態，以及 `validation_report.json` 每一項的狀態。
    - 輸出位置：`layers/`（分層 PNG）、`spine/character.json`（Spine JSON）、`preview/*_python_simulation_preview.gif`、`validation_report.json`、`report/visual_check.png`。
    - 需要人工補畫的部件，依 `report/repair_priority.md` 的優先順序，附 `report/repair_<部件>.png`（原圖、目前圖層、動畫中露出最多的三格對照）、`repair_masks/`（自動補上的區域）與 `repair_tasks.md`（文字版待修清單）的位置。

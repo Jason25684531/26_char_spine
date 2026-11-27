@@ -108,26 +108,69 @@ def contact_limits(rig, motion):
     return limits
 
 
+RAISE_TARGET = 20  # Happy 舉手的終點方向：外側水平再往上 20°（模板假設手臂下垂 -90°，舉 110° 到這裡）
+MIN_RAISE = 30  # 已經舉起或伸直的手臂仍保留的揮動角度
+PROP_TILT = 0.25  # 單手拿的道具跟著手傾斜的比例（其餘反向抵銷，保持直立）
+
+
+def arm_reach(rotation, s):
+    """依手臂初始方向（骨頭世界角度，y 向上）算出 Happy 舉手的比例：舉到 RAISE_TARGET 實際需要的角度 ÷ 模板的 110°。
+    已經舉起的手臂照模板再轉 110° 會甩過頭、撞臉、露出背後的草稿（v1.0 只能靠縮小整段動作避開）。"""
+    target = RAISE_TARGET if s > 0 else 180 - RAISE_TARGET
+    need = s * ((target - rotation + 180) % 360 - 180)  # 朝外側（s 的方向）還要轉幾度
+    return min(110, max(MIN_RAISE, need)) / 110
+
+
+ANCHOR_BOTTOM = ("body", "skirt")  # 擠壓伸展時下緣固定：以腰為中心縮放會讓長袍、裙襬往上縮，露出底下的腿（草稿）
+
+
+def _bottom_drop(rig, bone):
+    """骨頭原點到圖層下緣的世界距離（下緣在原點下方為正）。附件在世界座標中是正立的（rotation = -骨頭角度）。"""
+    x, y, rot = next(b["world"] for b in rig["bones"] if b["name"] == bone)
+    att = rig["attachments"][bone]
+    r = math.radians(rot)
+    center_y = y + att["x"] * math.sin(r) + att["y"] * math.cos(r)
+    return y - (center_y - att["height"] / 2)
+
+
 def _animation(rig, motion, tuning=None):
     template, period, count = TEMPLATES[motion]
     world = {b["name"]: b["world"] for b in rig["bones"] if "world" in b}
+    parent_of = {b["name"]: b.get("parent") for b in rig["bones"]}
     body_x = world["body"][0]
     limits = contact_limits(rig, motion)
     tune = (tuning or {}).get(motion, {})
     bones = {}
+    holders = {parent_of[b] for b, r in rig["roles"].items() if r == "prop"}  # 單手拿著道具的手（道具掛在手下）
+    rotations = {}  # 骨頭: (rotate 影格, 幅度係數)
     for bone, role in [("hip", "hip"), *((b, _template_role(rig, b, template)) for b in rig["roles"])]:
-        factor = min(rig["motion"].get(bone, 1.0), limits.get(bone, math.inf)) * tune.get(bone, 1.0)
+        s = -1 if world[bone][0] < body_x else 1
+        reach = 1.0
+        if role == "arm" and motion == "happy":
+            # 拿著東西的手只舉起展示，不把道具甩過頭砸到臉
+            reach = MIN_RAISE / 110 if bone in holders else arm_reach(world[bone][2], s)
+        factor = min(rig["motion"].get(bone, 1.0) * reach, limits.get(bone, math.inf)) * tune.get(bone, 1.0)
         if role not in template or factor == 0:
             continue
-        s = -1 if world[bone][0] < body_x else 1
         tls = {}
         for tl, make in template[role].items():
             frames = _timeline(make, s, rig["height"], period, count, factor, 1 if tl == "scale" else 0)
+            if tl == "scale" and role in ANCHOR_BOTTOM:
+                # 畫面上的高度縮放 sy 讓下緣移動 d·(1-sy)，在父骨頭座標裡反向位移抵銷
+                d, pr = _bottom_drop(rig, bone), math.radians(world.get(parent_of[bone], (0, 0, 0))[2])
+                tls["translate"] = _keys([(t, d * (sy - 1) * math.sin(pr), d * (sy - 1) * math.cos(pr)) for t, _, sy in frames],
+                                         CHANNELS["translate"])
             if tl == "scale" and _is_vertical(world[bone][2]):
                 # 模板的 scale 是畫面上的（寬, 高）；Spine 的 scaleX 沿著骨頭，骨頭直立時要對調
                 frames = [(t, sy, sx) for t, sx, sy in frames]
             tls[tl] = _keys(frames, CHANNELS[tl])
+            rotations[bone] = (frames, factor) if tl == "rotate" else rotations.get(bone)
         bones[bone] = tls
+    for prop, (arm, (frames, _)) in ((p, (parent_of[p], rotations[parent_of[p]])) for p in bones
+                                     if rig["roles"].get(p) == "prop" and rotations.get(parent_of[p])):
+        # 單手拿的道具反向旋轉保持直立，只留 PROP_TILT 的傾斜：手往外舉時旗桿、托盤不會整根倒向頭
+        f = rotations[prop][1] if rotations.get(prop) else 1.0
+        bones[prop]["rotate"] = _keys([(t, v * (PROP_TILT * f - 1)) for t, v in frames], CHANNELS["rotate"])
     return {"bones": bones}
 
 

@@ -102,12 +102,17 @@ def _assess(wd):
 
 
 def test_detects_joint_gap_and_attributes_it(built):
-    """synth_b 的手臂只和身體重疊 2px，一轉動肩膀就透出細縫：要被抓到、歸因到手臂，且降低幅度修不掉 → BLOCKED。"""
-    q = load_json(built("synth_b") / "quality" / "quality_report.json")
-    gaps = [a for a in q["rounds"][0]["anomalies"] if a["kind"] == "gap" and a["subject"] == "arm_l"]
-    assert gaps and gaps[0]["attributed_to"] == "arm_l"
-    assert any(a["kind"] == "gap" and a["subject"] == "arm_l" for a in q["unresolved"])
-    assert checks(built("synth_b"))["animation_quality"]["status"] == "BLOCKED"
+    """synth_b 的手臂只和身體重疊 2px，一轉動肩膀就透出細縫：要被抓到、歸因到那隻手臂，並且處理掉——
+    縮小那隻手的幅度，或修不掉時判 BLOCKED。不能留著縫卻回報 PASS。"""
+    wd = built("synth_b")
+    q = load_json(wd / "quality" / "quality_report.json")
+    gaps = [a for a in q["rounds"][0]["anomalies"] if a["kind"] == "gap" and a["subject"].startswith("arm_")]
+    assert gaps and all(a["attributed_to"] == a["subject"] for a in gaps)
+    arm = gaps[0]["subject"]
+    if any(a["kind"] == "gap" and a["subject"] == arm for a in q["unresolved"]):
+        assert checks(wd)["animation_quality"]["status"] == "BLOCKED"
+    else:
+        assert q["tuning"]["happy"][arm] < 1 and not any(a["kind"] == "gap" for a in q["rounds"][q["chosen_round"]]["anomalies"])
 
 
 def test_detects_unreliable_repair_exposure(built):
@@ -191,7 +196,8 @@ def test_separation_detected_without_constraint(tmp_path):
 # ---------- self-correction ----------
 
 def test_refine_fixes_and_records_rounds(workcopy):
-    """身體擠壓幅度 ×3，把不可靠的腿部補圖擠出來：歸因到 body、自動降低後露出消失，每輪紀錄都在。"""
+    """身體擠壓幅度 ×3，把不可靠的腿部補圖擠出來：歸因到 body、自動降低，但只因草稿露出時最多縮到 EXPOSURE_FLOOR；
+    仍露出的草稿改列人工補畫（不默默留在動畫裡），每輪紀錄都在。"""
     wd = workcopy("synth_b")
     rig = load_json(wd / "rig.json")
     rig["motion"]["body"] = 3.0
@@ -201,8 +207,9 @@ def test_refine_fixes_and_records_rounds(workcopy):
     first = [a for a in q["rounds"][0]["anomalies"] if a["kind"] == "exposure"]
     assert {a["subject"] for a in first} == {"leg_l", "leg_r"} and all(a["attributed_to"] == "body" for a in first)
     final = q["rounds"][q["chosen_round"]]["anomalies"]
-    assert not [a for a in final if a["kind"] == "exposure"] and q["downgraded_to_needs_manual"] == []
-    assert q["tuning"]["happy"]["body"] < 1 and load_json(wd / "tuning.json") == q["tuning"]
+    shown = {a["subject"] for a in final if a["kind"] == "exposure"}
+    assert shown <= set(q["downgraded_to_needs_manual"])
+    assert quality.EXPOSURE_FLOOR <= q["tuning"]["happy"]["body"] < 1 and load_json(wd / "tuning.json") == q["tuning"]
     assert len(q["rounds"]) <= quality.MAX_ROUNDS + 1
 
 

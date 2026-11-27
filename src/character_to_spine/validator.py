@@ -6,7 +6,7 @@ from PIL import Image
 
 from . import NeedsInput, load_json, save_json
 from .animation_builder import CHANNELS, duration
-from .image_processor import composite, masked_mae, part_mask
+from .image_processor import composite, masked_mae
 from .preview import render_setup_pose
 
 # 骨架初始姿勢算圖與圖層重組在前景範圍內的平均差異上限（0~1）。
@@ -84,18 +84,14 @@ def validate(workdir):
     add("animations", p, "；".join(f"{n} {duration(a)} 秒、{sum(len(k) for t in a['bones'].values() for k in t.values())} 個關鍵影格"
                                   for n, a in anims.items()))
 
-    # 用 Spine JSON 與 spine/images 把初始姿勢重新算一次圖，和「原圖在部件範圍內的像素」比對。
-    # 一次抓到：骨頭／附件座標換算錯誤、圖層順序錯誤、匯出的圖片內容錯誤（換錯圖、翻轉、損毀）。
+    # 用 Spine JSON 與 spine/images 把初始姿勢重新算一次圖，和整張原圖比對（每個前景像素都屬於某個部件或 fx 圖層）。
+    # 一次抓到：骨頭／附件座標換算錯誤、圖層順序錯誤、匯出的圖片內容錯誤（換錯圖、翻轉、損毀）、前景遺失。
     if not any(c["status"] == "FAIL" for c in checks):
         source = np.array(Image.open(wd / "source_rgba.png").convert("RGBA"))
         h, w = source.shape[:2]
-        assigned = np.zeros((h, w), bool)
-        for part in load_json(wd / "parts.json")["parts"]:
-            assigned |= part_mask(part, (h, w))
-        source[..., 3] = np.where(assigned, source[..., 3], 0)
         mae = masked_mae(render_setup_pose(wd), composite([(source, 0, 0)], (w, h)))
-        add("setup_pose", [f"骨架初始姿勢與原圖（部件範圍內）差異 {mae:.4f} 超過 {SETUP_POSE_MAX_MAE}"] if mae > SETUP_POSE_MAX_MAE else [],
-            f"骨架初始姿勢與原圖（部件範圍內）差異 {mae:.4f}")
+        add("setup_pose", [f"骨架初始姿勢與原圖差異 {mae:.4f} 超過 {SETUP_POSE_MAX_MAE}"] if mae > SETUP_POSE_MAX_MAE else [],
+            f"骨架初始姿勢與原圖差異 {mae:.4f}")
     else:
         checks.append({"check": "setup_pose", "status": "NOT_TESTED", "detail": "前面的檢查失敗，未進行算圖比對"})
 

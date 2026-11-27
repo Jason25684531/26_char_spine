@@ -16,6 +16,10 @@ from .spine_exporter import DEFAULT_SPINE_VERSION, export
 from .validator import validate
 
 
+REPORT_HINT = ("照 SKILL.md 第 4～7 步檢查 layer_preview.png、report/visual_check.png 後回報；"
+               "回報整份使用使用者提問的語言（中文提問就用中文），檔名與部件名稱是英文也一樣。")
+
+
 def _parser():
     p = argparse.ArgumentParser(prog="c2s", description="Character-to-Spine：2D 角色圖片 → 分層 PNG → Spine 骨架與動畫")
     p.add_argument("--version", action="version", version=__version__)
@@ -105,6 +109,9 @@ def main(argv=None):
         kind = "error" if isinstance(e, C2SError) else "unexpected_error"
         print(json.dumps({"status": kind, "message": str(e), "log": log}, ensure_ascii=False, indent=2), file=sys.stderr)
         return 1
+    if a.command == "run" and result.get("status") not in ("needs_input", "needs_parts"):
+        # 放在 Agent 寫回報前最後讀到的輸出：只寫在 SKILL.md 開頭時，Ref_pic 驗收 12 次有 2 次最後回報改用英文
+        result["next"] = REPORT_HINT
     print(json.dumps(result, ensure_ascii=False, indent=2))
     status = result.get("status")
     if status == "FAIL":

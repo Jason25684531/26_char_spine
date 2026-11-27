@@ -130,10 +130,11 @@ def test_amplitude_scales_with_height(workcopy):
 
 
 def test_left_right_mirror(built):
+    """左右手往相反方向轉。幅度依各自的初始方向決定（舉到同一個外側目標），synth_a 兩手差 1 個像素的重心，幅度差在 5% 內。"""
     b = anim(built("synth_a"))["bones"]
     for kl, kr in zip(b["arm_l"]["rotate"], b["arm_r"]["rotate"]):
         if kl.get("value"):
-            assert kl["value"] == pytest.approx(-kr["value"])
+            assert kl["value"] == pytest.approx(-kr["value"], rel=0.05)
 
 
 def test_motion_factor(workcopy):
@@ -166,3 +167,17 @@ def test_absent_bones_skipped(built):
     rig_bones = set(bones(built("synth_a")))
     for a in load_json(built("synth_a") / "animations.json").values():
         assert set(a["bones"]) <= rig_bones
+
+
+def test_held_prop_stays_upright(built):
+    """單手拿的道具（synth_b 的旗子）在手舉起時大致保持直立：世界角度只跟著手轉 PROP_TILT，不整根倒向頭。"""
+    import math
+    from character_to_spine.animation_builder import PROP_TILT
+    from character_to_spine.preview import world_matrices
+    skel = load_json(built("synth_b") / "spine" / "character.json")
+    angle = lambda m: math.degrees(math.atan2(m[1, 0], m[0, 0]))
+    # Idle 1.0s：身體縮放近乎等比（Happy 的壓扁會讓子骨頭的世界矩陣斜切，量出的角度失真）
+    w0, w1 = world_matrices(skel, "idle", 0.0), world_matrices(skel, "idle", 1.0)
+    turn = lambda n: angle(w1[n]) - angle(w0[n]) - (angle(w1["body"]) - angle(w0["body"]))  # 扣掉身體的擺動
+    assert abs(turn("arm_r")) > 1, "手有擺動"
+    assert turn("flag") == pytest.approx(PROP_TILT * turn("arm_r"), abs=0.2), "旗子只跟著手傾斜 PROP_TILT"

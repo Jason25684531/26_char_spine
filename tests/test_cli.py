@@ -33,6 +33,7 @@ def test_run_with_workdir(synth, tmp_path):
     img, _ = synth("synth_b")
     code, out, err = c2s("run", img, "--motion", "happy", "--workdir", tmp_path / "w", cwd=tmp_path)
     assert code == 0, err
+    assert list(json.loads(out))[-1] == "next" and "語言" in json.loads(out)["next"], "回報提醒放在輸出最後"
     wd = tmp_path / "w"
     assert (wd / "layers" / "head.png").exists() and (wd / "metadata.json").exists()
     assert (wd / "spine" / "character.json").exists() and (wd / "validation_report.json").exists()
@@ -49,7 +50,7 @@ def test_run_without_parts_exit_2(tmp_path):
     code, out, _ = c2s("run", img, cwd=tmp_path)
     assert code == 2
     msg = json.loads(out)["message"]
-    assert "head" in msg and "c2s run" in msg
+    assert "head" in msg and "c2s run" in msg and "next" not in json.loads(out)
     wd = tmp_path / "output" / "plain"
     assert not (wd / "rig.json").exists() and not (wd / "spine").exists()
 

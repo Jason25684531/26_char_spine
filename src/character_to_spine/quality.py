@@ -25,7 +25,7 @@ from . import load_json, save_json
 from .animation_builder import build_animations, duration
 from .image_processor import write_reports
 from .preview import framing, render, warp_slots, world_matrices
-from .rig_builder import PRESETS
+from .rig_builder import NON_BODY, PRESETS
 from .spine_exporter import DEFAULT_SPINE_VERSION, build_skeleton, export
 
 FPS = 10
@@ -33,6 +33,7 @@ MAX_ROUNDS = 3
 # 門檻（校準依據見 docs/DECISIONS.md D-31、D-32）
 THRESHOLDS = {"hole": 0.003, "gap": 0.1, "attach": 0.6, "intrude": 0.02, "exposure": 0.02}
 LOWER_IS_BAD = {"attach"}  # attach 是比值越低越糟，其餘越高越糟
+EXPOSURE_FLOOR = 0.5  # 只因草稿露出時動作的縮小下限（v1.0 會縮到 ×0.125，動畫幾乎不動）
 
 
 def violation(kind, value):
@@ -53,7 +54,7 @@ def _context(wd):
             "exposure_parts": [n for n, e in parts.items() if e["status"] == "needs_manual"
                                or (e["status"] == "auto_repaired" and not e.get("repair_reliable", True))],
             "contacts": [(c["a"], c["b"]) for c in rig.get("contacts", [])],
-            "ground": {n for n, r in rig.get("roles", {}).items() if r == "ground"},
+            "ground": {n for n, r in rig.get("roles", {}).items() if r in NON_BODY},
             # 穿插檢查的對象：有宣告接觸的部件與道具（使用者要求手、吉他、身體不得穿插）
             "constrained": sorted({n for c in rig.get("contacts", []) for n in (c["a"], c["b"])}
                                   | {n for n, r in rig.get("roles", {}).items() if r == "prop"})}
@@ -290,11 +291,13 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
         fixes = []
         for a in anomalies:
             a["attributed_to"] = bone = attribute(ctx, skel, a)
-            if bone and (a["anim"], bone) not in fixes:
+            # 只是草稿露出時，動作最多縮到 EXPOSURE_FLOOR：露出的草稿列入人工補畫，不再用縮小動作藏起來
+            hide_only = a["kind"] == "exposure" and tuning.get(a["anim"], {}).get(bone, 1.0) <= EXPOSURE_FLOOR
+            if bone and not hide_only and (a["anim"], bone) not in fixes:
                 fixes.append((a["anim"], bone))
         rec["fixes"] = [{"animation": an, "bone": b, "factor": 0.5} for an, b in fixes]
         if not fixes:
-            rec["note"] = "找不到能改善的骨頭，停止"
+            rec["note"] = "找不到能改善的骨頭（或只剩草稿露出、已達縮小下限），停止"
             break
         for an, b in fixes:
             tuning.setdefault(an, {})[b] = tuning.get(an, {}).get(b, 1.0) * 0.5

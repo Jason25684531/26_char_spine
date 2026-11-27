@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 from . import C2SError, NeedsInput, load_json, save_json
 from .analyzer import ALPHA_MIN
 from .providers import REPAIR_PROVIDERS
-from .rig_builder import PRESETS, default_role, required_parts
+from .rig_builder import FX, PRESETS, default_role, required_parts
 
 # 被遮住的面積超過部件的這個比例，就不把自動填補當成完成，改列人工修補任務
 MAX_AUTO_HIDDEN_RATIO = 0.35
@@ -58,9 +58,57 @@ def _ground_keeps_shadow(parts, masks, rgba):
         if not moved.any():
             continue
         masks[g] &= ~moved
-        owner = np.argmin([cv2.distanceTransform((~masks[n]).astype(np.uint8), cv2.DIST_L2, 3) for n in others], axis=0)
-        for i, n in enumerate(others):
-            masks[n] |= moved & (owner == i)
+        _give_to_nearest(moved, others, masks)
+
+
+def _give_to_nearest(pixels, names, masks):
+    """pixels 逐像素歸給最近的部件。逐一比較、只留目前最近的距離：一次堆疊全部距離圖在 4096² 的圖上每個部件要 64MB。"""
+    best = np.full(pixels.shape, np.inf, np.float32)
+    owner = np.zeros(pixels.shape, np.int16)
+    for i, n in enumerate(names):
+        d = cv2.distanceTransform((~masks[n]).astype(np.uint8), cv2.DIST_L2, 3)
+        closer = d < best
+        best[closer], owner[closer] = d[closer], i
+    for i, n in enumerate(names):
+        masks[n] |= pixels & (owner == i)
+
+
+SNAP_FRAC = 0.02  # 未分配的區塊有一半以上落在部件外側這個距離內（角色高度的比例），就是多邊形沒畫到的邊緣
+
+
+def _settle_unassigned(parts, masks, rgba):
+    """多邊形是目測的，邊緣與特效交給像素決定。原地修改 masks，回傳特效遮罩（沒有特效時 None）。
+    1. 混切：與角色本體不相連、又被部件邊界切開的前景區塊（多邊形順手包到的金幣、花瓣）移出部件。
+       整塊都在同一個部件內的獨立區塊視為 Agent 刻意畫進去的，保留。
+    2. 邊緣：未分配的區塊大多貼著部件（髮絲、蕾絲、描邊光暈）→ 整塊歸最近的部件。
+    3. 其餘未分配的前景是散落的特效 → fx 圖層，不再從輸出中消失。"""
+    fg = rgba[..., 3] > ALPHA_MIN
+    body_names = [p["name"] for p in parts if not _is_ground(p)]
+    if not body_names:
+        return None
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(fg.astype(np.uint8), connectivity=8)
+    if n > 2:
+        main = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+        for i in range(1, n):
+            if i == main:
+                continue
+            comp = lab == i
+            owners = [b for b in body_names if (masks[b] & comp).any()]
+            if owners and (len(owners) > 1 or (comp & ~masks[owners[0]]).any()):
+                for b in owners:
+                    masks[b] &= ~comp
+    body = np.any([masks[b] for b in body_names], axis=0)
+    loose = fg & ~np.any(list(masks.values()), axis=0)
+    if not loose.any():
+        return None
+    ys = np.nonzero(body)[0]
+    near = cv2.distanceTransform((~body).astype(np.uint8), cv2.DIST_L2, 3) <= max(4, SNAP_FRAC * (ys.max() - ys.min() + 1))
+    n, lab = cv2.connectedComponents(loose.astype(np.uint8), connectivity=8)
+    snap = np.isin(lab, [i for i in range(1, n) if (near & (lab == i)).sum() * 2 >= (lab == i).sum()])
+    if snap.any():
+        _give_to_nearest(snap, body_names, masks)
+    fx = loose & ~snap
+    return fx if fx.any() else None
 
 
 def _bbox(mask):
@@ -215,6 +263,10 @@ def prepare(workdir, only=None, replace=None):
 
     masks = {p["name"]: part_mask(p, (h, w)) for p in parts}
     _ground_keeps_shadow(parts, masks, rgba)
+    fx = _settle_unassigned(parts, masks, rgba)
+    if fx is not None:  # 放在最後面、掛在 hip：跟著角色跳，不擋住角色
+        parts = [{"name": FX, "z": parts[0]["z"] - 1, "parent": "hip", "role": "effect"}] + parts
+        masks[FX] = fx
     (wd / "quality" / "quality_report.json").unlink(missing_ok=True)  # 圖層變了，舊的品質報告不再有效
     repair = REPAIR_PROVIDERS["opencv"]
     odir = overrides_dir(wd, doc)
@@ -262,7 +314,8 @@ def prepare(workdir, only=None, replace=None):
     for m in masks.values():
         assigned |= m
     fg = rgba[..., 3] > ALPHA_MIN
-    body = fg & assigned  # 只算部件範圍內的像素：散落的特效不影響骨架原點與尺寸
+    loose = fg & masks[FX] if FX in masks else fg & ~assigned  # 不屬於任何角色部件的前景（已收進 fx 圖層）
+    body = fg & ~loose  # 只算角色部件的像素：散落的特效不影響骨架原點與尺寸
     if not body.any():
         raise C2SError("parts.json 的範圍內沒有任何前景像素，請檢查座標")
     ys, xs = np.nonzero(body)
@@ -276,15 +329,15 @@ def prepare(workdir, only=None, replace=None):
         "bbox": [int(xs.min()), int(ys.min()), int(xs.max() - xs.min() + 1), int(ys.max() - ys.min() + 1)],
         # 骨架原點：角色腳底中央（原圖像素座標）
         "origin": [round(float(xs.min() + xs.max()) / 2, 1), int(ys.max()) + 1],
-        "unassigned_ratio": round(float((fg & ~assigned).sum() / fg.sum()), 4),
+        "unassigned_ratio": round(float(loose.sum() / fg.sum()), 4),
         "recompose_mae": round(masked_mae(recomposed, source), 5),
-        "unassigned_regions": _unassigned_regions(fg & ~assigned, masks),
+        "unassigned_regions": _unassigned_regions(loose, {k: m for k, m in masks.items() if k != FX}),
         "parts": entries,
     }
     save_json(wd / "metadata.json", meta)
     missing_required, manual = write_reports(wd)
     shown = recomposed[0].copy()
-    shown[fg & ~assigned] = (255, 0, 255)  # 洋紅色：前景像素沒被任何部件涵蓋（漏畫或特效）
+    shown[loose] = (255, 0, 255)  # 洋紅色：不屬於任何角色部件的前景（特效，或漏畫的部件），已收進 fx 圖層
     _write_preview(wd, composite([(rgba, 0, 0)], (w, h))[0], shown, entries)
     status = "needs_parts" if missing_required else "needs_repair" if manual else "ok"
     return {"status": status, "layers": [e["name"] for e, _ in drawable], "written": written,
