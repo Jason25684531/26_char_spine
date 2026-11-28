@@ -38,3 +38,17 @@ def test_package_from_real_outputs(built, tmp_path):
     text = "\n".join(sh.text_frame.text for s in prs.slides for sh in s.shapes if sh.has_text_frame)
     assert "Python Simulation Preview" in text and "BLOCKED" in text and "synth_b" in text
     assert len(prs.slides) >= 12
+
+
+def test_launcher_falls_back_when_skill_dir_is_read_only(tmp_path, monkeypatch):
+    """Codex 沙盒中 .agents/skills/ 是唯讀的：執行環境改裝在目前專案的 .c2s-runtime/，不是失敗。"""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("c2s_launcher", Path(__file__).parents[1] / "skills/character-to-spine/scripts/c2s.py")
+    launcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(launcher)
+    monkeypatch.chdir(tmp_path)
+    writable = tmp_path / "skill_ok"
+    writable.mkdir()
+    assert launcher.venv_dir(writable, "c2s.whl") == writable / ".venv"
+    read_only = tmp_path / "no_such_dir" / "skill"  # 寫不進去
+    assert launcher.venv_dir(read_only, "c2s.whl") == tmp_path / ".c2s-runtime" / ".venv"

@@ -196,7 +196,7 @@ def test_separation_detected_without_constraint(tmp_path):
 # ---------- self-correction ----------
 
 def test_refine_fixes_and_records_rounds(workcopy):
-    """身體擠壓幅度 ×3，把不可靠的腿部補圖擠出來：歸因到 body、自動降低，但只因草稿露出時最多縮到 EXPOSURE_FLOOR；
+    """身體擠壓幅度 ×3，把不可靠的腿部補圖擠出來：歸因到 body、自動降低，但只因草稿露出時最多縮到 SHRINK_FLOOR；
     仍露出的草稿改列人工補畫（不默默留在動畫裡），每輪紀錄都在。"""
     wd = workcopy("synth_b")
     rig = load_json(wd / "rig.json")
@@ -209,7 +209,7 @@ def test_refine_fixes_and_records_rounds(workcopy):
     final = q["rounds"][q["chosen_round"]]["anomalies"]
     shown = {a["subject"] for a in final if a["kind"] == "exposure"}
     assert shown <= set(q["downgraded_to_needs_manual"])
-    assert quality.EXPOSURE_FLOOR <= q["tuning"]["happy"]["body"] < 1 and load_json(wd / "tuning.json") == q["tuning"]
+    assert quality.SHRINK_FLOOR <= q["tuning"]["happy"]["body"] < 1 and load_json(wd / "tuning.json") == q["tuning"]
     assert len(q["rounds"]) <= quality.MAX_ROUNDS + 1
 
 
@@ -345,11 +345,19 @@ def test_refine_is_deterministic_with_fixes(workcopy):
     assert load_json(wd / "tuning.json") == first
 
 
-def test_detects_interpenetration(built):
-    """synth_b 的旗子（道具）揮進頭部：要被抓到、歸因到拿旗子的手臂；修不掉就 BLOCKED。"""
-    q = load_json(built("synth_b") / "quality" / "quality_report.json")
-    first = {a["subject"]: a for a in q["rounds"][0]["anomalies"] if a["kind"] == "intrude"}
-    assert "flag+head" in first and first["flag+head"]["attributed_to"] == "arm_r"
+def test_detects_interpenetration(workcopy):
+    """旗子（道具）的樞軸放在旗面中央（v1.1 的預設）時，舉手會把旗子揮進頭部：要被抓到、歸因到拿旗子的手臂。
+    v1.2 預設樞軸在手握的地方，旗子不再揮進頭部，所以這裡明確指定舊的樞軸來製造穿插。"""
+    wd = workcopy("synth_b")
+    doc = load_json(wd / "parts.json")
+    next(p for p in doc["parts"] if p["name"] == "flag")["pivot"] = [317.5, 190.0]
+    save_json(wd / "parts.json", doc)
+    prepare(wd)
+    build_rig(wd)
+    build_animations(wd, "happy")
+    ctx, skel, anomalies = _assess(wd)
+    first = {a["subject"]: a for a in anomalies if a["kind"] == "intrude"}
+    assert "flag+head" in first and quality.attribute(ctx, skel, first["flag+head"]) == "arm_r"
     assert not any("hair_back" in s for s in first)  # 頭髮是背景層，不算穿插
 
 
@@ -420,3 +428,40 @@ def test_carried_arm_strums(tmp_path):
     assert sum(a != b for a, b in zip(signs, signs[1:])) >= 8
     held = arm_l_values(["arm_l"], "hold")
     assert len([v for v in held if v]) < len([v for v in values if v])
+
+
+def _hair_lock_synth(tmp_path, lock_z):
+    """synth_a 加一束垂在左肩外側的頭髮（hair_front）。lock_z 高於手臂時，舉起的左手會鑽到頭髮後面。"""
+    img = make_custom(tmp_path, f"lock{lock_z}", (300, 420), [
+        ("leg_l", rect(115, 280, 143, 390), (60, 80, 160), 1, {}),
+        ("leg_r", rect(157, 280, 185, 390), (70, 90, 175), 2, {}),
+        ("body", rect(105, 175, 195, 300), (220, 80, 80), 3, {}),
+        ("head", rect(95, 60, 205, 172), (250, 220, 190), 4, {}),
+        ("arm_l", rect(70, 180, 106, 280), (235, 185, 145), 5, {}),  # 只碰到身體邊緣：舉手不會露出身體草稿
+        ("arm_r", rect(194, 180, 230, 280), (240, 195, 155), 6, {}),
+        ("hair_front", rect(20, 90, 92, 182), (90, 50, 30), lock_z, {"parent": "head", "role": "hair"}),
+    ])
+    wd = tmp_path / f"w{lock_z}"
+    analyze(img, wd)
+    prepare(wd)
+    build_rig(wd)
+    build_animations(wd, "happy")
+    return wd
+
+
+def test_detects_raised_arm_hidden_by_hair(tmp_path):
+    """K-39：舉起的手鑽到前後順序較高的頭髮後面 → occluded 異常；同一束頭髮放在手臂後面就沒有。"""
+    _, _, anomalies = _assess(_hair_lock_synth(tmp_path, 9))
+    assert any(a["kind"] == "occluded" and a["subject"] == "arm_l" for a in anomalies), anomalies
+    _, _, anomalies = _assess(_hair_lock_synth(tmp_path, 0))
+    assert not [a for a in anomalies if a["kind"] == "occluded"]
+
+
+def test_refine_does_not_shrink_to_hide_occlusion(tmp_path):
+    """被頭髮遮住不能用縮小舉手來「解決」：遮擋本身從不觸發縮小；為了別的異常縮小而順帶藏起來時，仍留在 unresolved。"""
+    wd = _hair_lock_synth(tmp_path, 9)
+    r = quality.refine(wd, "happy")
+    assert "occluded:arm_l" in r["unresolved"]
+    for rd in load_json(wd / "quality" / "quality_report.json")["rounds"]:
+        for fix in rd.get("fixes", []):
+            assert any(a.get("attributed_to") == fix["bone"] and a["kind"] != "occluded" for a in rd["anomalies"]), rd

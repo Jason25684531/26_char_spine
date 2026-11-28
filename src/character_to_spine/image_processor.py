@@ -8,7 +8,10 @@ from PIL import Image, ImageDraw
 
 from . import C2SError, NeedsInput, load_json, save_json
 from .analyzer import ALPHA_MIN
+from . import gen_repair
+from .gen_repair import grant_consent, load_provenance, overrides_dir  # noqa: F401  （沿用舊的匯入位置）
 from .providers import REPAIR_PROVIDERS
+from .refine_mask import find_underlay_gaps, refine_masks
 from .rig_builder import FX, PRESETS, default_role, required_parts
 
 # 被遮住的面積超過部件的這個比例，就不把自動填補當成完成，改列人工修補任務
@@ -234,13 +237,29 @@ def masked_mae(a, b):
     return float(diff[region].mean())
 
 
+def _default_pivot(p, entry, masks, anchors):
+    """必要部件用 preset 的關節比例；其餘部件（頭髮、裙擺、飾品、道具）放在它和父部件相接的地方，
+    不放在裁切框中心（Spine-SKILL：樞軸在解剖或機構的轉動點）。父部件是 hip 等虛擬骨頭時以 body 代替。"""
+    if p["name"] not in anchors:
+        parent = p.get("parent") if p.get("parent") in masks else "body"
+        if parent in masks and parent != p["name"]:
+            near = cv2.dilate(masks[p["name"]].astype(np.uint8), np.ones((7, 7), np.uint8)).astype(bool) & masks[parent]
+            if near.sum() >= 30:
+                ys, xs = np.nonzero(near)
+                return [round(float(xs.mean()), 1), round(float(ys.mean()), 1)]
+    fx, fy = anchors.get(p["name"], (0.5, 0.5))
+    return [round(entry["x"] + fx * entry["w"], 1), round(entry["y"] + fy * entry["h"], 1)]
+
+
 def _same_png(path, arr):
     return path.exists() and np.array_equal(np.array(Image.open(path).convert("RGBA")), arr)
 
 
-def prepare(workdir, only=None, replace=None):
+def prepare(workdir, only=None, replace=None, generated=None, reference=None, strategy=None):
     """切圖。每次都重算全部部件（部件之間的遮擋互相影響），但只寫入內容有變的圖層檔。
-    only：強制重寫這個部件的圖層；replace：{部件名: 人工修好的 PNG}，驗證通過才保存到永久的 overrides 目錄。"""
+    only：強制重寫這個部件的圖層；replace：{部件名: 人工修好的 PNG}，驗證通過才保存到永久的 overrides 目錄。
+    generated：(部件名, 生成圖 PNG, 生成 Prompt)，只取被遮住的像素融合進該部件（見 fusion.py）；
+    reference：生成圖其實取自這張同角色的參考圖（不經過雲端，不需要許可）。"""
     wd = Path(workdir)
     if not (wd / "source_rgba.png").exists() or not (wd / "parts.json").exists():
         raise NeedsInput(f"{wd} 尚未完成分析或缺少 parts.json，請先執行 c2s analyze 並補上 parts.json")
@@ -254,22 +273,29 @@ def prepare(workdir, only=None, replace=None):
     names = [p["name"] for p in parts]
     preset = PRESETS[doc.get("preset", "humanoid-chibi")]
     replace = {k: Path(v) for k, v in (replace or {}).items()}
-    for name in ([only] if only else []) + list(replace):
+    for name in ([only] if only else []) + list(replace) + ([generated[0]] if generated else []):
         if name not in names:
             raise C2SError(f"沒有名為 {name} 的部件（現有：{', '.join(names)}）")
-    for src in replace.values():
+    for src in list(replace.values()) + ([Path(generated[1])] if generated else []):
         if not src.is_file():
             raise C2SError(f"找不到替換用的圖片：{src}")
+    odir = overrides_dir(wd, doc)
+    prov = load_provenance(odir)
+    if generated and not reference:
+        gen_repair._need_consent(prov)
 
     masks = {p["name"]: part_mask(p, (h, w)) for p in parts}
+    mask_refine = refine_masks(rgba, parts, masks)  # 多邊形的可見邊界貼齊影像邊緣；沒有改善的部件維持原樣
     _ground_keeps_shadow(parts, masks, rgba)
     fx = _settle_unassigned(parts, masks, rgba)
+    underlay = find_underlay_gaps(parts, masks, rgba[..., 3] > ALPHA_MIN)  # 要在零碎邊緣歸屬之後：那些像素也算下層
     if fx is not None:  # 放在最後面、掛在 hip：跟著角色跳，不擋住角色
         parts = [{"name": FX, "z": parts[0]["z"] - 1, "parent": "hip", "role": "effect"}] + parts
         masks[FX] = fx
     (wd / "quality" / "quality_report.json").unlink(missing_ok=True)  # 圖層變了，舊的品質報告不再有效
+    if generated:
+        gen_repair.import_generated(generated, reference, strategy, rgba, parts, masks, odir, prov)
     repair = REPAIR_PROVIDERS["opencv"]
-    odir = overrides_dir(wd, doc)
     results = []  # (entry, layer 或 None, 補圖遮罩或 None)
     for p in parts:
         name = p["name"]
@@ -278,14 +304,22 @@ def prepare(workdir, only=None, replace=None):
         if override.exists():
             layer = _apply_override(override, entry, (w, h))  # 尺寸不對會在寫入任何檔案前就失敗
             filled = None  # 人工修補圖沒有「自動補的像素」
+            rec = None if name in replace else prov["parts"].get(name, {})
+            if rec and rec.get("accepted") is not None:
+                att = rec["attempts"][rec["accepted"]]
+                entry.update(status=gen_repair.STATUS[att["source"]], repair_source=att["file"], review=att.get("review"),
+                             raw_verified=att["source"] == "reference" or bool(att.get("raw_source")))
+        elif prov["parts"].get(name, {}).get("exhausted"):
+            entry.update(status="needs_manual", reason=f"生成式補圖連續 {gen_repair.MAX_ATTEMPTS} 次未通過品質判定"
+                         "（量測值見 provenance.json），需要人工修補")
         if layer is not None:
             entry["file"] = f"layers/{name}.png"
-            fx, fy = preset["anchors"].get(name, (0.5, 0.5))
-            entry["pivot"] = p.get("pivot") or [round(entry["x"] + fx * entry["w"], 1), round(entry["y"] + fy * entry["h"], 1)]
+            entry["pivot"] = p.get("pivot") or _default_pivot(p, entry, masks, preset["anchors"])
         results.append((entry, layer, filled))
 
     (wd / "layers").mkdir(exist_ok=True)
     shutil.rmtree(wd / "repair_masks", ignore_errors=True)
+    gen_repair.write_gen_inputs(wd, rgba, parts, masks)
     written = []
     for entry, layer, filled in results:
         if filled is not None and layer is not None:  # 補上的像素：品質檢查用來量測動畫中是否露出
@@ -308,6 +342,8 @@ def prepare(workdir, only=None, replace=None):
             shutil.copyfile(dest, dest.with_suffix(".png.bak"))  # 人工修補圖不可回復，覆蓋前先備份
         if not dest.exists() or dest.resolve() != new.resolve():
             shutil.copyfile(new, dest)
+        if prov["parts"].pop(name, None) is not None:  # 人工修補圖取代了生成圖，之後以人工為準
+            save_json(odir / "provenance.json", prov)
     entries = [e for e, _, _ in results]
 
     assigned = np.zeros((h, w), bool)
@@ -332,6 +368,7 @@ def prepare(workdir, only=None, replace=None):
         "unassigned_ratio": round(float(loose.sum() / fg.sum()), 4),
         "recompose_mae": round(masked_mae(recomposed, source), 5),
         "unassigned_regions": _unassigned_regions(loose, {k: m for k, m in masks.items() if k != FX}),
+        "mask_refine": mask_refine, "underlay_gaps": underlay,
         "parts": entries,
     }
     save_json(wd / "metadata.json", meta)
@@ -339,18 +376,39 @@ def prepare(workdir, only=None, replace=None):
     shown = recomposed[0].copy()
     shown[loose] = (255, 0, 255)  # 洋紅色：不屬於任何角色部件的前景（特效，或漏畫的部件），已收進 fx 圖層
     _write_preview(wd, composite([(rgba, 0, 0)], (w, h))[0], shown, entries)
+    _write_review_sheets(wd, rgba, drawable)
     status = "needs_parts" if missing_required else "needs_repair" if manual else "ok"
     return {"status": status, "layers": [e["name"] for e, _ in drawable], "written": written,
             "missing_required": missing_required, "needs_manual": manual,
             "recompose_mae": meta["recompose_mae"], "unassigned_ratio": meta["unassigned_ratio"]}
 
 
-def overrides_dir(wd, doc):
-    """人工修補圖的永久位置：正式 parts.json 旁的 <圖名>.overrides/。來源就在工作目錄時才退回 工作目錄/overrides/。"""
-    src = Path(doc.get("source", wd / "parts.json")).resolve()
-    if src.parent == Path(wd).resolve():
-        return Path(wd) / "overrides"
-    return src.parent / f"{Path(doc.get('image') or src.name.split('.')[0]).stem}.overrides"
+def _write_review_sheets(wd, rgba, drawable):
+    """visual_review/<部件>.png：原圖｜補好的圖層（棋盤格＝透明）｜移開遮擋物後的樣子（只畫這個部件與它後面的圖層）。
+    每個生成式補圖都要有人或 Agent 看過這張圖並以 c2s review 記錄判定，數值通過不算數。"""
+    out = Path(wd) / "visual_review"
+    shutil.rmtree(out, ignore_errors=True)
+    h, w = rgba.shape[:2]
+    yy, xx = np.mgrid[0:h, 0:w]
+    checker = np.where(((yy // 10 + xx // 10) % 2)[..., None] == 0, 235.0, 200.0).repeat(3, 2)
+    for e, layer in drawable:
+        if e["status"] not in gen_repair.STATUS.values():
+            continue
+        x0, y0 = max(0, e["x"] - 12), max(0, e["y"] - 12)
+        x1, y1 = min(w, e["x"] + e["w"] + 12), min(h, e["y"] + e["h"] + 12)
+        behind = composite([(lay, o["x"], o["y"]) for o, lay in drawable if o["z"] <= e["z"]], (w, h))
+        alone = composite([(layer, e["x"], e["y"])], (w, h))
+
+        def on_checker(c):
+            return c[0] * c[1][..., None] + checker * (1 - c[1][..., None])
+        tiles = [composite([(rgba, 0, 0)], (w, h))[0], on_checker(alone), on_checker(behind)]
+        k = max(1, min(4, 600 // max(1, y1 - y0)))  # 小部件放大，看得清楚殘留與接縫
+        sheet = Image.new("RGB", (3 * (x1 - x0) * k + 16, (y1 - y0) * k), "white")
+        for i, t in enumerate(tiles):
+            tile = Image.fromarray(t[y0:y1, x0:x1].astype(np.uint8)).resize(((x1 - x0) * k, (y1 - y0) * k), Image.LANCZOS)
+            sheet.paste(tile, (i * ((x1 - x0) * k + 8), 0))
+        out.mkdir(exist_ok=True)
+        sheet.save(out / f"{e['name']}.png")
 
 
 def _unassigned_regions(mask, masks, top=10, min_area=20):
@@ -379,6 +437,7 @@ def write_reports(wd):
     manual = [{"name": e["name"], "reason": e["reason"], "hidden_ratio": e.get("hidden_ratio"), "layer": e.get("file")}
               for e in entries if e["status"] == "needs_manual"]
     save_json(Path(wd) / "missing_parts.json", {"missing_required": missing_required, "needs_manual": manual,
+                                                "underlay_gaps": meta.get("underlay_gaps", []),
                                                 "unassigned_ratio": meta["unassigned_ratio"],
                                                 "unassigned_regions": meta.get("unassigned_regions", [])})
     _write_repair_tasks(Path(wd), missing_required, manual, entries, meta)
@@ -401,6 +460,13 @@ def _write_repair_tasks(wd, missing_required, manual, entries, meta):
                       f"  - 修好後執行：`c2s prepare --replace {m['name']}=<修好的.png>`"
                       f"（PNG 尺寸要等於整張畫布 {meta['canvas'][0]}x{meta['canvas'][1]}，或與草稿圖層相同）"]
         lines.append("")
+    ai = [e for e in entries if e["status"] in gen_repair.STATUS.values()]
+    if ai:
+        lines += ["## 已用生成圖或參考圖補上被遮住的區域", "",
+                  "原始看得見的像素沒有改變；來源、Prompt 與量測值見 overrides 目錄的 `provenance.json`。", ""]
+        seen = {None: "尚未目視判定", "pass": "目視通過", "unsure": "目視不確定，待確認", "fail": "目視不通過"}
+        lines += [f"- `{e['name']}`：{e['status']}（{e.get('repair_source')}），{seen[(e.get('review') or {}).get('verdict')]}"
+                  + ("" if e.get("raw_verified", True) else "，**來源未驗證**（在生成工具的輸出目錄找不到相同的檔案）") for e in ai] + [""]
     auto = [e for e in entries if e["status"] == "auto_repaired"]
     if auto:
         lines += ["## 已自動填補（OpenCV 邊緣延伸）", ""]

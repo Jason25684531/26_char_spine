@@ -139,6 +139,29 @@ def check_scope(doc, names):
             errors.append(f"absent 不可包含 {a}：{'、'.join(NEVER_ABSENT)} 是骨架的根，看不到時請改用 unsupported 說明原因")
         elif a in names:
             errors.append(f"{a} 同時出現在 absent 與 parts，請擇一（看得到就畫範圍，完全看不到才列 absent）")
+    return errors + check_motion_overrides(doc.get("motion_overrides", {}))
+
+
+OVERRIDE_RANGE = (0.0, 2.5)
+
+
+def check_motion_overrides(ov):
+    """motion_overrides：{"happy": {"energy": 1.3, "hair": 1.5}}。energy 乘在整段動作，role 名稱只乘在該類部件。
+    使用者用自然語言調整動作（「更活潑」「頭髮多擺一點」）時，由 Agent 寫入這裡。"""
+    from .animation_builder import MOTIONS
+    from .rig_builder import ROLES
+    if not isinstance(ov, dict):
+        return ["motion_overrides 必須是 {動作: {energy 或 role: 倍率}}"]
+    errors = []
+    for motion, table in ov.items():
+        if motion not in MOTIONS:
+            errors.append(f"motion_overrides 的動作 {motion} 不存在（可用：{', '.join(MOTIONS)}）")
+            continue
+        for key, v in (table.items() if isinstance(table, dict) else [("?", None)]):
+            if key != "energy" and key not in ROLES:
+                errors.append(f"motion_overrides.{motion} 的 {key} 不是 energy 或部件 role（{', '.join(ROLES)}）")
+            elif not _num(v) or not OVERRIDE_RANGE[0] <= v <= OVERRIDE_RANGE[1]:
+                errors.append(f"motion_overrides.{motion}.{key} 必須是 0～2.5 的倍率")
     return errors
 
 
@@ -202,6 +225,7 @@ def analyze(image, workdir, parts_path=None, preset="humanoid-chibi"):
         else:
             absent = doc.get("absent", [])
             save_json(wd / "parts.json", {"version": 1, "image": image.name, "preset": preset, "absent": absent,
+                                          "motion_overrides": doc.get("motion_overrides", {}),
                                           "source": str(found.resolve()), "parts": parts})
     if unsupported:
         _invalidate(wd, unsupported)

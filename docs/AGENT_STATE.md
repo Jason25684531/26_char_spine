@@ -2,6 +2,17 @@
 
 新的 session 先讀這份，再看 `git log`、`docs/SKILL_V1_REPORT.md`、`docs/KNOWN_ISSUES.md`。不要重新規劃整個專案。
 
+## 最後更新：2026-11-27（Skill v1.2.0，Codex-first）
+
+**OpenSpec change `skill-v1-2-quality-first`**（`openspec/` 被使用者的 .gitignore 排除，只存在本機）。tasks.md 已標實際狀態；未勾的是 3.4、4.3、4.6、4.7、5.3、5.7、6.2～6.4、6.6、6.7。
+
+- 生成式補圖：`c2s consent` → `gen_inputs/<部件>.png`（洋紅標記）→ Codex 內建 image_gen → `c2s prepare --generated`。融合與門檻在 `fusion.py`（D-60，門檻凍結）。實驗腳本 `scripts/repair_experiment.py`、重算 `scripts/rejudge.py`，結果 `output/experiments/`、報告 `docs/acceptance/v1.2.0/ACCEPTANCE_REPORT.md`。
+- 四張面試圖已有使用者雲端許可（`examples/real/<圖名>.overrides/provenance.json`）。Ref_pic 六張沒有。
+- 動畫：模板依 `docs/motion/reference_analysis.md`（D-61）；Spine-SKILL 對照 `docs/motion/spine_skill_mapping.md`（D-62、D-63）。
+- 比較：`scripts/v12_compare.py`，v1.1 基準在 `output/v11_base/`、v1.2 在 `output/v12/`（c1 人、c2 人物 拷贝、c3 转场2、c4 预中奖）。
+- 注意：`docs/*` 在 .gitignore 中，新文件需 `git add -f`。改 Skill 後重跑 `build_skill.py` 並更新 `.claude/skills/` 複本（`test_skill_copies_identical`）。
+- 下一步：人工補 人.png body（或採用 `overrides/generated/*_fused.png` 候選）；取得 Ref_pic 許可後驗證 19→≤9；完整版 Spine（K-01）。
+
 ## 最後更新：2026-11-24（Skill v1.0）
 
 **交付物**：`dist/character-to-spine-skill-v1.0.0.zip`（`scripts/build_skill.py`）與 `Character-to-Spine-Deliverables/`（`scripts/package_deliverables.py --chars output/generalization/{ren,zc2,rq,yz}/work`），兩者都不進版控、可重建。實測報告 `docs/SKILL_V1_REPORT.md`。

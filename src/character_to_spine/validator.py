@@ -99,6 +99,16 @@ def validate(workdir):
     checks.append({"check": "manual_repairs", "status": "BLOCKED" if manual else "PASS",
                    "detail": ("等待人工修補：" + ", ".join(manual) + "（見 repair_tasks.md）") if manual else "沒有待人工修補的圖層"})
 
+    # 生成式補圖：數值通過不算數，每個部件都要有目視判定（c2s review）。沒看過＝NOT_TESTED，看不出來＝BLOCKED
+    seen = {e["name"]: (e.get("review") or {}).get("verdict") for e in meta["parts"] if e["status"] in ("ai_repaired", "ref_repaired")}
+    waiting, unsure = [n for n, v in seen.items() if v is None], [n for n, v in seen.items() if v == "unsure"]
+    checks.append({"check": "visual_review",
+                   "status": "BLOCKED" if unsure else "NOT_TESTED" if waiting else "PASS",
+                   "detail": "沒有生成式補圖" if not seen else "；".join(filter(None, [
+                       unsure and "目視不確定、待確認：" + ", ".join(unsure),
+                       waiting and "尚未目視判定：" + ", ".join(waiting) + "（看 visual_review/<部件>.png 後執行 c2s review）",
+                       not (unsure or waiting) and "全部目視通過：" + ", ".join(seen)]))})
+
     if meta.get("absent"):
         checks.append({"check": "absent_parts", "status": "BLOCKED",
                        "detail": "畫面上看不到、沒有骨頭也沒有動畫的必要部件：" + ", ".join(meta["absent"]) + "（可選擇補畫，見 repair_tasks.md）"})

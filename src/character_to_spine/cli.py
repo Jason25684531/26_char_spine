@@ -5,10 +5,12 @@ import sys
 import traceback
 from pathlib import Path
 
-from . import C2SError, NeedsInput, __version__, pipeline
+from . import C2SError, NeedsInput, __version__, pipeline, spine_bridge
 from .analyzer import analyze
+from .doctor import doctor
 from .animation_builder import MOTIONS, build_animations
-from .image_processor import prepare
+from . import gen_repair
+from .image_processor import grant_consent, prepare
 from .preview import write_previews
 from .quality import refine
 from .rig_builder import PRESETS, build_rig
@@ -39,6 +41,22 @@ def _parser():
     s = cmd("prepare", "依 parts.json 切出透明分層 PNG", "optional")
     s.add_argument("--part", help="強制重寫這個部件的圖層（其他圖層只在內容有變時才重寫）")
     s.add_argument("--replace", action="append", default=[], metavar="NAME=PNG", help="用人工修好的 PNG 取代某個部件（可重複）")
+    s.add_argument("--generated", metavar="NAME=PNG", help="生成圖：只取被遮住的像素融合進這個部件，原始看得見的像素不變")
+    s.add_argument("--prompt", help="產生 --generated 這張圖用的 Prompt（寫入來源紀錄）")
+    s.add_argument("--from-reference", metavar="IMAGE", help="--generated 的圖取自這張同角色參考圖，不是雲端生成")
+    s.add_argument("--strategy", choices=list(gen_repair.STRATEGIES), help="這張生成圖用的策略（預設取登記時的策略）")
+    s.add_argument("--begin", metavar="NAME", help="生成前登記一次嘗試（搭配 --prompt），回傳剩餘次數、策略與要交給生成工具的圖")
+    s.add_argument("--reopen", metavar="NAME", help="已達上限的部件重新計次（必須附 --reason）")
+    s.add_argument("--reason", help="--reopen 的理由，會寫入來源紀錄")
+    s.add_argument("--rollback", metavar="NAME", help="這個部件回到上一個通過的生成成果")
+
+    s = cmd("review", "記錄生成式補圖的目視判定（看過 visual_review/<部件>.png 之後）")
+    s.add_argument("part")
+    s.add_argument("--verdict", required=True, choices=list(gen_repair.VERDICTS), help="fail 會撤回這個補圖並計一次失敗")
+    s.add_argument("--note", required=True, help="看到了什麼")
+    s.add_argument("--by", default="agent", help="判定者（例如 codex、claude、美術姓名）")
+
+    cmd("consent", "記錄使用者已明確許可這個角色交給 Codex 內建 image_gen（雲端）處理", "optional")
 
     s = cmd("rig", "建立骨架")
     s.add_argument("--preset", default=None, choices=list(PRESETS))
@@ -59,6 +77,14 @@ def _parser():
     cmd("validate", "檢查輸出內容並產生 validation_report.json")
     cmd("preview", "用內建算圖器輸出動畫預覽 GIF（不是 Spine 的算圖結果）")
 
+    sub.add_parser("doctor", help="檢查 Python、套件、Codex、image_gen、Spine 與 Skill 安裝位置")
+    s = cmd("spine", "Spine Editor 橋接：import 匯入成新版本專案、open 開啟最新專案、sync 熱更新單一部件圖片")
+    s.add_argument("action", choices=["import", "open", "sync"])
+    s.add_argument("--part", help="sync：要更新的部件名稱")
+    s.add_argument("--restore", action="store_true", help="sync：還原這個部件的上一版圖片")
+    s.add_argument("--project", help="open：指定專案檔（預設最新版本）")
+    s.add_argument("--spine-exe")
+
     s = cmd("run", "一次跑完整個流程", "required")
     s.add_argument("--motion", default="happy", choices=MOTIONS)
     s.add_argument("--parts")
@@ -74,10 +100,25 @@ def _dispatch(a, wd):
     if a.command == "prepare":
         if a.image and not (wd / "source_rgba.png").exists():
             analyze(a.image, wd)
-        bad = [r for r in a.replace if "=" not in r]
+        bad = [r for r in a.replace + [a.generated or "="] if "=" not in r]
         if bad:
-            raise C2SError(f"--replace 格式應為 NAME=PNG，收到 {bad[0]!r}")
-        return prepare(wd, a.part, dict(r.split("=", 1) for r in a.replace))
+            raise C2SError(f"--replace／--generated 格式應為 NAME=PNG，收到 {bad[0]!r}")
+        gen = (*a.generated.split("=", 1), a.prompt) if a.generated else None
+        if a.begin:
+            return gen_repair.begin(wd, a.begin, a.prompt, a.strategy)
+        if a.reopen:
+            gen_repair.reopen(wd, a.reopen, a.reason)
+        if a.rollback:
+            gen_repair.rollback(wd, a.rollback)
+        return prepare(wd, a.part, dict(r.split("=", 1) for r in a.replace), gen, a.from_reference, a.strategy)
+    if a.command == "review":
+        out = gen_repair.review(wd, a.part, a.verdict, a.note, a.by)
+        prepare(wd)
+        return out
+    if a.command == "consent":
+        if a.image and not (wd / "parts.json").exists():
+            analyze(a.image, wd)
+        return grant_consent(wd)
     if a.command == "rig":
         return build_rig(wd, a.preset)
     if a.command == "animate":
@@ -90,6 +131,14 @@ def _dispatch(a, wd):
         return validate(wd)
     if a.command == "preview":
         return {"status": "ok", "previews": write_previews(wd)}
+    if a.command == "spine":
+        if a.action == "import":
+            return spine_bridge.import_project(wd, a.spine_exe)
+        if a.action == "open":
+            return spine_bridge.open_project(wd, a.project, a.spine_exe)
+        if not a.part:
+            raise C2SError("c2s spine sync 需要 --part <部件名稱>")
+        return spine_bridge.sync_image(wd, a.part, a.restore)
     return pipeline.run(a.image, a.motion, a.workdir, a.parts, a.preset, a.spine_version, a.spine_exe)
 
 
@@ -97,6 +146,11 @@ def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         stream.reconfigure(encoding="utf-8", errors="replace")
     a = _parser().parse_args(argv)
+    if a.command == "doctor":  # 不需要工作目錄；給人看的逐行結果
+        checks = doctor()
+        for c in checks:
+            print(f"[{c['status']}] {c['name']}：{c['detail']}" + (f"\n    → {c['fix']}" if c["fix"] else ""))
+        return 1 if any(c["status"] == "FAIL" for c in checks) else 0
     wd = None
     try:
         wd = pipeline.resolve_workdir(getattr(a, "image", None), a.workdir)
@@ -122,6 +176,8 @@ def main(argv=None):
     (Path(wd) / "c2s_error.log").unlink(missing_ok=True)  # 成功後不留上一次失敗的紀錄
     if status == "unsupported":
         return 3
+    if a.command == "spine" and status == "BLOCKED":  # 只限 spine：validate 的 BLOCKED 維持結束碼 0
+        return 2
     return 2 if status in ("needs_input", "needs_parts") else 0
 
 

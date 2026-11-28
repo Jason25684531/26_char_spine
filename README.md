@@ -70,17 +70,42 @@ Agent 看 `grid_overlay.png`（原圖加座標格線）寫出 `parts.json`，`c2
 
 PARTIAL 表示分層、骨架、動畫都產生了，但仍有部件要人工補畫或有小瑕疵。完整結果見[測試](#泛化測試陌生角色)。
 
+## 快速開始：Codex（v1.2）
+
+1. 把 `character-to-spine-skill-v1.2.0.zip` 解壓到專案的 `.agents/skills/`：
+
+   ```powershell
+   Expand-Archive character-to-spine-skill-v1.2.0.zip -DestinationPath .agents\skills
+   ```
+2. 把角色圖片放進專案資料夾，在 Codex 輸入一句話：
+
+   > $character-to-spine 請將 hero.png 自動拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出 Spine。
+
+   不開互動介面時：`codex exec -s workspace-write -c sandbox_workspace_write.network_access=true '$character-to-spine 請將 hero.png 自動拆補圖、建立骨架，製作 Idle／Happy 動畫並輸出 Spine。我同意把這張角色圖交給 Codex 內建 image_gen 補畫被遮住的部分。'`（用單引號，PowerShell 才不會把 `$character` 當成變數；第一次使用需要網路安裝執行環境）。
+3. Codex 會先問你一次：是否同意把角色圖交給內建 `image_gen`（雲端）補畫被遮住的部位。不同意也能完成，只是大面積遮擋的部件會列入人工補畫清單。不需要 API Key，也不需要選模型。
+
+之後可以用一句話修改：
+
+| 你說 | 會發生什麼 |
+|---|---|
+| 「請將 hero.png 自動拆補圖」 | 只拆圖、補圖，不做骨架與動畫 |
+| 「請重新補齊吉他後方的身體，其他部件保持不變」 | 只重做 body，其他圖層檔案不變 |
+| 「請讓角色的 Happy 動作更活潑，並增加頭髮自然擺動」 | 寫入 `motion_overrides` 後重跑，回報倍率 |
+| 「請輸出 Spine 動畫專案」 | 匯出 Spine JSON 並驗證；沒有完整版 Spine 時 `.spine` 為 BLOCKED |
+
+生成式補圖的原理與限制見 `skills/character-to-spine/references/generative-repair.md`，驗收結果見 `docs/acceptance/v1.2.0/ACCEPTANCE_REPORT.md`。
+
 ## 快速開始：安裝 Claude Skill
 
 需要：Claude Code、Python 3.11 以上（`python --version` 確認）、第一次使用時可連網（下載 numpy、Pillow、OpenCV）。不需要 API Key 或付費服務。
 
-1. 解壓 `character-to-spine-skill-v1.1.0.zip`，得到 `character-to-spine/` 資料夾。
+1. 解壓 `character-to-spine-skill-v1.2.0.zip`，得到 `character-to-spine/` 資料夾。
 2. 放到下列其中一處：
    - 只給某個專案用：`<專案>\.claude\skills\character-to-spine\`
    - 所有專案都能用：`%USERPROFILE%\.claude\skills\character-to-spine\`（macOS／Linux：`~/.claude/skills/character-to-spine/`）
 
    ```powershell
-   Expand-Archive character-to-spine-skill-v1.1.0.zip -DestinationPath .claude\skills
+   Expand-Archive character-to-spine-skill-v1.2.0.zip -DestinationPath .claude\skills
    ```
 3. 把角色圖片放進專案資料夾，啟動 Claude Code，說一句話即可，例如：
 

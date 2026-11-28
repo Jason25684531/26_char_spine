@@ -31,9 +31,13 @@ from .spine_exporter import DEFAULT_SPINE_VERSION, build_skeleton, export
 FPS = 10
 MAX_ROUNDS = 3
 # 門檻（校準依據見 docs/DECISIONS.md D-31、D-32）
-THRESHOLDS = {"hole": 0.003, "gap": 0.1, "attach": 0.6, "intrude": 0.02, "exposure": 0.02}
+THRESHOLDS = {"hole": 0.003, "gap": 0.1, "attach": 0.6, "intrude": 0.02, "exposure": 0.02, "occluded": 0.2}
+# occluded：手臂被前後順序較高的部件（頭髮、帽子）蓋住的面積，比初始姿勢多出手臂面積的這個比例（K-39）。
+# 修法是改 parts.json 的 z，不是縮小動作，所以自動修正不處理
+NOT_BY_SHRINKING = {"occluded"}
 LOWER_IS_BAD = {"attach"}  # attach 是比值越低越糟，其餘越高越糟
-EXPOSURE_FLOOR = 0.5  # 只因草稿露出時動作的縮小下限（v1.0 會縮到 ×0.125，動畫幾乎不動）
+SHRINK_FLOOR = 0.5  # 自動修正把動作縮小的下限（v1.0 會縮到 ×0.125，動畫幾乎不動）。到下限仍有的異常列為未解決，
+# 改姿勢、樞軸、圖層順序或補圖，不再縮（Spine-SKILL：只縮幅度不會讓動作變好，縮過頭會變僵硬）
 
 
 def violation(kind, value):
@@ -138,6 +142,8 @@ def _raw(ctx, f):
         raw[("attach", f"{a}+{b}")] = float((_dilated(f, a) & _dilated(f, b)).sum())
     for a, b in ctx["intrude_pairs"]:
         raw[("intrude", f"{a}+{b}")] = float(((f["alphas"][a] > 0.5) & (f["alphas"][b] > 0.5)).sum())
+    for p in ctx["limbs"]:
+        raw[("occluded", p)] = float(((f["alphas"][p] > 0.5) & (f["vis"][p] < 0.5)).sum())
     for p in ctx["exposure_parts"]:
         m = f["masks"].get(p)
         raw[("exposure", p)] = float((m * f["vis"][p]).sum()) if m is not None else 0.0
@@ -172,6 +178,7 @@ def _prepare_context(ctx, skel):
     names = sorted(f["alphas"])
     ctx["setup_alphas"] = {n: a.astype(np.float32) for n, a in f["alphas"].items()}
     ctx["setup_body"] = f["world"]["body"]
+    ctx["limbs"] = sorted(n for n, r in ctx["rig"].get("roles", {}).items() if r == "arm" and n in f["alphas"])
     setup_contacts = {(a, b) for i, a in enumerate(names) for b in names[i + 1:] if (_dilated(f, a) & _dilated(f, b)).any()}
     # 頭髮是最後面的背景層，手或道具畫在它前面是正常的，不算穿插
     backdrop = {n for n, r in ctx["rig"].get("roles", {}).items() if r == "hair"}
@@ -291,13 +298,12 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
         fixes = []
         for a in anomalies:
             a["attributed_to"] = bone = attribute(ctx, skel, a)
-            # 只是草稿露出時，動作最多縮到 EXPOSURE_FLOOR：露出的草稿列入人工補畫，不再用縮小動作藏起來
-            hide_only = a["kind"] == "exposure" and tuning.get(a["anim"], {}).get(bone, 1.0) <= EXPOSURE_FLOOR
-            if bone and not hide_only and (a["anim"], bone) not in fixes:
+            at_floor = tuning.get(a["anim"], {}).get(bone, 1.0) <= SHRINK_FLOOR
+            if bone and not at_floor and a["kind"] not in NOT_BY_SHRINKING and (a["anim"], bone) not in fixes:
                 fixes.append((a["anim"], bone))
         rec["fixes"] = [{"animation": an, "bone": b, "factor": 0.5} for an, b in fixes]
         if not fixes:
-            rec["note"] = "找不到能改善的骨頭（或只剩草稿露出、已達縮小下限），停止"
+            rec["note"] = "找不到能改善的骨頭，或相關骨頭已達縮小下限，停止"
             break
         for an, b in fixes:
             tuning.setdefault(an, {})[b] = tuning.get(an, {}).get(b, 1.0) * 0.5
@@ -350,6 +356,12 @@ def refine(workdir, motion="happy", spine_version=None, spine_exe=None):
 
     export(wd, spine_version or DEFAULT_SPINE_VERSION, spine_exe)
     unresolved = [a for a in final if a["kind"] != "exposure"]
+    # 縮小動作（為了別的異常）時被順帶藏起來的遮擋，仍以原設計幅度（第 0 輪）回報：修法是 z，不是動作變小
+    seen = {(a["kind"], a["subject"]) for a in unresolved}
+    unresolved += [a for a in rounds[0]["anomalies"] if a["kind"] in NOT_BY_SHRINKING and (a["kind"], a["subject"]) not in seen]
+    # 縮小動作（為了別的異常）時被順帶藏起來的遮擋，仍以原設計幅度（第 0 輪）回報：修法是 z，不是動作變小
+    seen = {(a["kind"], a["subject"]) for a in unresolved}
+    unresolved += [a for a in rounds[0]["anomalies"] if a["kind"] in NOT_BY_SHRINKING and (a["kind"], a["subject"]) not in seen]
     watch = {e["name"]: e["exposure"] for e in meta["parts"]
              if e.get("exposure") and e["status"] == "auto_repaired"}  # 不可靠、門檻內但有露出：建議目視
     report = {"fps": FPS, "thresholds": THRESHOLDS, "max_rounds": MAX_ROUNDS, "chosen_round": best["round"],

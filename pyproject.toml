@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "character-to-spine"
-version = "1.1.0"
+version = "1.2.0"
 description = "2D 角色圖片 → 分層 PNG → Spine 骨架與動畫"
 requires-python = ">=3.11"
 dependencies = ["numpy", "Pillow", "opencv-python"]

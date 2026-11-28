@@ -106,7 +106,8 @@ def test_loops_and_keys_are_editable(built):
             for bone, tls in a["bones"].items():
                 for tl, keys in tls.items():
                     times = [k.get("time", 0) for k in keys]
-                    assert times == sorted(set(times)) and 2 <= len(keys) <= 16, (an, bone, tl)
+                    # 上限是可編輯性的經驗值：v1.2 的 Happy 依參考影片多了落地後的小彈跳，hip 兩個循環 21 格
+                    assert times == sorted(set(times)) and 2 <= len(keys) <= 24, (an, bone, tl)
                     chans = ["value"] if tl == "rotate" else ["x", "y"]
                     first = [keys[0].get(c, 1 if tl == "scale" else 0) for c in chans]
                     last = [keys[-1].get(c, 1 if tl == "scale" else 0) for c in chans]
@@ -130,11 +131,16 @@ def test_amplitude_scales_with_height(workcopy):
 
 
 def test_left_right_mirror(built):
-    """左右手往相反方向轉。幅度依各自的初始方向決定（舉到同一個外側目標），synth_a 兩手差 1 個像素的重心，幅度差在 5% 內。"""
+    """Happy 每個循環舉一隻手、兩個循環左右交替：第一圈的左手與第二圈的右手方向相反、幅度相同。
+    幅度依各自的初始方向決定（舉到同一個外側目標），synth_a 兩手差 1 個像素的重心，幅度差在 5% 內。"""
+    from character_to_spine.animation_builder import TEMPLATES
+    from character_to_spine.preview import _sample
+    period = TEMPLATES["happy"][1]
     b = anim(built("synth_a"))["bones"]
-    for kl, kr in zip(b["arm_l"]["rotate"], b["arm_r"]["rotate"]):
-        if kl.get("value"):
-            assert kl["value"] == pytest.approx(-kr["value"], rel=0.05)
+    for t in (0.13, 0.33, 0.5, 0.8, 1.0):
+        left = _sample(b["arm_l"]["rotate"], "rotate", t)["value"]
+        right = _sample(b["arm_r"]["rotate"], "rotate", t + period)["value"]
+        assert left == pytest.approx(-right, rel=0.05, abs=0.5), t
 
 
 def test_motion_factor(workcopy):
@@ -148,12 +154,13 @@ def test_motion_factor(workcopy):
 
 
 def test_crouch_is_wider_on_screen(built):
-    """下蹲（happy t=0.2）時身體在畫面上要變寬變矮。骨頭直立時 Spine 的 scaleX 是垂直方向。"""
+    """下蹲（happy 第一個壓扁影格）時身體在畫面上要變寬變矮。骨頭直立時 Spine 的 scaleX 是垂直方向。"""
     import numpy as np
     from character_to_spine.preview import world_matrices
     wd = built("synth_a")
     s = load_json(wd / "spine" / "character.json")
-    m0, m1 = world_matrices(s, "happy", 0.0)["body"], world_matrices(s, "happy", 0.2)["body"]
+    crouch = next(k["time"] for k in s["animations"]["happy"]["bones"]["body"]["scale"] if k.get("time"))
+    m0, m1 = world_matrices(s, "happy", 0.0)["body"], world_matrices(s, "happy", crouch)["body"]
     deform = m1[:2, :2] @ np.linalg.inv(m0[:2, :2])  # 畫面上 t=0 → t=0.2 的變形
     assert np.linalg.norm(deform @ [1, 0]) > 1.02  # 變寬
     assert np.linalg.norm(deform @ [0, 1]) < 0.98  # 變矮

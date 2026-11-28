@@ -3,12 +3,12 @@
 JSON 結構依官方 spine-runtimes 4.2／4.3 的 spineboy 匯出檔比對：只使用兩版相同的子集
 （bones、slots、region attachment、rotate/translate/scale timeline、絕對座標 bezier）。
 """
-import os
 import shutil
 import subprocess
 from pathlib import Path
 
-from . import NeedsInput, load_json, save_json
+from . import NeedsInput, load_json, save_json, spine_bridge
+from .spine_bridge import _is_trial
 
 DEFAULT_SPINE_VERSION = "4.3.26"  # 試用版 Launcher 實際下載的 Editor 版本（~/SpineTrial/updates）；用 --spine-version 配合實際匯入的 Editor
 TRIAL_NOTE = ("偵測到的是 Spine 試用版：2026-11-23 實測 SpineTrial.com（Launcher 4.3.08，Editor 4.3.26）的 CLI 沒有 -i/-o/-r/-e 參數，"
@@ -37,17 +37,9 @@ def build_skeleton(workdir, spine_version=DEFAULT_SPINE_VERSION):
 
 
 def find_spine():
-    """回傳 (執行檔路徑或 None, 是否為試用版)。環境變數 SPINE_EXE 優先。"""
-    candidates = [os.environ.get("SPINE_EXE"), shutil.which("Spine.com"), shutil.which("Spine"),
-                  r"C:\Program Files\Spine\Spine.com", r"C:\Program Files\Spine Trial\SpineTrial.com"]
-    for c in candidates:
-        if c and Path(c).exists():
-            return str(c), _is_trial(c)
-    return None, False
-
-
-def _is_trial(exe):
-    return "trial" in Path(exe).name.lower()
+    """回傳 (執行檔路徑或 None, 是否為試用版)。偵測順序見 spine_bridge.detect。"""
+    d = spine_bridge.detect()
+    return d["exe"], d["trial"]
 
 
 def _run(cmd, log, timeout=300):

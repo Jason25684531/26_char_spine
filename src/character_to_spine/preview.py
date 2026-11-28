@@ -26,13 +26,29 @@ def _sample(keys, kind, t):
             u = (t - times[i]) / (times[i + 1] - times[i])
             curve = keys[i].get("curve")
             if curve == "stepped":
-                u = 0
-            elif curve:
-                # ponytail: 本專案產生的 bezier 都是平切線、控制點在 1/3 處，等同 smoothstep。
-                # 要預覽任意 bezier 時再改成真正的曲線求解。
-                u = u * u * (3 - 2 * u)
-            return {c: vals[i][c] + (vals[i + 1][c] - vals[i][c]) * u for c in base}
+                return vals[i]
+            if not curve:
+                return {c: vals[i][c] + (vals[i + 1][c] - vals[i][c]) * u for c in base}
+            # Spine 4.x：每個 channel 四個數字 [t1, v1, t2, v2]（絕對座標），先由時間解出曲線參數再求值
+            out = {}
+            for j, c in enumerate(base):
+                c1t, c1v, c2t, c2v = curve[4 * j:4 * j + 4]
+                out[c] = _bezier(_solve(times[i], c1t, c2t, times[i + 1], t), vals[i][c], c1v, c2v, vals[i + 1][c])
+            return out
     return vals[-1]
+
+
+def _bezier(s, p0, p1, p2, p3):
+    return (1 - s) ** 3 * p0 + 3 * (1 - s) ** 2 * s * p1 + 3 * (1 - s) * s * s * p2 + s ** 3 * p3
+
+
+def _solve(t0, t1, t2, t3, t):
+    """時間曲線單調遞增：二分法解 bezier 參數。"""
+    lo, hi = 0.0, 1.0
+    for _ in range(30):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if _bezier(mid, t0, t1, t2, t3) < t else (lo, mid)
+    return (lo + hi) / 2
 
 
 def _matrix(x, y, rotation, sx=1.0, sy=1.0):

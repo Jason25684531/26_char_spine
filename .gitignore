@@ -40,3 +40,6 @@ Thumbs.db
 .audit/
 ref/*
 Ref_pic/*
+openspec/*
+examples/*
+docs/*

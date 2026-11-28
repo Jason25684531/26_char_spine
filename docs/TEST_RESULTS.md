@@ -299,3 +299,6 @@ parts.json 由 Claude Code 依 `grid_overlay.png` 目測撰寫，依 `layer_prev
 - 最終狀態的 `Character-to-Spine-Deliverables/02_Layered_Assets/<角色>/report/visual_check.png`（打包時產生）：兩個角色的接觸點都在圈中央、沒有破圖。
 - `output/ren_strum_strip.png`：雙手在吉他上、沒有破圖。
 - 修補三格對照圖：子代理與我各自看過。
+
+| 2026-11-27 | v1.1.0 基準 `pytest -q` | **157 passed**（394 秒） |
+| 2026-11-27 | v1.2.0 完整執行 | 176 passed、1 failed（測試斷言錯誤，修正後通過）；最終完整執行被系統因記憶體不足停止（81% 以上無失敗），共 178 項 |
